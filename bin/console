@@ -1,0 +1,61 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use App\Bootstrap;
+use App\Config\AppConfig;
+use App\Console\Commands\KeyGenerateCommand;
+use App\Console\Commands\MakeAbilityCommand;
+use App\Console\Commands\MakeControllerCommand;
+use App\Console\Commands\MakeMigrationCommand;
+use App\Console\Commands\MakeUserCommand;
+use App\Console\Commands\MigrateFreshCommand;
+use App\Console\Commands\MigrateRunCommand;
+use App\Console\Commands\MigrateStatusCommand;
+use App\Console\Commands\RouteCacheClearCommand;
+use App\Console\Commands\RouteCacheCommand;
+use App\Database\MigrationRunner;
+use App\Providers\AppServiceProvider;
+use App\Repositories\UserRepository;
+use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Http\RouteCache;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\CommandLoader\FactoryCommandLoader;
+
+// The console entrypoint. It builds the same composition root as the HTTP front
+// controller (public/index.php) and resolves command dependencies from it, so
+// commands see exactly the bindings the app runs with. Providers are registered
+// but not booted — resolving a binding needs only registration.
+$container = Bootstrap::application(__DIR__ . '/..')->container();
+
+$application = new Application('Hydra');
+$application->addCommands([
+    new KeyGenerateCommand(__DIR__ . '/../.env'),
+    new RouteCacheCommand($container->get(RouteCache::class), AppServiceProvider::CONTROLLERS),
+    new RouteCacheClearCommand($container->get(RouteCache::class)),
+    new MakeMigrationCommand(__DIR__ . '/../database/migrations'),
+    new MakeControllerCommand(__DIR__ . '/../src/Controllers'),
+    new MakeAbilityCommand(__DIR__ . '/../src/Authorization'),
+]);
+
+// The migrate:* commands need the database connection, so they are loaded lazily
+// — the MigrationRunner (and the PDO behind it) is built only when one of these
+// commands actually runs, never at console boot. This keeps DB-free commands like
+// key:generate usable before the database exists.
+$application->setCommandLoader(new FactoryCommandLoader([
+    'migrate:run' => static fn () => new MigrateRunCommand($container->get(MigrationRunner::class)),
+    'migrate:fresh' => static fn () => new MigrateFreshCommand(
+        $container->get(MigrationRunner::class),
+        $container->get(AppConfig::class)->debug,
+    ),
+    'migrate:status' => static fn () => new MigrateStatusCommand($container->get(MigrationRunner::class)),
+    'make:user' => static fn () => new MakeUserCommand(
+        $container->get(UserRepository::class),
+        $container->get(HasherInterface::class),
+    ),
+]));
+
+$application->run();

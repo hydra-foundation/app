@@ -1,0 +1,69 @@
+# Base stack for the Hydra app skeleton.
+#
+# Hydra is a monorepo: app/vendor/hydra/{core,http} are relative symlinks that
+# resolve to ../../core and ../../http at the repo root. The container therefore
+# mounts the WHOLE repo root (../) at /var/www/html, with the web root pinned to
+# app/public. Run compose from this directory so it reads app/.env.
+#
+#   docker compose up -d            # base only
+#   ./bin/dev up -d --build         # base + dev (Traefik) — recommended
+name: hydra
+
+services:
+  php:
+    build:
+      context: ./docker/php
+      args:
+        # Default to dev; docker-compose.prod.yml overrides to prod.
+        BUILD_MODE: ${BUILD_MODE:-dev}
+    volumes:
+      - ../:/var/www/html
+      # Mount dev.ini in development (default); prod.yml swaps in prod.ini.
+      - ./docker/php/dev.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
+    networks:
+      - net
+
+  nginx:
+    image: nginx:alpine
+    sysctls:
+      - net.ipv4.tcp_tw_reuse=1
+    volumes:
+      - ../:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - net
+
+  db:
+    image: mariadb:11
+    restart: "no"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      TZ: ${APP_TIMEZONE:-UTC}
+    volumes:
+      - ./docker/db_data:/var/lib/mysql
+    networks:
+      - net
+
+  redis:
+    image: redis:7-alpine
+    restart: "no"
+    volumes:
+      - redis_data:/data
+    networks:
+      - net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  net:
+
+volumes:
+  redis_data:

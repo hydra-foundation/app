@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Open a MariaDB shell in the db container using credentials from .env.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+set -a
+source ./.env
+set +a
+
+exec docker compose exec -it db mariadb -u root -p"$DB_ROOT_PASSWORD" "$DB_NAME"

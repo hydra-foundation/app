@@ -1,0 +1,13 @@
+# Development overrides — portable, no external dependencies.
+# Use with: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# Or via ./bin/dev (which also layers in docker-compose.local.yml if present).
+#
+# Publishes nginx on the host so the stack is reachable without any reverse
+# proxy: http://localhost:${APP_PORT:-8080}. Personal, machine-specific niceties
+# (e.g. a shared Traefik proxy for *.localhost hostnames) belong in
+# docker-compose.local.yml — gitignored and auto-loaded by ./bin/dev.
+
+services:
+  nginx:
+    ports:
+      - "${APP_PORT:-8080}:80"

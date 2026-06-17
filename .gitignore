@@ -1,0 +1,22 @@
+# Dependencies
+/vendor/
+
+# Environment — never commit real secrets (keep a .env.example instead)
+/.env
+
+# Docker — MariaDB bind-mount data and any local compose overrides
+/docker/db_data/
+/docker-compose.local.yml
+
+# PHPUnit
+/.phpunit.cache/
+.phpunit.result.cache
+/coverage/
+
+# Editors / OS
+/.idea/
+/.vscode/
+.DS_Store
+*.swp
+
+# Note: composer.lock IS committed for applications (this is a "type": "project")

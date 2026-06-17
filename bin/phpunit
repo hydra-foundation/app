@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Run the test suite inside the app container.
+# Extra args pass straight through to phpunit, e.g.:
+#   ./bin/phpunit                      # whole suite
+#   ./bin/phpunit --filter SomeTest    # a subset
+#   ./bin/phpunit --testdox            # readable output
+set -euo pipefail
+
+exec "$(dirname "$0")/app-container" vendor/bin/phpunit "$@"
