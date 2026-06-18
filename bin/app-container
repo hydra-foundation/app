@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-# Run a command in the php container from the app dir, or open a shell with no args.
+# Run a command in the php container from the project dir, or open a shell with no args.
 #   ./bin/app-container                      # bash shell
 #   ./bin/app-container composer install     # run a command
 #   ./bin/app-container vendor/bin/phpunit   # run the tests
 #
-# The repo root is mounted at /var/www/html, so the app lives in
-# /var/www/html/app — commands run there so composer.json/vendor resolve.
+# The repo root is mounted at /var/www/html, and each project lives in a
+# subdirectory named after itself — commands run there so composer.json/vendor
+# resolve. The workdir is derived from this project's directory name rather than
+# hardcoded, so a copy of this script works unchanged in any sibling project.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-workdir=/var/www/html/app
+workdir="/var/www/html/$(basename "$(pwd)")"
 
 if [ $# -eq 0 ]; then
     exec docker compose exec -it -w "$workdir" php bash

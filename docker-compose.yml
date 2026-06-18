@@ -5,9 +5,13 @@
 # mounts the WHOLE repo root (../) at /var/www/html, with the web root pinned to
 # app/public. Run compose from this directory so it reads app/.env.
 #
+#
+# The Compose project name is left unset on purpose: it defaults to this
+# directory's name (app), so a copy of this stack in any sibling project is
+# namespaced correctly with nothing to configure.
+#
 #   docker compose up -d            # base only
 #   ./bin/dev up -d --build         # base + dev (Traefik) — recommended
-name: hydra
 
 services:
   php:
