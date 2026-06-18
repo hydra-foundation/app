@@ -14,10 +14,10 @@ working auth/admin slice you can build on or delete.
 - **PHP 8.2+** and **Composer** (for the no-Docker path).
 - **Docker** + Compose (for the full stack: PHP-FPM, nginx, MariaDB, Redis).
 
-Hydra is developed as a monorepo: this app lives in `app/`, and the framework
-packages (`hydra/core`, `hydra/http`, …) are sibling directories symlinked in
-through Composer `path` repositories. So `app/` expects `../core`, `../http`,
-etc. to exist beside it.
+Hydra's framework packages (`hydra/core`, `hydra/http`, …) are developed as
+separate sibling directories — each destined to be its own published package.
+During local development this app consumes them via Composer `path` repositories
+with symlinking, so `app/` expects `../core`, `../http`, etc. to exist beside it.
 
 ## Quick start
 
@@ -55,7 +55,6 @@ Open **http://localhost:8000**.
 ## Updating
 
 ```bash
-git pull
 composer install                     # or: ./bin/app-container composer install
 php bin/console migrate:run          # apply any new migrations (DB only)
 ```
