@@ -1,9 +1,10 @@
 # Base stack for the Hydra app skeleton.
 #
-# Hydra is a monorepo: app/vendor/hydra/{core,http} are relative symlinks that
-# resolve to ../../core and ../../http at the repo root. The container therefore
-# mounts the WHOLE repo root (../) at /var/www/html, with the web root pinned to
-# app/public. Run compose from this directory so it reads app/.env.
+# During local dev app/vendor/hydra/{core,http,...} are relative symlinks (via
+# Composer path repos) that resolve to ../../core, ../../http, ... beside app/.
+# The container therefore mounts the WHOLE parent dir (../) at /var/www/html, so
+# those symlinks resolve, with the web root pinned to app/public. Run compose
+# from this directory so it reads app/.env.
 #
 #
 # The Compose project name is left unset on purpose: it defaults to this
