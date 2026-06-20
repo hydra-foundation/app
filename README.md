@@ -41,7 +41,7 @@ Open **http://localhost:8000**.
 ## Updating
 
 ```bash
-composer install                     # or: ./bin/app-container composer install
+composer install                     # or: ./bin/exec composer install
 php bin/console migrate:run          # apply any new migrations (DB only)
 ```
 
@@ -49,7 +49,7 @@ php bin/console migrate:run          # apply any new migrations (DB only)
 
 ```bash
 ./bin/dev up -d            # start the dev stack       ./bin/dev down       # stop it
-./bin/dev logs -f nginx    # tail a service            ./bin/app-container  # shell in the php container
+./bin/dev logs -f nginx    # tail a service            ./bin/exec           # shell in the php container
 ./bin/phpunit              # run the test suite        ./bin/db             # open a MariaDB shell
 
 php bin/console            # list everything the console can do
