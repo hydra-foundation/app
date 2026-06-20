@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\View\ViewInterface;
+use Hydra\View\Contracts\ViewInterface;
 use Hydra\Http\Exceptions\HttpException;
 use Hydra\Http\Responder;
 use Hydra\Http\Status;

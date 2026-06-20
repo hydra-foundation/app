@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Container;
-use App\Database\ConnectionInterface;
-use App\Database\PdoConnection;
+use Hydra\Database\Contracts\ConnectionInterface;
+use Hydra\Database\PdoConnection;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use Hydra\Auth\AuthConfig;

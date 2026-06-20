@@ -17,7 +17,7 @@ use App\Console\Commands\MigrateRunCommand;
 use App\Console\Commands\MigrateStatusCommand;
 use App\Console\Commands\RouteCacheClearCommand;
 use App\Console\Commands\RouteCacheCommand;
-use App\Database\MigrationRunner;
+use Hydra\Database\MigrationRunner;
 use App\Providers\AppServiceProvider;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;

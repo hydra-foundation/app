@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Database\ConnectionInterface;
+use Hydra\Database\Contracts\ConnectionInterface;
 use App\Entities\User;
 use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;

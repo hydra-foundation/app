@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Controllers\Controller;
-use App\View\PhpView;
+use Hydra\View\PhpView;
 use Hydra\Http\Exceptions\HttpException;
 use Hydra\Http\Responder;
 use Nyholm\Psr7\Factory\Psr17Factory;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Http\Htmx;
-use App\Http\HtmxResponse;
+use Hydra\Http\Htmx;
+use Hydra\Http\HtmxResponse;
 use Hydra\Auth\Exceptions\AuthenticationException;
 use Hydra\Http\Responder;
 use Hydra\Http\Status;

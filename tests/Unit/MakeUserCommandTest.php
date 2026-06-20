@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Console\Commands\MakeUserCommand;
-use App\Database\PdoConnection;
+use Hydra\Database\PdoConnection;
 use App\Repositories\UserRepository;
 use Hydra\Auth\AuthConfig;
 use Hydra\Auth\NativeHasher;

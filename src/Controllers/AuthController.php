@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Entities\User;
-use App\Http\Htmx;
-use App\Http\HtmxResponse;
-use App\Http\Input;
+use Hydra\Http\Htmx;
+use Hydra\Http\HtmxResponse;
+use Hydra\Http\Input;
 use App\Http\Middleware\RedirectAuthenticatedMiddleware;
-use App\View\ViewInterface;
+use Hydra\View\Contracts\ViewInterface;
 use App\ViewModels\AccountViewModel;
 use App\ViewModels\LoginViewModel;
 use Hydra\Auth\AuthenticateMiddleware;

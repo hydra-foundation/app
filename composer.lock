@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "50a9b30d08abb6e0db5fd2f422f56327",
+    "content-hash": "26023701e2a1c001de0683eab1e5cf6b",
     "packages": [
         {
             "name": "hydra/auth",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "efe7590ef0c3d7d4d59bfa5512832c1db7f1f8c9"
+                "reference": "a7137991f758f3322dee0a5f7f413617883fd634"
             },
             "require": {
                 "hydra/core": "*",
@@ -47,7 +47,7 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Authentication for the Hydra PHP framework",
+            "description": "Authentication library for Hydra PHP framework",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -59,7 +59,7 @@
             "dist": {
                 "type": "path",
                 "url": "../authorization",
-                "reference": "d0f6cee2d1bfff8377d1e4f7a55223a59821f732"
+                "reference": "8377513f70bb5ff2182efb365256f10f3bb5436c"
             },
             "require": {
                 "hydra/auth": "*",
@@ -90,7 +90,7 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Authorization for the Hydra PHP framework",
+            "description": "Authorization library for Hydra PHP framework",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -102,7 +102,7 @@
             "dist": {
                 "type": "path",
                 "url": "../core",
-                "reference": "679c4f77b90a6e2484e370d9c432aabd71b8a0bc"
+                "reference": "724319f31206b3b97a36763465cfa1aa355c6ca9"
             },
             "require": {
                 "php": ">=8.2",
@@ -143,7 +143,7 @@
             "dist": {
                 "type": "path",
                 "url": "../csrf",
-                "reference": "f083d7b92960791a9df879ed2f1dfbd23a5d9940"
+                "reference": "90a13092936726feb79da235a851b268820f2117"
             },
             "require": {
                 "hydra/http": "*",
@@ -177,7 +177,49 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "CSRF protection for the Hydra PHP framework",
+            "description": "CSRF library for Hydra PHP framework",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "hydra/database",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../database",
+                "reference": "0af73da7972d7d456909e407080bcb75bf6a5674"
+            },
+            "require": {
+                "ext-pdo": "*",
+                "php": ">=8.2"
+            },
+            "require-dev": {
+                "ext-pdo_sqlite": "*",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Hydra\\Database\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Hydra\\Database\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Hleucka",
+                    "email": "william.hleucka@gmail.com"
+                }
+            ],
+            "description": "Database library for Hydra PHP framework",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -189,7 +231,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "16cc9cc65dd495a34521700a06ee49a1dec51919"
+                "reference": "04e2e26f725105626f6a10775a72aa6bfd6cad11"
             },
             "require": {
                 "hydra/core": "*",
@@ -231,12 +273,97 @@
             }
         },
         {
+            "name": "hydra/log",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../log",
+                "reference": "c147a62f1d5b48f42c9df6a7b1545d747ffa9d3b"
+            },
+            "require": {
+                "php": ">=8.2",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Hydra\\Log\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Hydra\\Log\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Hleucka",
+                    "email": "william.hleucka@gmail.com"
+                }
+            ],
+            "description": "Logging library for Hydra PHP framework",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "hydra/nyholm",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../nyholm",
+                "reference": "3435035bda8ed6e0b5218fa82558165cf666790f"
+            },
+            "require": {
+                "hydra/http": "*",
+                "nyholm/psr7": "^1.8",
+                "nyholm/psr7-server": "^1.0",
+                "php": ">=8.2",
+                "psr/http-message": "^2.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Hydra\\Nyholm\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Hydra\\Nyholm\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Hleucka",
+                    "email": "william.hleucka@gmail.com"
+                }
+            ],
+            "description": "Nyholm PSR-7/PSR-17 adapter for the Hydra PHP framework",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "hydra/session",
             "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../session",
-                "reference": "7ed1296c9152ec72fd397d1c0fa5b1d1ccd15be2"
+                "reference": "649ffefcd2219e62f148bea78c32be95690496c0"
             },
             "require": {
                 "hydra/core": "*",
@@ -280,7 +407,7 @@
             "dist": {
                 "type": "path",
                 "url": "../validation",
-                "reference": "4cf0bd1ba36bef1c628cb087a9a7c05dee0fb134"
+                "reference": "ac8c798202b667a08a8240488105a53d7f62e823"
             },
             "require": {
                 "php": ">=8.2"
@@ -309,6 +436,48 @@
                 }
             ],
             "description": "Validation library for Hydra PHP framework",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "hydra/view",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../view",
+                "reference": "d3dbfe79361926f6b20332822022329ceb64b3a0"
+            },
+            "require": {
+                "hydra/csrf": "*",
+                "php": ">=8.2"
+            },
+            "require-dev": {
+                "hydra/session": "*",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Hydra\\View\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Hydra\\View\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Hleucka",
+                    "email": "william.hleucka@gmail.com"
+                }
+            ],
+            "description": "Native PHP templating for the Hydra PHP framework",
             "transport-options": {
                 "symlink": true,
                 "relative": true

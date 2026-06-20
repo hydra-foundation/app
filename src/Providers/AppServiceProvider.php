@@ -11,19 +11,19 @@ use App\Config\RouteConfig;
 use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\HomeController;
-use App\Database\ConnectionInterface;
-use App\Database\MigrationRunner;
-use App\Database\PdoConnection;
-use App\Http\Middleware\ForceHttpsMiddleware;
 use App\Http\Middleware\RedirectUnauthenticatedMiddleware;
-use App\Http\Middleware\RequestLoggingMiddleware;
-use App\Http\Middleware\SecurityHeadersMiddleware;
-use App\Http\NyholmRequestProvider;
-use App\Log\StreamLogger;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\UserProviderInterface;
-use App\View\PhpView;
-use App\View\ViewInterface;
+use Hydra\Database\Contracts\ConnectionInterface;
+use Hydra\Database\MigrationRunner;
+use Hydra\Database\PdoConnection;
+use Hydra\Http\ForceHttpsMiddleware;
+use Hydra\Http\RequestLoggingMiddleware;
+use Hydra\Http\SecurityHeadersMiddleware;
+use Hydra\Log\StreamLogger;
+use Hydra\Nyholm\NyholmRequestProvider;
+use Hydra\View\PhpView;
+use Hydra\View\Contracts\ViewInterface;
 use PDO;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Contracts\KernelInterface;
@@ -43,7 +43,6 @@ use Hydra\Session\StartSessionMiddleware;
 use Hydra\Csrf\CsrfGuard;
 use Hydra\Csrf\VerifyCsrfTokenMiddleware;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -183,8 +182,7 @@ final class AppServiceProvider extends ServiceProvider
 
         // Capture the incoming request from PHP globals (nyholm behind our seam).
         $container->singleton(ServerRequestProviderInterface::class, function () use ($container) {
-            $psr17 = $container->get(Psr17Factory::class);
-            return new NyholmRequestProvider(new ServerRequestCreator($psr17, $psr17, $psr17, $psr17));
+            return NyholmRequestProvider::create($container->get(Psr17Factory::class));
         });
 
         // PSR-3 logger. Sink is LOG_PATH (default stderr); an unwritable path
@@ -210,6 +208,17 @@ final class AppServiceProvider extends ServiceProvider
             return new Responder(
                 $container->get(ResponseFactoryInterface::class),
                 $container->get(StreamFactoryInterface::class),
+            );
+        });
+
+        // Https-upgrade middleware. Bound explicitly because its $enabled flag is
+        // a plain bool (the package stays free of the app's config type), so it
+        // can't be autowired — the app supplies FORCE_HTTPS here. Once bound it's
+        // just another class-string in the MIDDLEWARE stack.
+        $container->singleton(ForceHttpsMiddleware::class, function () use ($container) {
+            return new ForceHttpsMiddleware(
+                $container->get(AppConfig::class)->forceHttps,
+                $container->get(Responder::class),
             );
         });
 

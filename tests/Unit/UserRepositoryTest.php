@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
-use App\Database\PdoConnection;
+use Hydra\Database\PdoConnection;
 use App\Entities\User;
 use App\Repositories\UserRepository;
 use PDO;

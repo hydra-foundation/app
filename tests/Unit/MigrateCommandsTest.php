@@ -8,7 +8,7 @@ use App\Console\Commands\MakeMigrationCommand;
 use App\Console\Commands\MigrateFreshCommand;
 use App\Console\Commands\MigrateRunCommand;
 use App\Console\Commands\MigrateStatusCommand;
-use App\Database\MigrationRunner;
+use Hydra\Database\MigrationRunner;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
