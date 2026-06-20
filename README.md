@@ -1,23 +1,15 @@
 # Hydra App
 
-The skeleton application — the starting point every Hydra project is created
-from. It's the composition root that wires the framework packages together and
+The starting point every Hydra project is created from. 
+It's the composition root that wires the framework packages together and
 the home for everything that is *application policy* rather than *framework
 mechanism*: the user provider, the database connection, the view layer, the
 abilities.
-
-Out of the box it boots, serves one page (`/` → "Welcome to Hydra"), and ships a
-working auth/admin slice you can build on or delete.
 
 ## Requirements
 
 - **PHP 8.2+** and **Composer** (for the no-Docker path).
 - **Docker** + Compose (for the full stack: PHP-FPM, nginx, MariaDB, Redis).
-
-Hydra's framework packages (`hydra/core`, `hydra/http`, …) are developed as
-separate sibling directories — each destined to be its own published package.
-During local development this app consumes them via Composer `path` repositories
-with symlinking, so `app/` expects `../core`, `../http`, etc. to exist beside it.
 
 ## Quick start
 
@@ -36,13 +28,7 @@ Then bring it up one of two ways.
 ```
 
 Open **http://localhost:8080** (the port is `APP_PORT` in `.env`). You should see
-**Welcome to Hydra**. That's the whole loop working: nginx → PHP-FPM →
-`public/index.php` → `HomeController` → the `home` view.
-
-> Inside Docker the repo root is mounted at `/var/www/html` (the symlinks need
-> it), so run Composer and PHPUnit *in the container* — `./bin/app-container
-> composer install`, `./bin/phpunit`. The host commands above also work as long
-> as the sibling packages are present on the host.
+**Welcome to Hydra**.
 
 **Without Docker (the public site only — no DB needed for hello world):**
 
@@ -58,9 +44,6 @@ Open **http://localhost:8000**.
 composer install                     # or: ./bin/app-container composer install
 php bin/console migrate:run          # apply any new migrations (DB only)
 ```
-
-When the framework packages change next door, `composer install` picks them up
-through the symlinks — there's nothing to publish or version locally.
 
 ## Everyday commands
 
@@ -140,15 +123,3 @@ commented list). The defaults are tuned for local dev; the ones that matter most
 ./bin/phpunit --testdox                # readable output
 ```
 
-## Going to production
-
-Use the prod stack wrapper, which layers `docker-compose.prod.yml` over the base
-(prod PHP ini, restart policies, TLS via Traefik):
-
-```bash
-./bin/prod up -d --build
-```
-
-In production set `APP_DEBUG=false`, a real `APP_KEY`, `FORCE_HTTPS=true`,
-`ROUTE_CACHE=true` (and build it at deploy time with `php bin/console
-route:cache`), and real `DB_*` / `REDIS_*` credentials.
