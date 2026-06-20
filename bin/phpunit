@@ -6,4 +6,4 @@
 #   ./bin/phpunit --testdox            # readable output
 set -euo pipefail
 
-exec "$(dirname "$0")/app-container" vendor/bin/phpunit "$@"
+exec "$(dirname "$0")/exec" vendor/bin/phpunit "$@"
