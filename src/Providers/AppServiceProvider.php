@@ -52,7 +52,7 @@ final class AppServiceProvider extends ServiceProvider
 {
     /**
      * Controllers scanned for #[Route] attributes. Public because the route
-     * cache console command (App\Console\Commands\RouteCacheCommand) compiles
+     * cache console command (Hydra\Console\Commands\RouteCacheCommand) compiles
      * the very same set — one list, two readers, no drift.
      */
     public const CONTROLLERS = [

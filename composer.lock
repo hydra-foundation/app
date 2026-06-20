@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "26023701e2a1c001de0683eab1e5cf6b",
+    "content-hash": "3f0ef9be64cb2fa74d11377245305b8d",
     "packages": [
         {
             "name": "hydra/auth",
@@ -91,6 +91,50 @@
                 }
             ],
             "description": "Authorization library for Hydra PHP framework",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "hydra/console",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../console",
+                "reference": "ffcb5aa2e886a70b7facc1101fb8c3fd7a201e38"
+            },
+            "require": {
+                "hydra/database": "*",
+                "hydra/http": "*",
+                "php": ">=8.2",
+                "symfony/console": "^7.0"
+            },
+            "require-dev": {
+                "ext-pdo_sqlite": "*",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Hydra\\Console\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Hydra\\Console\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Hleucka",
+                    "email": "william.hleucka@gmail.com"
+                }
+            ],
+            "description": "Console command library for Hydra PHP framework",
             "transport-options": {
                 "symlink": true,
                 "relative": true
