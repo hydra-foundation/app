@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "a7137991f758f3322dee0a5f7f413617883fd634"
+                "reference": "fa0b65edc2b3d81154661e6b8b1fd5b89b22d9b9"
             },
             "require": {
                 "hydra/core": "*",
@@ -376,6 +376,7 @@
                 "hydra/http": "*",
                 "hydra/nyholm": "*",
                 "hydra/session": "*",
+                "hydra/view": "*",
                 "nyholm/psr7": "^1.8",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
