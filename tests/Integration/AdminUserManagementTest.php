@@ -9,6 +9,7 @@ use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\TestHttpProvider;
 use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthServiceProvider;
 use Hydra\Auth\Contracts\HasherInterface;
@@ -48,6 +49,7 @@ final class AdminUserManagementTest extends TestCase
 
         (new Application($container))
             ->register(new ArraySessionServiceProvider)
+            ->register(TestHttpProvider::make())
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)

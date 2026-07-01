@@ -14,46 +14,50 @@ use App\Controllers\HomeController;
 use App\Http\Middleware\RedirectUnauthenticatedMiddleware;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\UserProviderInterface;
+use Hydra\Auth\Events\Attempting;
+use Hydra\Auth\Events\LoggedIn;
+use Hydra\Auth\Events\LoggedOut;
+use Hydra\Auth\Events\LoginFailed;
+use Hydra\Auth\LogAuthEventsListener;
+use Hydra\Core\Contracts\ContainerInterface;
+use Hydra\Core\Environment;
+use Hydra\Core\Providers\ServiceProvider;
+use Hydra\Csrf\CsrfGuard;
+use Hydra\Csrf\VerifyCsrfTokenMiddleware;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\MigrationRunner;
 use Hydra\Database\PdoConnection;
+use Hydra\Event\ListenerProvider;
+use Hydra\Http\ErrorHandlerMiddleware;
 use Hydra\Http\ForceHttpsMiddleware;
 use Hydra\Http\RequestLoggingMiddleware;
+use Hydra\Http\Responder;
 use Hydra\Http\SecurityHeadersMiddleware;
 use Hydra\Log\StreamLogger;
-use Hydra\Nyholm\NyholmRequestProvider;
-use Hydra\View\PhpView;
-use Hydra\View\Contracts\ViewInterface;
-use PDO;
-use Hydra\Core\Contracts\ContainerInterface;
-use Hydra\Core\Contracts\KernelInterface;
-use Hydra\Core\Environment;
-use Hydra\Core\Providers\ServiceProvider;
-use Hydra\Http\Contracts\EmitterInterface;
-use Hydra\Http\ErrorHandlerMiddleware;
-use Hydra\Http\Contracts\ServerRequestProviderInterface;
-use Hydra\Http\Emitter;
-use Hydra\Http\HttpKernel;
-use Hydra\Http\Pipeline;
-use Hydra\Http\Responder;
-use Hydra\Http\Router;
-use Hydra\Http\RouteCache;
-use Hydra\Http\RouteScanner;
 use Hydra\Session\StartSessionMiddleware;
-use Hydra\Csrf\CsrfGuard;
-use Hydra\Csrf\VerifyCsrfTokenMiddleware;
-use Nyholm\Psr7\Factory\Psr17Factory;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Hydra\View\Contracts\ViewInterface;
+use Hydra\View\PhpView;
+use PDO;
 use Psr\Log\LoggerInterface;
 
+/**
+ * The app's own service provider: only what is genuinely this application's
+ * policy. The framework plumbing (PSR-17 factories, request provider, emitter,
+ * responder, router, pipeline, kernel) lives in {@see \Hydra\Kernel\HttpServiceProvider}
+ * and the standard provider stack in {@see \Hydra\Kernel\Kernel} — so none of that
+ * boilerplate can drift between this skeleton and other Hydra consumers.
+ *
+ * What stays here: config value objects, the data layer, the app-supplied user
+ * provider, the view, the logger, the two config-needing middleware, and the
+ * app's event listeners. Everything the kernel binds is resolved from the
+ * container by these bindings exactly as before.
+ */
 final class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Controllers scanned for #[Route] attributes. Public because the route
-     * cache console command (Hydra\Console\Commands\RouteCacheCommand) compiles
-     * the very same set — one list, two readers, no drift.
+     * Controllers scanned for #[Route] attributes. Public because two readers
+     * consume the same list with no drift: the kernel's HttpServiceProvider
+     * (passed in at Bootstrap) and the route:cache console command.
      */
     public const CONTROLLERS = [
         HomeController::class,
@@ -63,10 +67,11 @@ final class AppServiceProvider extends ServiceProvider
 
     /**
      * The app's middleware stack, outermost first. Each entry is a class-string
-     * resolved through the container, so middleware get full dependency
-     * injection. The order here is the order requests travel inward.
+     * the kernel's pipeline resolves through the container, so middleware get full
+     * dependency injection. The order here is the order requests travel inward.
+     * Public because Bootstrap hands it to the kernel's HttpServiceProvider.
      */
-    private const MIDDLEWARE = [
+    public const MIDDLEWARE = [
         // Writes one access-log line per request once a response exists. Sits
         // outermost so it times the whole pipeline and always sees a final
         // status — the error handler beneath turns any throwable into a 500, so
@@ -120,15 +125,10 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         // Routing settings (the ROUTE_CACHE toggle), same typed-config pattern.
+        // Bootstrap reads this to tell the kernel whether to use the cache; it
+        // stays bound for any other consumer that wants the typed view.
         $container->singleton(RouteConfig::class, function () use ($container) {
             return RouteConfig::fromEnvironment($container->get(Environment::class));
-        });
-
-        // The compiled route cache, bound once so the web path (read-only) and
-        // the route:cache / route:cache:clear console commands (the writers)
-        // agree on a single artifact location.
-        $container->singleton(RouteCache::class, function () {
-            return new RouteCache(dirname(__DIR__, 2) . '/bootstrap/cache/routes.php');
         });
 
         // The raw PDO handle, bound once. Built here (not in PdoConnection) with
@@ -148,7 +148,7 @@ final class AppServiceProvider extends ServiceProvider
 
         // The database connection behind its seam. Wraps the shared PDO so the
         // connection class stays driver-agnostic. Binding the interface keeps the
-        // engine swappable, like the ViewInterface binding above.
+        // engine swappable, like the ViewInterface binding below.
         $container->singleton(ConnectionInterface::class, function () use ($container) {
             return new PdoConnection($container->get(PDO::class));
         });
@@ -175,16 +175,6 @@ final class AppServiceProvider extends ServiceProvider
             return new UserRepository($container->get(ConnectionInterface::class));
         });
 
-        // nyholm's Psr17Factory implements every PSR-17 factory interface.
-        $container->singleton(Psr17Factory::class, fn () => new Psr17Factory);
-        $container->singleton(ResponseFactoryInterface::class, fn () => $container->get(Psr17Factory::class));
-        $container->singleton(StreamFactoryInterface::class, fn () => $container->get(Psr17Factory::class));
-
-        // Capture the incoming request from PHP globals (nyholm behind our seam).
-        $container->singleton(ServerRequestProviderInterface::class, function () use ($container) {
-            return NyholmRequestProvider::create($container->get(Psr17Factory::class));
-        });
-
         // PSR-3 logger. Sink is LOG_PATH (default stderr); an unwritable path
         // falls back to stderr so a bad config can never break booting.
         $container->singleton(LoggerInterface::class, function () use ($container) {
@@ -200,21 +190,10 @@ final class AppServiceProvider extends ServiceProvider
             return new PhpView(dirname(__DIR__, 2) . '/views', $container->get(CsrfGuard::class));
         });
 
-        // Send the response.
-        $container->singleton(EmitterInterface::class, fn () => new Emitter);
-
-        // Response helper shared by controllers (via the base Controller).
-        $container->singleton(Responder::class, function () use ($container) {
-            return new Responder(
-                $container->get(ResponseFactoryInterface::class),
-                $container->get(StreamFactoryInterface::class),
-            );
-        });
-
         // Https-upgrade middleware. Bound explicitly because its $enabled flag is
         // a plain bool (the package stays free of the app's config type), so it
-        // can't be autowired — the app supplies FORCE_HTTPS here. Once bound it's
-        // just another class-string in the MIDDLEWARE stack.
+        // can't be autowired — the app supplies FORCE_HTTPS here. The Responder it
+        // needs is bound by the kernel's HttpServiceProvider and resolved here.
         $container->singleton(ForceHttpsMiddleware::class, function () use ($container) {
             return new ForceHttpsMiddleware(
                 $container->get(AppConfig::class)->forceHttps,
@@ -232,59 +211,23 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(LoggerInterface::class),
             );
         });
-
-        // Router, populated from controller #[Route] attributes. Routing misses
-        // (404/405) are thrown as HttpExceptions and rendered by the pipeline's
-        // ErrorHandlerMiddleware, so the router needs no response factory.
-        $container->singleton(Router::class, function () use ($container) {
-            $router = new Router($container);
-            $router->loadRoutes($this->compileRoutes($container));
-            return $router;
-        });
-
-        // The application handler: the middleware pipeline wrapping the router.
-        // The stack is declared as class-strings (self::MIDDLEWARE) and resolved
-        // here through the container, so adding a layer is a one-line edit.
-        $container->singleton(RequestHandlerInterface::class, function () use ($container) {
-            $middleware = array_map(
-                fn (string $class) => $container->get($class),
-                self::MIDDLEWARE,
-            );
-
-            return new Pipeline($middleware, $container->get(Router::class));
-        });
-
-        // The HTTP kernel Application resolves and runs.
-        $container->singleton(KernelInterface::class, function () use ($container) {
-            return new HttpKernel(
-                $container->get(ServerRequestProviderInterface::class),
-                $container->get(RequestHandlerInterface::class),
-                $container->get(EmitterInterface::class),
-            );
-        });
     }
 
     /**
-     * The compiled route definitions for the Router. This path is READ-ONLY: it
-     * never writes the cache during a request — writing belongs to the
-     * `route:cache` console command, run at deploy time. With ROUTE_CACHE off
-     * (the default — dev wants #[Route] edits to take effect at once) it scans
-     * the controllers on every boot. With it on it loads the cached file, or
-     * falls back to a live scan when the cache is cold (a forgotten
-     * `route:cache` degrades to uncached-but-correct, never broken).
-     *
-     * @return list<array{method: string, path: string, handler: array{0: class-string, 1: string}, middleware: list<class-string>}>
+     * Register the app's event listeners. boot() runs after every provider has
+     * registered, so the shared ListenerProvider (from the kernel's
+     * EventServiceProvider) and the logger both exist by now. This is the "app
+     * supplies the noun" half of the event system: the framework ships the
+     * dispatcher and the audit listener; the app decides to wire them up.
      */
-    private function compileRoutes(ContainerInterface $container): array
+    public function boot(ContainerInterface $container): void
     {
-        $scan = static fn (): array => (new RouteScanner)->scan(self::CONTROLLERS);
+        $listeners = $container->get(ListenerProvider::class);
+        $audit = new LogAuthEventsListener($container->get(LoggerInterface::class));
 
-        if (!$container->get(RouteConfig::class)->cache) {
-            return $scan();
-        }
-
-        return $container->get(RouteCache::class)->load() ?? $scan();
+        $listeners->listen(Attempting::class, [$audit, 'onAttempting']);
+        $listeners->listen(LoginFailed::class, [$audit, 'onFailed']);
+        $listeners->listen(LoggedIn::class, [$audit, 'onLoggedIn']);
+        $listeners->listen(LoggedOut::class, [$audit, 'onLoggedOut']);
     }
-
-    public function boot(ContainerInterface $container): void {}
 }

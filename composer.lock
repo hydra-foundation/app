@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3f0ef9be64cb2fa74d11377245305b8d",
+    "content-hash": "911a7373396f801bf7565008ffe4d7d6",
     "packages": [
         {
             "name": "hydra/auth",
@@ -19,9 +19,11 @@
                 "hydra/http": "*",
                 "hydra/session": "*",
                 "php": ">=8.2",
+                "psr/event-dispatcher": "^1.0",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
-                "psr/http-server-middleware": "^1.0"
+                "psr/http-server-middleware": "^1.0",
+                "psr/log": "^3.0"
             },
             "require-dev": {
                 "nyholm/psr7": "^1.8",
@@ -102,7 +104,7 @@
             "dist": {
                 "type": "path",
                 "url": "../console",
-                "reference": "ffcb5aa2e886a70b7facc1101fb8c3fd7a201e38"
+                "reference": "87d669c38eaee8029e12f1844ce74051e97fa016"
             },
             "require": {
                 "hydra/database": "*",
@@ -270,6 +272,48 @@
             }
         },
         {
+            "name": "hydra/event",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../event",
+                "reference": "45c526d5021519edd8023959bb0d6c8514adee27"
+            },
+            "require": {
+                "hydra/core": "*",
+                "php": ">=8.2",
+                "psr/event-dispatcher": "^1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Hydra\\Event\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Hydra\\Event\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Hleucka",
+                    "email": "william.hleucka@gmail.com"
+                }
+            ],
+            "description": "PSR-14 event dispatcher for Hydra PHP framework",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "hydra/http",
             "version": "dev-main",
             "dist": {
@@ -311,6 +355,57 @@
                 }
             ],
             "description": "HTTP library for Hydra PHP framework",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "hydra/kernel",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../kernel",
+                "reference": "7ca5b46983ae9d083565217ff2e15b38e46919ba"
+            },
+            "require": {
+                "hydra/auth": "*",
+                "hydra/authorization": "*",
+                "hydra/core": "*",
+                "hydra/event": "*",
+                "hydra/http": "*",
+                "hydra/nyholm": "*",
+                "hydra/session": "*",
+                "nyholm/psr7": "^1.8",
+                "php": ">=8.2",
+                "psr/http-message": "^2.0",
+                "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Hydra\\Kernel\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Hydra\\Kernel\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Hleucka",
+                    "email": "william.hleucka@gmail.com"
+                }
+            ],
+            "description": "Default composition root and HTTP plumbing for the Hydra PHP framework",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -912,6 +1007,56 @@
                 "source": "https://github.com/php-fig/container/tree/2.0.2"
             },
             "time": "2021-11-05T16:47:00+00:00"
+        },
+        {
+            "name": "psr/event-dispatcher",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/event-dispatcher.git",
+                "reference": "dbefd12671e8a14ec7f180cab83036ed26714bb0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/event-dispatcher/zipball/dbefd12671e8a14ec7f180cab83036ed26714bb0",
+                "reference": "dbefd12671e8a14ec7f180cab83036ed26714bb0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\EventDispatcher\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Standard interfaces for event handling.",
+            "keywords": [
+                "events",
+                "psr",
+                "psr-14"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/event-dispatcher/issues",
+                "source": "https://github.com/php-fig/event-dispatcher/tree/1.0.0"
+            },
+            "time": "2019-01-08T18:20:26+00:00"
         },
         {
             "name": "psr/http-factory",

@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Container;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\TestHttpProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Contracts\KernelInterface;
@@ -37,6 +38,7 @@ final class RequestLifecycleTest extends TestCase
 
         (new Application($container))
             ->register(new ArraySessionServiceProvider)
+            ->register(TestHttpProvider::make())
             ->register(new AppServiceProvider)
             ->boot();
 
