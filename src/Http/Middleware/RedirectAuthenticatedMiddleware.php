@@ -8,7 +8,6 @@ use Hydra\Http\Htmx;
 use Hydra\Http\HtmxResponse;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\Responder;
-use Hydra\Http\Status;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -48,7 +47,7 @@ final class RedirectAuthenticatedMiddleware implements MiddlewareInterface
         if (Htmx::fromRequest($request)->isHtmx()) {
             return (new HtmxResponse)
                 ->redirect(self::HOME_PATH)
-                ->applyTo($this->respond->noContent(Status::NoContent));
+                ->applyTo($this->respond->noContent());
         }
 
         return $this->respond->redirect(self::HOME_PATH);
