@@ -11,7 +11,7 @@ use Hydra\Authorization\Contracts\AbilityInterface;
 /**
  * May the current user reach the admin area?
  *
- * The app's own authorization rule — the "noun" the hydra/authorization package
+ * The app's own authorization rule — the "noun" the hydrakit/authorization package
  * deliberately does not ship, the exact counterpart to how the app (not the auth
  * package) supplies the UserProviderInterface. The gate ships the mechanism;
  * what "admin" means is app policy, decided here.

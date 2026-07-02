@@ -4,10 +4,10 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "911a7373396f801bf7565008ffe4d7d6",
+    "content-hash": "e8b082949f135a54a5ffe2267ab87994",
     "packages": [
         {
-            "name": "hydra/auth",
+            "name": "hydrakit/auth",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -15,9 +15,9 @@
                 "reference": "fa0b65edc2b3d81154661e6b8b1fd5b89b22d9b9"
             },
             "require": {
-                "hydra/core": "*",
-                "hydra/http": "*",
-                "hydra/session": "*",
+                "hydrakit/core": "*",
+                "hydrakit/http": "*",
+                "hydrakit/session": "*",
                 "php": ">=8.2",
                 "psr/event-dispatcher": "^1.0",
                 "psr/http-message": "^2.0",
@@ -56,7 +56,7 @@
             }
         },
         {
-            "name": "hydra/authorization",
+            "name": "hydrakit/authorization",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -64,9 +64,9 @@
                 "reference": "8377513f70bb5ff2182efb365256f10f3bb5436c"
             },
             "require": {
-                "hydra/auth": "*",
-                "hydra/core": "*",
-                "hydra/http": "*",
+                "hydrakit/auth": "*",
+                "hydrakit/core": "*",
+                "hydrakit/http": "*",
                 "php": ">=8.2"
             },
             "require-dev": {
@@ -99,7 +99,7 @@
             }
         },
         {
-            "name": "hydra/console",
+            "name": "hydrakit/console",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -107,8 +107,8 @@
                 "reference": "87d669c38eaee8029e12f1844ce74051e97fa016"
             },
             "require": {
-                "hydra/database": "*",
-                "hydra/http": "*",
+                "hydrakit/database": "*",
+                "hydrakit/http": "*",
                 "php": ">=8.2",
                 "symfony/console": "^7.0"
             },
@@ -143,7 +143,7 @@
             }
         },
         {
-            "name": "hydra/core",
+            "name": "hydrakit/core",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -184,7 +184,7 @@
             }
         },
         {
-            "name": "hydra/csrf",
+            "name": "hydrakit/csrf",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -192,8 +192,8 @@
                 "reference": "90a13092936726feb79da235a851b268820f2117"
             },
             "require": {
-                "hydra/http": "*",
-                "hydra/session": "*",
+                "hydrakit/http": "*",
+                "hydrakit/session": "*",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -230,7 +230,7 @@
             }
         },
         {
-            "name": "hydra/database",
+            "name": "hydrakit/database",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -272,7 +272,7 @@
             }
         },
         {
-            "name": "hydra/event",
+            "name": "hydrakit/event",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -280,7 +280,7 @@
                 "reference": "45c526d5021519edd8023959bb0d6c8514adee27"
             },
             "require": {
-                "hydra/core": "*",
+                "hydrakit/core": "*",
                 "php": ">=8.2",
                 "psr/event-dispatcher": "^1.0"
             },
@@ -314,7 +314,7 @@
             }
         },
         {
-            "name": "hydra/http",
+            "name": "hydrakit/http",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -322,7 +322,7 @@
                 "reference": "04e2e26f725105626f6a10775a72aa6bfd6cad11"
             },
             "require": {
-                "hydra/core": "*",
+                "hydrakit/core": "*",
                 "php": ">=8.2",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^2.0",
@@ -361,22 +361,22 @@
             }
         },
         {
-            "name": "hydra/kernel",
+            "name": "hydrakit/kernel",
             "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../kernel",
-                "reference": "7ca5b46983ae9d083565217ff2e15b38e46919ba"
+                "reference": "ef7a52cdda2b5d9ec9f86db06eada7c5a944f453"
             },
             "require": {
-                "hydra/auth": "*",
-                "hydra/authorization": "*",
-                "hydra/core": "*",
-                "hydra/event": "*",
-                "hydra/http": "*",
-                "hydra/nyholm": "*",
-                "hydra/session": "*",
-                "hydra/view": "*",
+                "hydrakit/auth": "*",
+                "hydrakit/authorization": "*",
+                "hydrakit/core": "*",
+                "hydrakit/event": "*",
+                "hydrakit/http": "*",
+                "hydrakit/nyholm": "*",
+                "hydrakit/session": "*",
+                "hydrakit/view": "*",
                 "nyholm/psr7": "^1.8",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
@@ -413,7 +413,7 @@
             }
         },
         {
-            "name": "hydra/log",
+            "name": "hydrakit/log",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -454,7 +454,7 @@
             }
         },
         {
-            "name": "hydra/nyholm",
+            "name": "hydrakit/nyholm",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -462,7 +462,7 @@
                 "reference": "3435035bda8ed6e0b5218fa82558165cf666790f"
             },
             "require": {
-                "hydra/http": "*",
+                "hydrakit/http": "*",
                 "nyholm/psr7": "^1.8",
                 "nyholm/psr7-server": "^1.0",
                 "php": ">=8.2",
@@ -498,7 +498,7 @@
             }
         },
         {
-            "name": "hydra/session",
+            "name": "hydrakit/session",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -506,7 +506,7 @@
                 "reference": "649ffefcd2219e62f148bea78c32be95690496c0"
             },
             "require": {
-                "hydra/core": "*",
+                "hydrakit/core": "*",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -542,7 +542,7 @@
             }
         },
         {
-            "name": "hydra/validation",
+            "name": "hydrakit/validation",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -582,7 +582,7 @@
             }
         },
         {
-            "name": "hydra/view",
+            "name": "hydrakit/view",
             "version": "dev-main",
             "dist": {
                 "type": "path",
@@ -590,11 +590,11 @@
                 "reference": "d3dbfe79361926f6b20332822022329ceb64b3a0"
             },
             "require": {
-                "hydra/csrf": "*",
+                "hydrakit/csrf": "*",
                 "php": ">=8.2"
             },
             "require-dev": {
-                "hydra/session": "*",
+                "hydrakit/session": "*",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
@@ -1332,16 +1332,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v7.4.13",
+            "version": "v7.4.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "85095d2573eaefaf35e40b9513a9bf09f72cd217"
+                "reference": "92f58bc4bf97a92ed1b9f367f0cd44f20bde0e87"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/85095d2573eaefaf35e40b9513a9bf09f72cd217",
-                "reference": "85095d2573eaefaf35e40b9513a9bf09f72cd217",
+                "url": "https://api.github.com/repos/symfony/console/zipball/92f58bc4bf97a92ed1b9f367f0cd44f20bde0e87",
+                "reference": "92f58bc4bf97a92ed1b9f367f0cd44f20bde0e87",
                 "shasum": ""
             },
             "require": {
@@ -1406,7 +1406,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v7.4.13"
+                "source": "https://github.com/symfony/console/tree/v7.4.14"
             },
             "funding": [
                 {
@@ -1426,20 +1426,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-24T08:56:14+00:00"
+            "time": "2026-06-16T11:50:14+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
-            "version": "v3.7.0",
+            "version": "v3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
-                "reference": "50f59d1f3ca46d41ac911f97a78626b6756af35b"
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/50f59d1f3ca46d41ac911f97a78626b6756af35b",
-                "reference": "50f59d1f3ca46d41ac911f97a78626b6756af35b",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/f3202fa1b5097b0af062dc978b32ecf63404e31d",
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d",
                 "shasum": ""
             },
             "require": {
@@ -1477,7 +1477,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.0"
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.1"
             },
             "funding": [
                 {
@@ -1497,7 +1497,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-13T15:52:40+00:00"
+            "time": "2026-06-05T06:23:12+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -1831,16 +1831,16 @@
         },
         {
             "name": "symfony/service-contracts",
-            "version": "v3.7.0",
+            "version": "v3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "d25d82433a80eba6aa0e6c24b61d7370d99e444a"
+                "reference": "c0a284bab1ed8aa0417e3d69250ab437739563a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/d25d82433a80eba6aa0e6c24b61d7370d99e444a",
-                "reference": "d25d82433a80eba6aa0e6c24b61d7370d99e444a",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/c0a284bab1ed8aa0417e3d69250ab437739563a0",
+                "reference": "c0a284bab1ed8aa0417e3d69250ab437739563a0",
                 "shasum": ""
             },
             "require": {
@@ -1894,7 +1894,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/service-contracts/tree/v3.7.0"
+                "source": "https://github.com/symfony/service-contracts/tree/v3.7.1"
             },
             "funding": [
                 {
@@ -1914,7 +1914,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-28T09:44:51+00:00"
+            "time": "2026-06-16T09:55:08+00:00"
         },
         {
             "name": "symfony/string",
