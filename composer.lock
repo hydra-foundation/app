@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "fa0b65edc2b3d81154661e6b8b1fd5b89b22d9b9"
+                "reference": "96d6071c3847eba9590a557e91fe961ab08e7e4d"
             },
             "require": {
                 "hydrakit/core": "*",
@@ -61,7 +61,7 @@
             "dist": {
                 "type": "path",
                 "url": "../authorization",
-                "reference": "8377513f70bb5ff2182efb365256f10f3bb5436c"
+                "reference": "7c4378796f71ca8f8dbb278d7a35cf78aabb6341"
             },
             "require": {
                 "hydrakit/auth": "*",
@@ -104,7 +104,7 @@
             "dist": {
                 "type": "path",
                 "url": "../console",
-                "reference": "87d669c38eaee8029e12f1844ce74051e97fa016"
+                "reference": "732f4c0fba521a3039f14b585cc6ce494f51bf95"
             },
             "require": {
                 "hydrakit/database": "*",
@@ -148,7 +148,7 @@
             "dist": {
                 "type": "path",
                 "url": "../core",
-                "reference": "724319f31206b3b97a36763465cfa1aa355c6ca9"
+                "reference": "ef795c72d3e60811858afaa80ca38ce76e2fb957"
             },
             "require": {
                 "php": ">=8.2",
@@ -189,7 +189,7 @@
             "dist": {
                 "type": "path",
                 "url": "../csrf",
-                "reference": "90a13092936726feb79da235a851b268820f2117"
+                "reference": "65d309f5d10506a47186d98f9fffd36600d058c5"
             },
             "require": {
                 "hydrakit/http": "*",
@@ -235,7 +235,7 @@
             "dist": {
                 "type": "path",
                 "url": "../database",
-                "reference": "0af73da7972d7d456909e407080bcb75bf6a5674"
+                "reference": "6cf5ea4aacc8751f1f2aea4734120468d68fae5e"
             },
             "require": {
                 "ext-pdo": "*",
@@ -277,7 +277,7 @@
             "dist": {
                 "type": "path",
                 "url": "../event",
-                "reference": "45c526d5021519edd8023959bb0d6c8514adee27"
+                "reference": "5eb34e4e424eb2c6ad579278737f367ff94ac7bd"
             },
             "require": {
                 "hydrakit/core": "*",
@@ -319,7 +319,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "04e2e26f725105626f6a10775a72aa6bfd6cad11"
+                "reference": "4bb250ad38a552b85b6dfc9f2c5b4926904ff34e"
             },
             "require": {
                 "hydrakit/core": "*",
@@ -366,7 +366,7 @@
             "dist": {
                 "type": "path",
                 "url": "../kernel",
-                "reference": "ef7a52cdda2b5d9ec9f86db06eada7c5a944f453"
+                "reference": "df48612862168222dfd637cfa4c2778a9c2c7070"
             },
             "require": {
                 "hydrakit/auth": "*",
@@ -418,7 +418,7 @@
             "dist": {
                 "type": "path",
                 "url": "../log",
-                "reference": "c147a62f1d5b48f42c9df6a7b1545d747ffa9d3b"
+                "reference": "f4b6314f07f85bebc16f3efee684fee27893e185"
             },
             "require": {
                 "php": ">=8.2",
@@ -459,7 +459,7 @@
             "dist": {
                 "type": "path",
                 "url": "../nyholm",
-                "reference": "3435035bda8ed6e0b5218fa82558165cf666790f"
+                "reference": "5e093115ca681c3ea0d58aff7db1afe333fc6c17"
             },
             "require": {
                 "hydrakit/http": "*",
@@ -503,7 +503,7 @@
             "dist": {
                 "type": "path",
                 "url": "../session",
-                "reference": "649ffefcd2219e62f148bea78c32be95690496c0"
+                "reference": "1974f6935f92f4bcc36718261feb31fba6b3b6e5"
             },
             "require": {
                 "hydrakit/core": "*",
@@ -547,7 +547,7 @@
             "dist": {
                 "type": "path",
                 "url": "../validation",
-                "reference": "ac8c798202b667a08a8240488105a53d7f62e823"
+                "reference": "205bf5048ad3acd0c808693d1aab53cb8ae4fe21"
             },
             "require": {
                 "php": ">=8.2"
@@ -587,7 +587,7 @@
             "dist": {
                 "type": "path",
                 "url": "../view",
-                "reference": "d3dbfe79361926f6b20332822022329ceb64b3a0"
+                "reference": "e4714ee5915d379805c2de2f0b62e1482ff319f7"
             },
             "require": {
                 "hydrakit/csrf": "*",
@@ -2070,20 +2070,19 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.7.0",
+            "version": "v5.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "dca41cd15c2ac9d055ad70dbfd011130757d1f82"
+                "reference": "044a6a392ff8ad0d61f14370a5fbbd0a0107152f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/dca41cd15c2ac9d055ad70dbfd011130757d1f82",
-                "reference": "dca41cd15c2ac9d055ad70dbfd011130757d1f82",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/044a6a392ff8ad0d61f14370a5fbbd0a0107152f",
+                "reference": "044a6a392ff8ad0d61f14370a5fbbd0a0107152f",
                 "shasum": ""
             },
             "require": {
-                "ext-ctype": "*",
                 "ext-json": "*",
                 "ext-tokenizer": "*",
                 "php": ">=7.4"
@@ -2122,9 +2121,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.7.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.8.0"
             },
-            "time": "2025-12-06T11:56:16+00:00"
+            "time": "2026-07-04T14:30:18+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -2593,24 +2592,24 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "11.5.55",
+            "version": "11.5.56",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "adc7262fccc12de2b30f12a8aa0b33775d814f00"
+                "reference": "5f83edffa6967c3db468d48a695ec7bcb02e9256"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/adc7262fccc12de2b30f12a8aa0b33775d814f00",
-                "reference": "adc7262fccc12de2b30f12a8aa0b33775d814f00",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/5f83edffa6967c3db468d48a695ec7bcb02e9256",
+                "reference": "5f83edffa6967c3db468d48a695ec7bcb02e9256",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
+                "ext-filter": "*",
                 "ext-json": "*",
                 "ext-libxml": "*",
                 "ext-mbstring": "*",
-                "ext-xml": "*",
                 "ext-xmlwriter": "*",
                 "myclabs/deep-copy": "^1.13.4",
                 "phar-io/manifest": "^2.0.4",
@@ -2675,31 +2674,15 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.55"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.56"
             },
             "funding": [
                 {
-                    "url": "https://phpunit.de/sponsors.html",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/sebastianbergmann",
-                    "type": "github"
-                },
-                {
-                    "url": "https://liberapay.com/sebastianbergmann",
-                    "type": "liberapay"
-                },
-                {
-                    "url": "https://thanks.dev/u/gh/sebastianbergmann",
-                    "type": "thanks_dev"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/phpunit/phpunit",
-                    "type": "tidelift"
+                    "url": "https://phpunit.de/sponsoring.html",
+                    "type": "other"
                 }
             ],
-            "time": "2026-02-18T12:37:06+00:00"
+            "time": "2026-07-06T14:52:39+00:00"
         },
         {
             "name": "sebastian/cli-parser",
