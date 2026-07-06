@@ -85,7 +85,8 @@ final class AppServiceProvider extends ServiceProvider
         // Upgrades insecure requests to https with a 301 (and emits HSTS on
         // secure ones) when FORCE_HTTPS is on; a no-op otherwise. Runs before
         // the error handler and session so we don't do work for a request we're
-        // about to redirect. Honours X-Forwarded-Proto for proxy-terminated TLS.
+        // about to redirect. Honours X-Forwarded-Proto for proxy-terminated
+        // TLS only when TRUST_FORWARDED_PROTO says our proxy sets it.
         ForceHttpsMiddleware::class,
         // Converts any uncaught Throwable into a 500 and logs it before
         // responding, so it must wrap all the application work below it.
@@ -190,14 +191,17 @@ final class AppServiceProvider extends ServiceProvider
             return new PhpView(dirname(__DIR__, 2) . '/views', $container->get(CsrfGuard::class));
         });
 
-        // Https-upgrade middleware. Bound explicitly because its $enabled flag is
-        // a plain bool (the package stays free of the app's config type), so it
-        // can't be autowired — the app supplies FORCE_HTTPS here. The Responder it
-        // needs is bound by the kernel's HttpServiceProvider and resolved here.
+        // Https-upgrade middleware. Bound explicitly because its flags are
+        // plain bools (the package stays free of the app's config type), so it
+        // can't be autowired — the app supplies FORCE_HTTPS and
+        // TRUST_FORWARDED_PROTO here. The Responder it needs is bound by the
+        // kernel's HttpServiceProvider and resolved here.
         $container->singleton(ForceHttpsMiddleware::class, function () use ($container) {
+            $config = $container->get(AppConfig::class);
             return new ForceHttpsMiddleware(
-                $container->get(AppConfig::class)->forceHttps,
+                $config->forceHttps,
                 $container->get(Responder::class),
+                $config->trustForwardedProto,
             );
         });
 

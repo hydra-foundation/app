@@ -22,6 +22,7 @@ final readonly class AppConfig
         public string $timezone,
         public string $key,
         public bool $forceHttps,
+        public bool $trustForwardedProto,
     ) {}
 
     public static function fromEnvironment(Environment $env): self
@@ -35,6 +36,11 @@ final readonly class AppConfig
             // Off by default so local http dev is never redirected; turn on in
             // production (behind TLS or a TLS-terminating proxy).
             forceHttps: $env->bool('FORCE_HTTPS', false),
+            // Off by default because X-Forwarded-Proto is client-supplied:
+            // only turn this on when a proxy we control (Traefik in the
+            // dev/prod stacks) terminates TLS and sets the header — otherwise
+            // any direct client could spoof "https" past the redirect.
+            trustForwardedProto: $env->bool('TRUST_FORWARDED_PROTO', false),
         );
     }
 }
