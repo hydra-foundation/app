@@ -21,20 +21,20 @@
     ],
     "require": {
         "php": ">=8.2",
-        "hydrakit/core": "*",
-        "hydrakit/http": "*",
-        "hydrakit/validation": "*",
-        "hydrakit/session": "*",
-        "hydrakit/csrf": "*",
-        "hydrakit/auth": "*",
-        "hydrakit/authorization": "*",
-        "hydrakit/event": "*",
-        "hydrakit/kernel": "*",
-        "hydrakit/log": "*",
-        "hydrakit/database": "*",
-        "hydrakit/view": "*",
-        "hydrakit/nyholm": "*",
-        "hydrakit/console": "*",
+        "hydrakit/core": "^0.1",
+        "hydrakit/http": "^0.1",
+        "hydrakit/validation": "^0.1",
+        "hydrakit/session": "^0.1",
+        "hydrakit/csrf": "^0.1",
+        "hydrakit/auth": "^0.1",
+        "hydrakit/authorization": "^0.1",
+        "hydrakit/event": "^0.1",
+        "hydrakit/kernel": "^0.1",
+        "hydrakit/log": "^0.1",
+        "hydrakit/database": "^0.1",
+        "hydrakit/view": "^0.1",
+        "hydrakit/nyholm": "^0.1",
+        "hydrakit/console": "^0.1",
         "php-di/php-di": "^7.0",
         "nyholm/psr7": "^1.8",
         "symfony/console": "^7.0"
@@ -45,6 +45,6 @@
     "scripts": {
         "start": "php -S localhost:8000 -t public/"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

@@ -4,26 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d2c646e5535ff00645228b3fbe16182d",
+    "content-hash": "580acc49b07517dd7294a52a74b413d7",
     "packages": [
         {
             "name": "hydrakit/auth",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/auth.git",
-                "reference": "96d6071c3847eba9590a557e91fe961ab08e7e4d"
+                "reference": "e354c19bfcbd3770e7998ff2af68dca92ffde59b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/auth/zipball/96d6071c3847eba9590a557e91fe961ab08e7e4d",
-                "reference": "96d6071c3847eba9590a557e91fe961ab08e7e4d",
+                "url": "https://api.github.com/repos/hydra-foundation/auth/zipball/e354c19bfcbd3770e7998ff2af68dca92ffde59b",
+                "reference": "e354c19bfcbd3770e7998ff2af68dca92ffde59b",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "*",
-                "hydrakit/http": "*",
-                "hydrakit/session": "*",
+                "hydrakit/core": "^0.1",
+                "hydrakit/http": "^0.1",
+                "hydrakit/session": "^0.1",
                 "php": ">=8.2",
                 "psr/event-dispatcher": "^1.0",
                 "psr/http-message": "^2.0",
@@ -35,8 +35,12 @@
                 "nyholm/psr7": "^1.8",
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Auth\\": "src/"
@@ -55,35 +59,39 @@
             "description": "Authentication library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/auth/issues",
-                "source": "https://github.com/hydra-foundation/auth/tree/main"
+                "source": "https://github.com/hydra-foundation/auth/tree/v0.1.2"
             },
-            "time": "2026-07-06T21:12:30+00:00"
+            "time": "2026-07-07T19:02:17+00:00"
         },
         {
             "name": "hydrakit/authorization",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/authorization.git",
-                "reference": "7c4378796f71ca8f8dbb278d7a35cf78aabb6341"
+                "reference": "4e4282a769bb36e9d27ff6f05db8bb7e0872eff6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/authorization/zipball/7c4378796f71ca8f8dbb278d7a35cf78aabb6341",
-                "reference": "7c4378796f71ca8f8dbb278d7a35cf78aabb6341",
+                "url": "https://api.github.com/repos/hydra-foundation/authorization/zipball/4e4282a769bb36e9d27ff6f05db8bb7e0872eff6",
+                "reference": "4e4282a769bb36e9d27ff6f05db8bb7e0872eff6",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/auth": "*",
-                "hydrakit/core": "*",
-                "hydrakit/http": "*",
+                "hydrakit/auth": "^0.1",
+                "hydrakit/core": "^0.1",
+                "hydrakit/http": "^0.1",
                 "php": ">=8.2"
             },
             "require-dev": {
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Authorization\\": "src/"
@@ -102,27 +110,27 @@
             "description": "Authorization library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/authorization/issues",
-                "source": "https://github.com/hydra-foundation/authorization/tree/main"
+                "source": "https://github.com/hydra-foundation/authorization/tree/v0.1.2"
             },
-            "time": "2026-07-02T17:52:59+00:00"
+            "time": "2026-07-07T19:02:18+00:00"
         },
         {
             "name": "hydrakit/console",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/console.git",
-                "reference": "732f4c0fba521a3039f14b585cc6ce494f51bf95"
+                "reference": "418e0ade12ab61a6952534026bd153e0e0af3b24"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/console/zipball/732f4c0fba521a3039f14b585cc6ce494f51bf95",
-                "reference": "732f4c0fba521a3039f14b585cc6ce494f51bf95",
+                "url": "https://api.github.com/repos/hydra-foundation/console/zipball/418e0ade12ab61a6952534026bd153e0e0af3b24",
+                "reference": "418e0ade12ab61a6952534026bd153e0e0af3b24",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/database": "*",
-                "hydrakit/http": "*",
+                "hydrakit/database": "^0.1",
+                "hydrakit/http": "^0.1",
                 "php": ">=8.2",
                 "symfony/console": "^7.0"
             },
@@ -130,8 +138,12 @@
                 "ext-pdo_sqlite": "*",
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Console\\": "src/"
@@ -150,22 +162,22 @@
             "description": "Console command library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/console/issues",
-                "source": "https://github.com/hydra-foundation/console/tree/main"
+                "source": "https://github.com/hydra-foundation/console/tree/v0.1.2"
             },
-            "time": "2026-07-02T17:53:35+00:00"
+            "time": "2026-07-07T19:02:26+00:00"
         },
         {
             "name": "hydrakit/core",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/core.git",
-                "reference": "ef795c72d3e60811858afaa80ca38ce76e2fb957"
+                "reference": "c8af1465b7b7aa64324f009d5a43d34af9f0758b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/core/zipball/ef795c72d3e60811858afaa80ca38ce76e2fb957",
-                "reference": "ef795c72d3e60811858afaa80ca38ce76e2fb957",
+                "url": "https://api.github.com/repos/hydra-foundation/core/zipball/c8af1465b7b7aa64324f009d5a43d34af9f0758b",
+                "reference": "c8af1465b7b7aa64324f009d5a43d34af9f0758b",
                 "shasum": ""
             },
             "require": {
@@ -175,8 +187,12 @@
             "require-dev": {
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Core\\": "src/"
@@ -195,27 +211,27 @@
             "description": "Core library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/core/issues",
-                "source": "https://github.com/hydra-foundation/core/tree/main"
+                "source": "https://github.com/hydra-foundation/core/tree/v0.1.2"
             },
-            "time": "2026-07-06T21:10:37+00:00"
+            "time": "2026-07-07T19:02:11+00:00"
         },
         {
             "name": "hydrakit/csrf",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/csrf.git",
-                "reference": "65d309f5d10506a47186d98f9fffd36600d058c5"
+                "reference": "a47412878ac26c45f1abd1b99db8ac7f1fd5234f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/csrf/zipball/65d309f5d10506a47186d98f9fffd36600d058c5",
-                "reference": "65d309f5d10506a47186d98f9fffd36600d058c5",
+                "url": "https://api.github.com/repos/hydra-foundation/csrf/zipball/a47412878ac26c45f1abd1b99db8ac7f1fd5234f",
+                "reference": "a47412878ac26c45f1abd1b99db8ac7f1fd5234f",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/http": "*",
-                "hydrakit/session": "*",
+                "hydrakit/http": "^0.1",
+                "hydrakit/session": "^0.1",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -225,8 +241,12 @@
                 "nyholm/psr7": "^1.8",
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Csrf\\": "src/"
@@ -245,22 +265,22 @@
             "description": "CSRF library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/csrf/issues",
-                "source": "https://github.com/hydra-foundation/csrf/tree/main"
+                "source": "https://github.com/hydra-foundation/csrf/tree/v0.1.2"
             },
-            "time": "2026-07-06T21:12:56+00:00"
+            "time": "2026-07-07T19:02:16+00:00"
         },
         {
             "name": "hydrakit/database",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/database.git",
-                "reference": "6cf5ea4aacc8751f1f2aea4734120468d68fae5e"
+                "reference": "176c06bb82cf1e3b6a89ede8ae70750126987dc7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/database/zipball/6cf5ea4aacc8751f1f2aea4734120468d68fae5e",
-                "reference": "6cf5ea4aacc8751f1f2aea4734120468d68fae5e",
+                "url": "https://api.github.com/repos/hydra-foundation/database/zipball/176c06bb82cf1e3b6a89ede8ae70750126987dc7",
+                "reference": "176c06bb82cf1e3b6a89ede8ae70750126987dc7",
                 "shasum": ""
             },
             "require": {
@@ -271,8 +291,12 @@
                 "ext-pdo_sqlite": "*",
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Database\\": "src/"
@@ -291,34 +315,38 @@
             "description": "Database library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/database/issues",
-                "source": "https://github.com/hydra-foundation/database/tree/main"
+                "source": "https://github.com/hydra-foundation/database/tree/v0.1.2"
             },
-            "time": "2026-07-06T21:10:52+00:00"
+            "time": "2026-07-07T19:02:23+00:00"
         },
         {
             "name": "hydrakit/event",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/event.git",
-                "reference": "5eb34e4e424eb2c6ad579278737f367ff94ac7bd"
+                "reference": "ac23b70f1647e1eb3dc1e157749d3cf14f971b71"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/event/zipball/5eb34e4e424eb2c6ad579278737f367ff94ac7bd",
-                "reference": "5eb34e4e424eb2c6ad579278737f367ff94ac7bd",
+                "url": "https://api.github.com/repos/hydra-foundation/event/zipball/ac23b70f1647e1eb3dc1e157749d3cf14f971b71",
+                "reference": "ac23b70f1647e1eb3dc1e157749d3cf14f971b71",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "*",
+                "hydrakit/core": "^0.1",
                 "php": ">=8.2",
                 "psr/event-dispatcher": "^1.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Event\\": "src/"
@@ -337,26 +365,26 @@
             "description": "PSR-14 event dispatcher for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/event/issues",
-                "source": "https://github.com/hydra-foundation/event/tree/main"
+                "source": "https://github.com/hydra-foundation/event/tree/v0.1.2"
             },
-            "time": "2026-07-02T17:55:03+00:00"
+            "time": "2026-07-07T19:02:19+00:00"
         },
         {
             "name": "hydrakit/http",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/http.git",
-                "reference": "4bb250ad38a552b85b6dfc9f2c5b4926904ff34e"
+                "reference": "0924d72e5110521a5bbd32c6c4e6b487235e87e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/http/zipball/4bb250ad38a552b85b6dfc9f2c5b4926904ff34e",
-                "reference": "4bb250ad38a552b85b6dfc9f2c5b4926904ff34e",
+                "url": "https://api.github.com/repos/hydra-foundation/http/zipball/0924d72e5110521a5bbd32c6c4e6b487235e87e0",
+                "reference": "0924d72e5110521a5bbd32c6c4e6b487235e87e0",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "*",
+                "hydrakit/core": "^0.1",
                 "php": ">=8.2",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^2.0",
@@ -368,8 +396,12 @@
                 "nyholm/psr7": "^1.8",
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Http\\": "src/"
@@ -388,33 +420,33 @@
             "description": "HTTP library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/http/issues",
-                "source": "https://github.com/hydra-foundation/http/tree/main"
+                "source": "https://github.com/hydra-foundation/http/tree/v0.1.2"
             },
-            "time": "2026-07-06T21:11:15+00:00"
+            "time": "2026-07-07T19:02:13+00:00"
         },
         {
             "name": "hydrakit/kernel",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/kernel.git",
-                "reference": "df48612862168222dfd637cfa4c2778a9c2c7070"
+                "reference": "17c5464109b0895ed513b1fbec1c699df9da65ea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/kernel/zipball/df48612862168222dfd637cfa4c2778a9c2c7070",
-                "reference": "df48612862168222dfd637cfa4c2778a9c2c7070",
+                "url": "https://api.github.com/repos/hydra-foundation/kernel/zipball/17c5464109b0895ed513b1fbec1c699df9da65ea",
+                "reference": "17c5464109b0895ed513b1fbec1c699df9da65ea",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/auth": "*",
-                "hydrakit/authorization": "*",
-                "hydrakit/core": "*",
-                "hydrakit/event": "*",
-                "hydrakit/http": "*",
-                "hydrakit/nyholm": "*",
-                "hydrakit/session": "*",
-                "hydrakit/view": "*",
+                "hydrakit/auth": "^0.1",
+                "hydrakit/authorization": "^0.1",
+                "hydrakit/core": "^0.1",
+                "hydrakit/event": "^0.1",
+                "hydrakit/http": "^0.1",
+                "hydrakit/nyholm": "^0.1",
+                "hydrakit/session": "^0.1",
+                "hydrakit/view": "^0.1",
                 "nyholm/psr7": "^1.8",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
@@ -424,8 +456,12 @@
             "require-dev": {
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Kernel\\": "src/"
@@ -444,13 +480,13 @@
             "description": "Default composition root and HTTP plumbing for the Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/kernel/issues",
-                "source": "https://github.com/hydra-foundation/kernel/tree/main"
+                "source": "https://github.com/hydra-foundation/kernel/tree/v0.1.2"
             },
-            "time": "2026-07-02T19:39:09+00:00"
+            "time": "2026-07-07T19:02:20+00:00"
         },
         {
             "name": "hydrakit/log",
-            "version": "dev-main",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/log.git",
@@ -469,7 +505,6 @@
             "require-dev": {
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -489,26 +524,26 @@
             "description": "Logging library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/log/issues",
-                "source": "https://github.com/hydra-foundation/log/tree/main"
+                "source": "https://github.com/hydra-foundation/log/tree/v0.1.0"
             },
             "time": "2026-07-02T17:57:21+00:00"
         },
         {
             "name": "hydrakit/nyholm",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/nyholm.git",
-                "reference": "5e093115ca681c3ea0d58aff7db1afe333fc6c17"
+                "reference": "f089f41345113f7459d7135c2839a7f0ec79a69d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/nyholm/zipball/5e093115ca681c3ea0d58aff7db1afe333fc6c17",
-                "reference": "5e093115ca681c3ea0d58aff7db1afe333fc6c17",
+                "url": "https://api.github.com/repos/hydra-foundation/nyholm/zipball/f089f41345113f7459d7135c2839a7f0ec79a69d",
+                "reference": "f089f41345113f7459d7135c2839a7f0ec79a69d",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/http": "*",
+                "hydrakit/http": "^0.1",
                 "nyholm/psr7": "^1.8",
                 "nyholm/psr7-server": "^1.0",
                 "php": ">=8.2",
@@ -517,8 +552,12 @@
             "require-dev": {
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Nyholm\\": "src/"
@@ -537,26 +576,26 @@
             "description": "Nyholm PSR-7/PSR-17 adapter for the Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/nyholm/issues",
-                "source": "https://github.com/hydra-foundation/nyholm/tree/main"
+                "source": "https://github.com/hydra-foundation/nyholm/tree/v0.1.2"
             },
-            "time": "2026-07-02T17:57:33+00:00"
+            "time": "2026-07-07T19:02:25+00:00"
         },
         {
             "name": "hydrakit/session",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/session.git",
-                "reference": "1974f6935f92f4bcc36718261feb31fba6b3b6e5"
+                "reference": "4539865b0adaade94b3731b5dcb7e93c6076262e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/session/zipball/1974f6935f92f4bcc36718261feb31fba6b3b6e5",
-                "reference": "1974f6935f92f4bcc36718261feb31fba6b3b6e5",
+                "url": "https://api.github.com/repos/hydra-foundation/session/zipball/4539865b0adaade94b3731b5dcb7e93c6076262e",
+                "reference": "4539865b0adaade94b3731b5dcb7e93c6076262e",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "*",
+                "hydrakit/core": "^0.1",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -565,8 +604,12 @@
             "require-dev": {
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Session\\": "src/"
@@ -585,22 +628,22 @@
             "description": "Session library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/session/issues",
-                "source": "https://github.com/hydra-foundation/session/tree/main"
+                "source": "https://github.com/hydra-foundation/session/tree/v0.1.2"
             },
-            "time": "2026-07-06T21:11:46+00:00"
+            "time": "2026-07-07T19:02:15+00:00"
         },
         {
             "name": "hydrakit/validation",
-            "version": "dev-main",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/validation.git",
-                "reference": "205bf5048ad3acd0c808693d1aab53cb8ae4fe21"
+                "reference": "a6105dc428b693f56903cfb061d7bd370222b490"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/validation/zipball/205bf5048ad3acd0c808693d1aab53cb8ae4fe21",
-                "reference": "205bf5048ad3acd0c808693d1aab53cb8ae4fe21",
+                "url": "https://api.github.com/repos/hydra-foundation/validation/zipball/a6105dc428b693f56903cfb061d7bd370222b490",
+                "reference": "a6105dc428b693f56903cfb061d7bd370222b490",
                 "shasum": ""
             },
             "require": {
@@ -609,8 +652,12 @@
             "require-dev": {
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Validation\\": "src/"
@@ -629,13 +676,13 @@
             "description": "Validation library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/validation/issues",
-                "source": "https://github.com/hydra-foundation/validation/tree/main"
+                "source": "https://github.com/hydra-foundation/validation/tree/v0.1.2"
             },
-            "time": "2026-07-06T21:13:32+00:00"
+            "time": "2026-07-07T19:02:14+00:00"
         },
         {
             "name": "hydrakit/view",
-            "version": "dev-main",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/view.git",
@@ -655,7 +702,6 @@
                 "hydrakit/session": "*",
                 "phpunit/phpunit": "^11.0"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -675,7 +721,7 @@
             "description": "Native PHP templating for the Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/view/issues",
-                "source": "https://github.com/hydra-foundation/view/tree/main"
+                "source": "https://github.com/hydra-foundation/view/tree/v0.1.0"
             },
             "time": "2026-07-06T21:12:13+00:00"
         },
@@ -3830,7 +3876,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
