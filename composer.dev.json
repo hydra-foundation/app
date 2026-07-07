@@ -1,0 +1,67 @@
+{
+    "name": "hydrakit/app",
+    "description": "Hydra PHP framework application skeleton",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\Tests\\": "tests/"
+        }
+    },
+    "_comment": "LOCAL DEVELOPMENT ONLY. Use with: COMPOSER=composer.dev.json composer install. This resolves the hydrakit/* packages from your local sibling checkouts via symlink so edits are reflected immediately. Consumers use the plain composer.json, which resolves everything from Packagist.",
+    "repositories": [
+        { "type": "path", "url": "../core", "options": { "symlink": true } },
+        { "type": "path", "url": "../http", "options": { "symlink": true } },
+        { "type": "path", "url": "../validation", "options": { "symlink": true } },
+        { "type": "path", "url": "../session", "options": { "symlink": true } },
+        { "type": "path", "url": "../csrf", "options": { "symlink": true } },
+        { "type": "path", "url": "../auth", "options": { "symlink": true } },
+        { "type": "path", "url": "../authorization", "options": { "symlink": true } },
+        { "type": "path", "url": "../event", "options": { "symlink": true } },
+        { "type": "path", "url": "../kernel", "options": { "symlink": true } },
+        { "type": "path", "url": "../log", "options": { "symlink": true } },
+        { "type": "path", "url": "../database", "options": { "symlink": true } },
+        { "type": "path", "url": "../view", "options": { "symlink": true } },
+        { "type": "path", "url": "../nyholm", "options": { "symlink": true } },
+        { "type": "path", "url": "../console", "options": { "symlink": true } }
+    ],
+    "authors": [
+        {
+            "name": "William Hleucka",
+            "email": "william.hleucka@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "hydrakit/core": "*",
+        "hydrakit/http": "*",
+        "hydrakit/validation": "*",
+        "hydrakit/session": "*",
+        "hydrakit/csrf": "*",
+        "hydrakit/auth": "*",
+        "hydrakit/authorization": "*",
+        "hydrakit/event": "*",
+        "hydrakit/kernel": "*",
+        "hydrakit/log": "*",
+        "hydrakit/database": "*",
+        "hydrakit/view": "*",
+        "hydrakit/nyholm": "*",
+        "hydrakit/console": "*",
+        "php-di/php-di": "^7.0",
+        "nyholm/psr7": "^1.8",
+        "symfony/console": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "scripts": {
+        "start": "php -S localhost:8000 -t public/"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

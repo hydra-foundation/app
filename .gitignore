@@ -19,4 +19,8 @@
 .DS_Store
 *.swp
 
-# Note: composer.lock IS committed for applications (this is a "type": "project")
+# Note: composer.lock IS committed for applications (this is a "type": "project").
+# It resolves hydrakit/* from Packagist. For local framework dev against your
+# sibling checkouts, use: COMPOSER=composer.dev.json composer install
+# That produces composer.dev.lock, which is machine-specific and NOT committed:
+/composer.dev.lock

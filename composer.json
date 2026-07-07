@@ -13,22 +13,6 @@
             "App\\Tests\\": "tests/"
         }
     },
-    "repositories": [
-        { "type": "path", "url": "../core", "options": { "symlink": true } },
-        { "type": "path", "url": "../http", "options": { "symlink": true } },
-        { "type": "path", "url": "../validation", "options": { "symlink": true } },
-        { "type": "path", "url": "../session", "options": { "symlink": true } },
-        { "type": "path", "url": "../csrf", "options": { "symlink": true } },
-        { "type": "path", "url": "../auth", "options": { "symlink": true } },
-        { "type": "path", "url": "../authorization", "options": { "symlink": true } },
-        { "type": "path", "url": "../event", "options": { "symlink": true } },
-        { "type": "path", "url": "../kernel", "options": { "symlink": true } },
-        { "type": "path", "url": "../log", "options": { "symlink": true } },
-        { "type": "path", "url": "../database", "options": { "symlink": true } },
-        { "type": "path", "url": "../view", "options": { "symlink": true } },
-        { "type": "path", "url": "../nyholm", "options": { "symlink": true } },
-        { "type": "path", "url": "../console", "options": { "symlink": true } }
-    ],
     "authors": [
         {
             "name": "William Hleucka",
