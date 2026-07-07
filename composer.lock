@@ -486,16 +486,16 @@
         },
         {
             "name": "hydrakit/log",
-            "version": "v0.1.0",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/log.git",
-                "reference": "f4b6314f07f85bebc16f3efee684fee27893e185"
+                "reference": "09965e9bbddb10cd7dcff31dabe0848631a301b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/log/zipball/f4b6314f07f85bebc16f3efee684fee27893e185",
-                "reference": "f4b6314f07f85bebc16f3efee684fee27893e185",
+                "url": "https://api.github.com/repos/hydra-foundation/log/zipball/09965e9bbddb10cd7dcff31dabe0848631a301b9",
+                "reference": "09965e9bbddb10cd7dcff31dabe0848631a301b9",
                 "shasum": ""
             },
             "require": {
@@ -506,6 +506,11 @@
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\Log\\": "src/"
@@ -524,9 +529,9 @@
             "description": "Logging library for Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/log/issues",
-                "source": "https://github.com/hydra-foundation/log/tree/v0.1.0"
+                "source": "https://github.com/hydra-foundation/log/tree/v0.1.2"
             },
-            "time": "2026-07-02T17:57:21+00:00"
+            "time": "2026-07-07T19:02:21+00:00"
         },
         {
             "name": "hydrakit/nyholm",
@@ -682,27 +687,32 @@
         },
         {
             "name": "hydrakit/view",
-            "version": "v0.1.0",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/view.git",
-                "reference": "e4714ee5915d379805c2de2f0b62e1482ff319f7"
+                "reference": "ac0ddda2dba75362698ef75a7129b3e5fe8780a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/view/zipball/e4714ee5915d379805c2de2f0b62e1482ff319f7",
-                "reference": "e4714ee5915d379805c2de2f0b62e1482ff319f7",
+                "url": "https://api.github.com/repos/hydra-foundation/view/zipball/ac0ddda2dba75362698ef75a7129b3e5fe8780a7",
+                "reference": "ac0ddda2dba75362698ef75a7129b3e5fe8780a7",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/csrf": "*",
+                "hydrakit/csrf": "^0.1",
                 "php": ">=8.2"
             },
             "require-dev": {
-                "hydrakit/session": "*",
+                "hydrakit/session": "^0.1",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Hydra\\View\\": "src/"
@@ -721,9 +731,9 @@
             "description": "Native PHP templating for the Hydra PHP framework",
             "support": {
                 "issues": "https://github.com/hydra-foundation/view/issues",
-                "source": "https://github.com/hydra-foundation/view/tree/v0.1.0"
+                "source": "https://github.com/hydra-foundation/view/tree/v0.1.2"
             },
-            "time": "2026-07-06T21:12:13+00:00"
+            "time": "2026-07-07T19:02:23+00:00"
         },
         {
             "name": "laravel/serializable-closure",
