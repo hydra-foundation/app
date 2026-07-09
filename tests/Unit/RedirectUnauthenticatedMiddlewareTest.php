@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Http\Middleware\RedirectUnauthenticatedMiddleware;
 use Hydra\Auth\Exceptions\AuthenticationException;
+use Hydra\Core\Security\Signer;
 use Hydra\Csrf\CsrfGuard;
 use Hydra\Csrf\Exceptions\TokenMismatchException;
 use Hydra\Http\Responder;
@@ -77,7 +78,7 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
         // A live session that HAS a token and still failed validation is a real
         // CSRF failure — swallowing it into a redirect would blunt the
         // protection.
-        (new CsrfGuard($this->session))->token(); // mint: the session now has a token
+        $this->guard()->token(); // mint: the session now has a token
 
         $this->expectException(TokenMismatchException::class);
 
@@ -99,8 +100,13 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
 
         return new RedirectUnauthenticatedMiddleware(
             new Responder($factory, $factory),
-            new CsrfGuard($this->session),
+            $this->guard(),
         );
+    }
+
+    private function guard(): CsrfGuard
+    {
+        return new CsrfGuard($this->session, Signer::fromHex(str_repeat('cd', 32)));
     }
 
     private function request(): ServerRequestInterface

@@ -13,6 +13,7 @@ use Hydra\Auth\AuthServiceProvider;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
+use App\Tests\Support\FixedSignerServiceProvider;
 use Hydra\Core\Environment;
 use Hydra\Csrf\CsrfGuard;
 use Hydra\Database\Contracts\ConnectionInterface;
@@ -58,6 +59,7 @@ final class AuthEventsFlowTest extends TestCase
         $app = (new Application($container))
             ->register(new ArraySessionServiceProvider)
             ->register(new NyholmServiceProvider)
+            ->register(new FixedSignerServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new EventServiceProvider)
             ->register(new AuthServiceProvider)

@@ -11,6 +11,7 @@ use App\Tests\Support\TestHttpProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Contracts\KernelInterface;
+use App\Tests\Support\FixedSignerServiceProvider;
 use Hydra\Core\Environment;
 use Hydra\Http\HttpKernel;
 use Hydra\Nyholm\NyholmServiceProvider;
@@ -40,6 +41,9 @@ final class RequestLifecycleTest extends TestCase
         (new Application($container))
             ->register(new ArraySessionServiceProvider)
             ->register(new NyholmServiceProvider)
+            // The CSRF guard signs with a Signer; bind a fixed-key one (the .env-less
+            // Environment has no APP_KEY for the real provider to read).
+            ->register(new FixedSignerServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new AppServiceProvider)
             ->boot();

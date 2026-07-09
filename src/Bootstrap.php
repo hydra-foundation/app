@@ -9,6 +9,7 @@ use App\Providers\AppServiceProvider;
 use DI\Container as PhpDiContainer;
 use Hydra\Core\Application;
 use Hydra\Core\Environment;
+use Hydra\Core\Security\SignerServiceProvider;
 use Hydra\Kernel\HttpServiceProvider;
 use Hydra\Kernel\Kernel;
 use Hydra\Nyholm\NyholmServiceProvider;
@@ -54,6 +55,10 @@ final class Bootstrap
             // The app names its PSR-7 vendor here, explicitly — the kernel's
             // plumbing consumes only the interfaces this provider binds.
             ->register(new NyholmServiceProvider)
+            // Binds the Signer from APP_KEY — the CSRF guard signs its tokens
+            // with it, so a missing APP_KEY fails loud the first time a form is
+            // rendered rather than being ignorable dead config.
+            ->register(new SignerServiceProvider)
             ->register(new HttpServiceProvider(
                 controllers: AppServiceProvider::CONTROLLERS,
                 middleware: AppServiceProvider::MIDDLEWARE,

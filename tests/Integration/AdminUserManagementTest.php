@@ -14,6 +14,7 @@ use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Authorization\AuthorizationServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
+use App\Tests\Support\FixedSignerServiceProvider;
 use Hydra\Core\Environment;
 use Hydra\Csrf\CsrfGuard;
 use Hydra\Database\Contracts\ConnectionInterface;
@@ -52,6 +53,7 @@ final class AdminUserManagementTest extends TestCase
         (new Application($container))
             ->register(new ArraySessionServiceProvider)
             ->register(new NyholmServiceProvider)
+            ->register(new FixedSignerServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)

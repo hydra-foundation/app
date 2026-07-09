@@ -12,6 +12,7 @@ use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthServiceProvider;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Core\Application;
+use App\Tests\Support\FixedSignerServiceProvider;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
 use Hydra\Csrf\CsrfGuard;
@@ -51,6 +52,8 @@ final class AuthFlowTest extends TestCase
         (new Application($container))
             ->register(new ArraySessionServiceProvider)
             ->register(new NyholmServiceProvider)
+            // Fixed-key signer for the CSRF guard (no APP_KEY in this .env-less env).
+            ->register(new FixedSignerServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new AuthServiceProvider)
             ->register(new AppServiceProvider)

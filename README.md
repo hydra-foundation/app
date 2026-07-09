@@ -108,12 +108,17 @@ commented list). The defaults are tuned for local dev; the ones that matter most
 
 | Variable | What it does |
 | --- | --- |
-| `APP_KEY` | Signing key. Generate with `key:generate` before first boot. |
+| `APP_KEY` | HMAC signing key, **required** — the CSRF guard signs its tokens with it, so a missing or malformed key fails loud the first time a form renders. Generate with `key:generate` before first boot. |
 | `APP_DEBUG` | `true` locally; **set `false` in production**. |
 | `APP_PORT` | Host port the dev stack publishes nginx on (`8080`). |
 | `ROUTE_CACHE` | Compile routes to a cache. Off in dev; on in prod via `route:cache`. |
 | `FORCE_HTTPS` | Redirect to https + HSTS. Off by default so local http works. |
 | `DB_*` / `REDIS_*` | MariaDB and Redis connection settings. |
+
+Regenerating `APP_KEY` (`key:generate --force`) invalidates anything sealed with
+the old key: in-flight forms carrying a token signed under it fail CSRF until the
+page is reloaded. It does **not** log anyone out — session ids are not signed —
+so the cost is a one-time reload, not a mass logout.
 
 ## Tests
 
