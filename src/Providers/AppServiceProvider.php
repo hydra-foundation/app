@@ -27,8 +27,11 @@ use Hydra\Csrf\VerifyCsrfTokenMiddleware;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\MigrationRunner;
 use Hydra\Database\PdoConnection;
+use App\Http\NegotiatingErrorRenderer;
 use Hydra\Event\ListenerProvider;
+use Hydra\Http\Contracts\ErrorRendererInterface;
 use Hydra\Http\ErrorHandlerMiddleware;
+use Hydra\Http\PlainTextErrorRenderer;
 use Hydra\Http\ForceHttpsMiddleware;
 use Hydra\Http\ParseBodyMiddleware;
 use Hydra\Http\RequestLoggingMiddleware;
@@ -221,12 +224,24 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
+        // Rebind the error renderer: this app negotiates htmx/JSON/HTML instead
+        // of the kernel's plain-text default. Negotiation is app policy, so it
+        // lives here, in an app class — the package never inspects Accept. The
+        // plain-text renderer is composed in as the fallback branch.
+        $container->singleton(ErrorRendererInterface::class, function () use ($container) {
+            return new NegotiatingErrorRenderer(
+                $container->get(Responder::class),
+                new PlainTextErrorRenderer($container->get(Responder::class)),
+            );
+        });
+
         // Error handler middleware. Bound explicitly because its $debug flag and
         // logger aren't autowirable; once bound, it's just another class-string
-        // in the MIDDLEWARE stack like any other.
+        // in the MIDDLEWARE stack like any other. It resolves the renderer bound
+        // just above.
         $container->singleton(ErrorHandlerMiddleware::class, function () use ($container) {
             return new ErrorHandlerMiddleware(
-                $container->get(Responder::class),
+                $container->get(ErrorRendererInterface::class),
                 $container->get(AppConfig::class)->debug,
                 $container->get(LoggerInterface::class),
             );
