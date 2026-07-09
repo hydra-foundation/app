@@ -11,6 +11,7 @@ use Hydra\Core\Application;
 use Hydra\Core\Environment;
 use Hydra\Kernel\HttpServiceProvider;
 use Hydra\Kernel\Kernel;
+use Hydra\Nyholm\NyholmServiceProvider;
 
 /**
  * The single composition root, shared by every entrypoint.
@@ -43,6 +44,9 @@ final class Bootstrap
         $routeCacheEnabled = RouteConfig::fromEnvironment(new Environment($basePath))->cache;
 
         return Kernel::application($container, $basePath)
+            // The app names its PSR-7 vendor here, explicitly — the kernel's
+            // plumbing consumes only the interfaces this provider binds.
+            ->register(new NyholmServiceProvider)
             ->register(new HttpServiceProvider(
                 controllers: AppServiceProvider::CONTROLLERS,
                 middleware: AppServiceProvider::MIDDLEWARE,

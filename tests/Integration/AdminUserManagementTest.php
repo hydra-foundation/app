@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Container;
-use Hydra\Database\Contracts\ConnectionInterface;
-use Hydra\Database\PdoConnection;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\TestHttpProvider;
@@ -18,6 +16,10 @@ use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
 use Hydra\Csrf\CsrfGuard;
+use Hydra\Database\Contracts\ConnectionInterface;
+use Hydra\Database\PdoConnection;
+use Hydra\Nyholm\NyholmServiceProvider;
+use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -49,6 +51,7 @@ final class AdminUserManagementTest extends TestCase
 
         (new Application($container))
             ->register(new ArraySessionServiceProvider)
+            ->register(new NyholmServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
@@ -98,6 +101,9 @@ final class AdminUserManagementTest extends TestCase
         $request = (new Psr17Factory)->createServerRequest($method, $path);
 
         if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) {
+            // Mint the token inside a started session window, the way a
+            // rendered form would; the pipeline's session save() closes it.
+            $this->container->get(SessionLifecycleInterface::class)->start();
             $request = $request->withHeader('X-CSRF-Token', $this->container->get(CsrfGuard::class)->token());
         }
         foreach ($headers as $name => $value) {

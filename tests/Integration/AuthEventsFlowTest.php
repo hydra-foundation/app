@@ -18,6 +18,8 @@ use Hydra\Csrf\CsrfGuard;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\Event\EventServiceProvider;
+use Hydra\Nyholm\NyholmServiceProvider;
+use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -55,6 +57,7 @@ final class AuthEventsFlowTest extends TestCase
         // dispatcher instead of null.
         $app = (new Application($container))
             ->register(new ArraySessionServiceProvider)
+            ->register(new NyholmServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new EventServiceProvider)
             ->register(new AuthServiceProvider)
@@ -100,6 +103,9 @@ final class AuthEventsFlowTest extends TestCase
         $request = (new Psr17Factory)->createServerRequest($method, $path);
 
         if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) {
+            // Mint the token inside a started session window, the way a
+            // rendered form would; the pipeline's session save() closes it.
+            $this->container->get(SessionLifecycleInterface::class)->start();
             $request = $request->withHeader('X-CSRF-Token', $this->container->get(CsrfGuard::class)->token());
         }
         if ($body !== null) {

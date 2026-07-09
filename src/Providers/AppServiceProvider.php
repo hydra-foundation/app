@@ -30,6 +30,7 @@ use Hydra\Database\PdoConnection;
 use Hydra\Event\ListenerProvider;
 use Hydra\Http\ErrorHandlerMiddleware;
 use Hydra\Http\ForceHttpsMiddleware;
+use Hydra\Http\ParseBodyMiddleware;
 use Hydra\Http\RequestLoggingMiddleware;
 use Hydra\Http\Responder;
 use Hydra\Http\SecurityHeadersMiddleware;
@@ -91,6 +92,13 @@ final class AppServiceProvider extends ServiceProvider
         // Converts any uncaught Throwable into a 500 and logs it before
         // responding, so it must wrap all the application work below it.
         ErrorHandlerMiddleware::class,
+        // Populates getParsedBody() for JSON bodies and urlencoded PUT/PATCH,
+        // which PHP's SAPI leaves empty (it only parses POST forms). Sits just
+        // inside the error handler so its 400 on malformed JSON renders through
+        // the normal error path, and before the CSRF check so a token submitted
+        // in a urlencoded PUT/PATCH body is visible to the guard. Needs no
+        // session, so it stays outside the session brackets.
+        ParseBodyMiddleware::class,
         // Opens the session on the way in and saves it on the way out, so a
         // controller is handed an already-started session. Sits inside the
         // error handler so a session save failure still becomes a clean 500.

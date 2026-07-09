@@ -13,6 +13,7 @@ use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Contracts\KernelInterface;
 use Hydra\Core\Environment;
 use Hydra\Http\HttpKernel;
+use Hydra\Nyholm\NyholmServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -38,6 +39,7 @@ final class RequestLifecycleTest extends TestCase
 
         (new Application($container))
             ->register(new ArraySessionServiceProvider)
+            ->register(new NyholmServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new AppServiceProvider)
             ->boot();
