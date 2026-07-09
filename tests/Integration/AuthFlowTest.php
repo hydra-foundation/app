@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
-use App\Container;
+use Hydra\PhpDi\Container;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\TestHttpProvider;
@@ -45,7 +45,7 @@ final class AuthFlowTest extends TestCase
 
     protected function setUp(): void
     {
-        $container = new Container(new \DI\Container);
+        $container = Container::create();
         $container->instance(ContainerInterface::class, $container);
         $container->instance(Environment::class, new Environment(__DIR__));
 

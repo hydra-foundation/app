@@ -35,7 +35,7 @@
         "hydrakit/view": "^0.1",
         "hydrakit/nyholm": "^0.1",
         "hydrakit/console": "^0.1",
-        "php-di/php-di": "^7.0",
+        "hydrakit/php-di": "^0.1",
         "nyholm/psr7": "^1.8",
         "symfony/console": "^7.0"
     },

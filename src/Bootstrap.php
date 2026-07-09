@@ -6,13 +6,13 @@ namespace App;
 
 use App\Config\RouteConfig;
 use App\Providers\AppServiceProvider;
-use DI\Container as PhpDiContainer;
 use Hydra\Core\Application;
 use Hydra\Core\Environment;
 use Hydra\Core\Security\SignerServiceProvider;
 use Hydra\Kernel\HttpServiceProvider;
 use Hydra\Kernel\Kernel;
 use Hydra\Nyholm\NyholmServiceProvider;
+use Hydra\PhpDi\Container;
 
 /**
  * The single composition root, shared by every entrypoint.
@@ -40,7 +40,7 @@ final class Bootstrap
      */
     public static function application(string $basePath): Application
     {
-        $container = new Container(new PhpDiContainer);
+        $container = Container::create();
 
         // Parse .env exactly once per request. This instance serves both the
         // route-cache read below and — via Kernel::application(), which binds
