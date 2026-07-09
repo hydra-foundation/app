@@ -103,16 +103,24 @@ final class AppServiceProvider extends ServiceProvider
         // controller is handed an already-started session. Sits inside the
         // error handler so a session save failure still becomes a clean 500.
         StartSessionMiddleware::class,
-        // Rejects any unsafe request (POST/PUT/PATCH/DELETE) without a valid CSRF
-        // token with a 403. Sits inside the session middleware because it reads
-        // the token from the started session. Autowires from CsrfGuard, which in
-        // turn autowires from the session binding — no provider to register.
-        VerifyCsrfTokenMiddleware::class,
-        // Maps auth's 401 (thrown by the per-route AuthenticateMiddleware) to a
-        // redirect to /login — a 302 for browsers, an HX-Redirect for htmx. Sits
-        // innermost so it wraps only the router: it catches AuthenticationException
-        // and lets every other HttpException pass out to the error handler.
+        // Maps "not logged in" signals to a /login redirect — a 302 for
+        // browsers, an HX-Redirect for htmx: auth's 401 (thrown by the
+        // per-route AuthenticateMiddleware) always, and csrf's 403 token
+        // mismatch when the session holds no token at all (the expired-session
+        // POST — a mismatch against an issued token is rethrown as a real 403).
+        // Sits inside the session middleware (the CsrfGuard it consults reads
+        // the started session) but OUTSIDE the CSRF check, so it can catch what
+        // that check throws; every other HttpException passes out to the error
+        // handler.
         RedirectUnauthenticatedMiddleware::class,
+        // Rejects any unsafe request (POST/PUT/PATCH/DELETE) without a valid CSRF
+        // token with a 403 TokenMismatchException. Sits inside the session
+        // middleware because it reads the token from the started session, and
+        // inside RedirectUnauthenticatedMiddleware, which turns the no-token
+        // (expired-session) variant of that 403 into a login redirect. Autowires
+        // from CsrfGuard, which in turn autowires from the session binding — no
+        // provider to register.
+        VerifyCsrfTokenMiddleware::class,
     ];
 
     public function register(ContainerInterface $container): void

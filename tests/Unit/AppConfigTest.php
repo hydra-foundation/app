@@ -20,12 +20,7 @@ final class AppConfigTest extends TestCase
 
     protected function tearDown(): void
     {
-        // Environment writes to putenv()/$_ENV, so values leak across tests via
-        // getenv() unless we scrub the keys this suite touches.
-        foreach (['APP_NAME', 'APP_URL', 'APP_DEBUG', 'APP_TIMEZONE', 'APP_KEY', 'FORCE_HTTPS', 'TRUST_FORWARDED_PROTO'] as $key) {
-            putenv($key);
-            unset($_ENV[$key]);
-        }
+        $this->scrubProcessEnv();
 
         $envFile = $this->dir . '/.env';
         if (file_exists($envFile)) {
@@ -34,8 +29,23 @@ final class AppConfigTest extends TestCase
         rmdir($this->dir);
     }
 
+    /**
+     * Environment exports .env values to putenv()/$_ENV, and the real process
+     * environment beats the file — so scrub the keys this suite touches before
+     * every Environment construction (and in tearDown), or one fromEnv() call's
+     * exports would override the next one's .env.
+     */
+    private function scrubProcessEnv(): void
+    {
+        foreach (['APP_NAME', 'APP_URL', 'APP_DEBUG', 'APP_TIMEZONE', 'APP_KEY', 'FORCE_HTTPS', 'TRUST_FORWARDED_PROTO'] as $key) {
+            putenv($key);
+            unset($_ENV[$key], $_SERVER[$key]);
+        }
+    }
+
     private function fromEnv(string $contents): AppConfig
     {
+        $this->scrubProcessEnv();
         file_put_contents($this->dir . '/.env', $contents);
         return AppConfig::fromEnvironment(new Environment($this->dir));
     }

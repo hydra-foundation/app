@@ -33,17 +33,24 @@ final class Bootstrap
      * Build the container, compose the framework kernel with the app's policy,
      * and register the app provider. Providers are registered (their bindings
      * declared) but NOT booted here: booting is the caller's lifecycle — the HTTP
-     * path boots via {@see Application::run()}, the console only resolves bindings.
+     * path boots via {@see Application::run()}, the console calls boot()
+     * explicitly before dispatching a command. Both entrypoints boot; only the
+     * moment differs.
      */
     public static function application(string $basePath): Application
     {
         $container = new Container(new PhpDiContainer);
 
+        // Parse .env exactly once per request. This instance serves both the
+        // route-cache read below and — via Kernel::application(), which binds
+        // it in the container — every other consumer.
+        $environment = new Environment($basePath);
+
         // Read once, here, whether to serve routes from the compiled cache — the
         // one route-cache decision the kernel's HTTP plumbing needs from the app.
-        $routeCacheEnabled = RouteConfig::fromEnvironment(new Environment($basePath))->cache;
+        $routeCacheEnabled = RouteConfig::fromEnvironment($environment)->cache;
 
-        return Kernel::application($container, $basePath)
+        return Kernel::application($container, $environment)
             // The app names its PSR-7 vendor here, explicitly — the kernel's
             // plumbing consumes only the interfaces this provider binds.
             ->register(new NyholmServiceProvider)

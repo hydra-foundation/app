@@ -205,4 +205,51 @@ final class AuthFlowTest extends TestCase
         // Back to anonymous: the guard bounces the protected route again.
         $this->assertSame(302, $this->handle('GET', '/dashboard')->getStatusCode());
     }
+
+    public function testExpiredSessionPostRedirectsToLoginInsteadOf403(): void
+    {
+        // The user loaded a form, their session then expired (or the cookie was
+        // cleared), and they submit: the fresh session knows no CSRF token, so
+        // the token check fails. A GUEST failing the check must land on the
+        // login page — not a bare 403. Build the request by hand to bypass the
+        // helper's automatic valid-token header.
+        $request = (new Psr17Factory)->createServerRequest('POST', '/login')
+            ->withParsedBody([
+                'username' => self::USERNAME,
+                'password' => self::PASSWORD,
+                '_token' => 'token-from-the-expired-session',
+            ]);
+
+        $response = $this->container->get(RequestHandlerInterface::class)->handle($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/login', $response->getHeaderLine('Location'));
+    }
+
+    public function testExpiredSessionHtmxPostSignalsLoginViaHeader(): void
+    {
+        $request = (new Psr17Factory)->createServerRequest('POST', '/logout')
+            ->withHeader('HX-Request', 'true')
+            ->withHeader('X-CSRF-Token', 'token-from-the-expired-session');
+
+        $response = $this->container->get(RequestHandlerInterface::class)->handle($request);
+
+        $this->assertSame('/login', $response->getHeaderLine('HX-Redirect'));
+    }
+
+    public function testAuthenticatedUserWithBadTokenStillGets403(): void
+    {
+        // A LIVE session with a wrong token is a real CSRF failure — the
+        // redirect policy applies to guests only.
+        $this->handle('POST', '/login', [], [
+            'username' => self::USERNAME,
+            'password' => self::PASSWORD,
+        ]);
+
+        $request = (new Psr17Factory)->createServerRequest('POST', '/logout')
+            ->withHeader('X-CSRF-Token', 'not-the-real-token');
+        $response = $this->container->get(RequestHandlerInterface::class)->handle($request);
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
 }

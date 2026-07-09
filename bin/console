@@ -27,9 +27,14 @@ use Symfony\Component\Console\CommandLoader\FactoryCommandLoader;
 
 // The console entrypoint. It builds the same composition root as the HTTP front
 // controller (public/index.php) and resolves command dependencies from it, so
-// commands see exactly the bindings the app runs with. Providers are registered
-// but not booted — resolving a binding needs only registration.
-$container = Bootstrap::application(__DIR__ . '/..')->container();
+// commands see exactly the bindings the app runs with. It also boots the
+// providers, exactly as the HTTP path does via Application::run(): boot() is
+// where cross-provider wiring happens (AppServiceProvider::boot attaches the
+// auth audit listeners, for one), and a command that logs in a user or fires
+// events must see the same wired-up world a request does.
+$app = Bootstrap::application(__DIR__ . '/..');
+$app->boot();
+$container = $app->container();
 
 $application = new Application('Hydra');
 $application->addCommands([

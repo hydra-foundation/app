@@ -72,7 +72,10 @@ final class UserRepository implements UserProviderInterface
             [$username, $passwordHash, $role],
         );
 
-        return $this->db->lastInsertId();
+        // lastInsertId() is a string (the seam's PDO-native surface, so UUID
+        // PKs survive); THIS schema's users.id is an integer, so the cast —
+        // the schema assumption — lives here, at the call site.
+        return (int) $this->db->lastInsertId();
     }
 
     /**
