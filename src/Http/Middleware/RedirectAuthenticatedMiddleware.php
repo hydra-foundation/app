@@ -14,9 +14,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * The mirror of {@see RedirectUnauthenticatedMiddleware}: guards the "guest"
- * routes (login, registration) by sending an already-authenticated visitor away
- * from them instead of showing the form again.
+ * The mirror of {@see RedirectUnauthenticatedMiddleware}: guards guest-only
+ * routes by sending an already-authenticated visitor away instead of showing
+ * the form again — a signed-in user has no reason to see the login page.
  *
  * It's a per-route middleware, the counterpart to auth's AuthenticateMiddleware
  * — drop it on a route's `middleware:` list. Unlike the unauthenticated case it

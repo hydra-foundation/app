@@ -33,8 +33,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 /**
  * The authorization vertical slice: an admin-only area reached through two
  * gates, one per question — both answered in middleware, before any controller
- * body runs. Now that the area has more than one page, those two gates live on
- * the class as a #[RouteGroup] instead of being repeated on every route:
+ * body runs. Both gates guard every page in the area, so they ride the class as
+ * a #[RouteGroup] rather than being repeated on each route:
  *
  *   - AuthenticateMiddleware answers "who are you?" — an anonymous visitor never
  *     reaches a controller (401 → redirect to /login, the auth slice's policy).
