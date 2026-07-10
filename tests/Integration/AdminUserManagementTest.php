@@ -133,7 +133,7 @@ final class AdminUserManagementTest extends TestCase
         return $this->pdo->query('SELECT username, role FROM users ORDER BY id')->fetchAll();
     }
 
-    public function testCreateFormIsBehindTheAdminGate(): void
+    public function test_create_form_is_behind_the_admin_gate(): void
     {
         // The new route inherits the group's gates: anonymous → 401 → /login.
         $response = $this->handle('GET', '/admin/users/new');
@@ -142,7 +142,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function testAdminCanReachTheCreateForm(): void
+    public function test_admin_can_reach_the_create_form(): void
     {
         $this->loginAsAdmin();
 
@@ -152,7 +152,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertStringContainsString('New user', (string) $response->getBody());
     }
 
-    public function testPostWithoutCsrfTokenIsRejected(): void
+    public function test_post_without_csrf_token_is_rejected(): void
     {
         $this->loginAsAdmin();
 
@@ -166,7 +166,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertCount(1, $this->rows());
     }
 
-    public function testValidInputCreatesUserAndRedirectsWithFlash(): void
+    public function test_valid_input_creates_user_and_redirects_with_flash(): void
     {
         $this->loginAsAdmin();
 
@@ -198,7 +198,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertStringNotContainsString('created', (string) $again->getBody());
     }
 
-    public function testInvalidInputReRendersFormWithErrorsAndWritesNothing(): void
+    public function test_invalid_input_re_renders_form_with_errors_and_writes_nothing(): void
     {
         $this->loginAsAdmin();
 
@@ -216,7 +216,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertCount(1, $this->rows());
     }
 
-    public function testDuplicateUsernameIsRejected(): void
+    public function test_duplicate_username_is_rejected(): void
     {
         $this->loginAsAdmin();
 
@@ -231,7 +231,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertCount(1, $this->rows());
     }
 
-    public function testEditFormLoadsForAnotherUser(): void
+    public function test_edit_form_loads_for_another_user(): void
     {
         $this->loginAsAdmin();
         $id = $this->seedUser('clerk');
@@ -244,7 +244,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertStringContainsString('clerk', $body);
     }
 
-    public function testEditingYourOwnAccountIsForbidden(): void
+    public function test_editing_your_own_account_is_forbidden(): void
     {
         $this->loginAsAdmin();
 
@@ -254,14 +254,14 @@ final class AdminUserManagementTest extends TestCase
         $this->assertSame(403, $response->getStatusCode());
     }
 
-    public function testEditingAMissingUserIs404(): void
+    public function test_editing_a_missing_user_is404(): void
     {
         $this->loginAsAdmin();
 
         $this->assertSame(404, $this->handle('GET', '/admin/users/9999/edit')->getStatusCode());
     }
 
-    public function testUpdateChangesUsernameAndRoleAndFlashes(): void
+    public function test_update_changes_username_and_role_and_flashes(): void
     {
         $this->loginAsAdmin();
         $id = $this->seedUser('clerk', 'user');
@@ -280,7 +280,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertStringContainsString('updated', (string) $this->handle('GET', '/admin')->getBody());
     }
 
-    public function testUpdateKeepingYourOwnUsernameIsAllowed(): void
+    public function test_update_keeping_your_own_username_is_allowed(): void
     {
         $this->loginAsAdmin();
         $id = $this->seedUser('clerk', 'user');
@@ -294,7 +294,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
     }
 
-    public function testUpdateRejectsANameTakenByAnotherUser(): void
+    public function test_update_rejects_a_name_taken_by_another_user(): void
     {
         $this->loginAsAdmin();
         $id = $this->seedUser('clerk');
@@ -310,7 +310,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertSame('clerk', $this->pdo->query("SELECT username FROM users WHERE id = {$id}")->fetchColumn());
     }
 
-    public function testUpdateWithInvalidInputReRendersFormWithErrorsAndWritesNothing(): void
+    public function test_update_with_invalid_input_re_renders_form_with_errors_and_writes_nothing(): void
     {
         $this->loginAsAdmin();
         $id = $this->seedUser('clerk', 'user');
@@ -334,7 +334,7 @@ final class AdminUserManagementTest extends TestCase
         );
     }
 
-    public function testUpdatingYourOwnAccountIsForbidden(): void
+    public function test_updating_your_own_account_is_forbidden(): void
     {
         $this->loginAsAdmin();
 
@@ -348,7 +348,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertSame('boss', $this->pdo->query("SELECT username FROM users WHERE id = {$this->bossId}")->fetchColumn());
     }
 
-    public function testDeletingAnotherUserWorksAndFlashes(): void
+    public function test_deleting_another_user_works_and_flashes(): void
     {
         $this->loginAsAdmin();
         $id = $this->seedUser('clerk');
@@ -361,7 +361,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertStringContainsString('deleted', (string) $this->handle('GET', '/admin')->getBody());
     }
 
-    public function testDeletingYourOwnAccountIsForbidden(): void
+    public function test_deleting_your_own_account_is_forbidden(): void
     {
         $this->loginAsAdmin();
 
@@ -371,7 +371,7 @@ final class AdminUserManagementTest extends TestCase
         $this->assertCount(1, $this->rows()); // boss still there
     }
 
-    public function testDeletingAMissingUserIs404(): void
+    public function test_deleting_a_missing_user_is404(): void
     {
         $this->loginAsAdmin();
 

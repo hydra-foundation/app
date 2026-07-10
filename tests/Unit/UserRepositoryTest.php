@@ -47,7 +47,7 @@ final class UserRepositoryTest extends TestCase
         $this->repo = new UserRepository(new PdoConnection($this->pdo));
     }
 
-    public function testByUsernameReturnsTheHydratedUser(): void
+    public function test_by_username_returns_the_hydrated_user(): void
     {
         $user = $this->repo->byUsername('will');
 
@@ -57,12 +57,12 @@ final class UserRepositoryTest extends TestCase
         $this->assertSame(1, $user->getAuthIdentifier());
     }
 
-    public function testByUsernameReturnsNullForUnknownName(): void
+    public function test_by_username_returns_null_for_unknown_name(): void
     {
         $this->assertNull($this->repo->byUsername('nobody'));
     }
 
-    public function testByIdentifierRestoresTheUser(): void
+    public function test_by_identifier_restores_the_user(): void
     {
         $user = $this->repo->byIdentifier(1);
 
@@ -70,12 +70,12 @@ final class UserRepositoryTest extends TestCase
         $this->assertSame('will', $user->username);
     }
 
-    public function testByIdentifierReturnsNullForMissingId(): void
+    public function test_by_identifier_returns_null_for_missing_id(): void
     {
         $this->assertNull($this->repo->byIdentifier(404));
     }
 
-    public function testRoleDefaultsToPlainUser(): void
+    public function test_role_defaults_to_plain_user(): void
     {
         // all() is typed list<User>, so role/isAdmin read without narrowing.
         $user = $this->repo->all()[0];
@@ -84,7 +84,7 @@ final class UserRepositoryTest extends TestCase
         $this->assertFalse($user->isAdmin());
     }
 
-    public function testAllReturnsEveryUserNewestFirst(): void
+    public function test_all_returns_every_user_newest_first(): void
     {
         $this->pdo->exec("INSERT INTO users (username, password_hash, role) VALUES ('ada', 'x', 'admin')");
 
@@ -97,7 +97,7 @@ final class UserRepositoryTest extends TestCase
         $this->assertSame('will', $all[1]->username);
     }
 
-    public function testCreateInsertsAndReturnsTheNewId(): void
+    public function test_create_inserts_and_returns_the_new_id(): void
     {
         $id = $this->repo->create('ada', 'digest', 'admin');
 
@@ -110,14 +110,14 @@ final class UserRepositoryTest extends TestCase
         $this->assertTrue($created->isAdmin());
     }
 
-    public function testCreateDefaultsToThePlainUserRole(): void
+    public function test_create_defaults_to_the_plain_user_role(): void
     {
         $id = $this->repo->create('grace', 'digest');
 
         $this->assertSame('user', $this->repo->byIdentifier($id)?->role);
     }
 
-    public function testUpdateChangesUsernameAndRoleAndReportsTheRowChanged(): void
+    public function test_update_changes_username_and_role_and_reports_the_row_changed(): void
     {
         $affected = $this->repo->update(1, 'will-admin', 'admin');
 
@@ -129,12 +129,12 @@ final class UserRepositoryTest extends TestCase
         $this->assertSame('hashed-secret', $reloaded->getAuthPassword());
     }
 
-    public function testUpdateReportsZeroWhenNoRowMatches(): void
+    public function test_update_reports_zero_when_no_row_matches(): void
     {
         $this->assertSame(0, $this->repo->update(404, 'ghost', 'user'));
     }
 
-    public function testDeleteRemovesTheRowAndReportsTheCount(): void
+    public function test_delete_removes_the_row_and_reports_the_count(): void
     {
         $affected = $this->repo->delete(1);
 
@@ -142,7 +142,7 @@ final class UserRepositoryTest extends TestCase
         $this->assertNull($this->repo->byIdentifier(1));
     }
 
-    public function testDeleteReportsZeroWhenNoRowMatches(): void
+    public function test_delete_reports_zero_when_no_row_matches(): void
     {
         $this->assertSame(0, $this->repo->delete(404));
     }

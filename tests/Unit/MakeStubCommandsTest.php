@@ -49,7 +49,7 @@ final class MakeStubCommandsTest extends TestCase
         return file_get_contents($this->dir . '/' . $class . '.php');
     }
 
-    public function testControllerAppendsSuffixAndDerivesRoute(): void
+    public function test_controller_appends_suffix_and_derives_route(): void
     {
         $tester = $this->controller();
         $this->assertSame(Command::SUCCESS, $tester->execute(['name' => 'post']));
@@ -61,27 +61,27 @@ final class MakeStubCommandsTest extends TestCase
         $this->assertStringContainsString('namespace App\\Controllers;', $body);
     }
 
-    public function testControllerDoesNotDoubleSuffix(): void
+    public function test_controller_does_not_double_suffix(): void
     {
         $this->assertSame(Command::SUCCESS, $this->controller()->execute(['name' => 'PostController']));
         $this->assertFileExists($this->dir . '/PostController.php');
         $this->assertFileDoesNotExist($this->dir . '/PostControllerController.php');
     }
 
-    public function testControllerNormalisesLooseNames(): void
+    public function test_controller_normalises_loose_names(): void
     {
         $this->assertSame(Command::SUCCESS, $this->controller()->execute(['name' => 'blog-post']));
         $this->assertStringContainsString('final class BlogPostController', $this->body('BlogPostController'));
     }
 
-    public function testControllerPrintsRegisterReminder(): void
+    public function test_controller_prints_register_reminder(): void
     {
         $tester = $this->controller();
         $tester->execute(['name' => 'post']);
         $this->assertStringContainsString('CONTROLLERS', $tester->getDisplay());
     }
 
-    public function testControllerRefusesToOverwriteWithoutForce(): void
+    public function test_controller_refuses_to_overwrite_without_force(): void
     {
         file_put_contents($this->dir . '/PostController.php', '<?php // hand-written');
 
@@ -92,7 +92,7 @@ final class MakeStubCommandsTest extends TestCase
         $this->assertStringContainsString('hand-written', $this->body('PostController'));
     }
 
-    public function testControllerOverwritesWithForce(): void
+    public function test_controller_overwrites_with_force(): void
     {
         file_put_contents($this->dir . '/PostController.php', '<?php // hand-written');
 
@@ -100,7 +100,7 @@ final class MakeStubCommandsTest extends TestCase
         $this->assertStringContainsString('extends Controller', $this->body('PostController'));
     }
 
-    public function testAbilityDeniesByDefaultAndForcesNoSuffix(): void
+    public function test_ability_denies_by_default_and_forces_no_suffix(): void
     {
         $tester = $this->ability();
         $this->assertSame(Command::SUCCESS, $tester->execute(['name' => 'ManagePost']));
@@ -113,7 +113,7 @@ final class MakeStubCommandsTest extends TestCase
         $this->assertStringNotContainsString('CONTROLLERS', $tester->getDisplay());
     }
 
-    public function testRejectsAnEmptyName(): void
+    public function test_rejects_an_empty_name(): void
     {
         $tester = $this->controller();
         $this->assertSame(Command::FAILURE, $tester->execute(['name' => '!!!']));

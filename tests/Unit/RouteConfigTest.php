@@ -37,23 +37,23 @@ final class RouteConfigTest extends TestCase
         return RouteConfig::fromEnvironment(new Environment($this->dir));
     }
 
-    public function testExposesReadonlyCacheFlagFromConstructor(): void
+    public function test_exposes_readonly_cache_flag_from_constructor(): void
     {
         $this->assertTrue((new RouteConfig(cache: true))->cache);
     }
 
-    public function testDefaultsToDisabledWhenUnset(): void
+    public function test_defaults_to_disabled_when_unset(): void
     {
         // Off by default: local dev wants #[Route] edits to take effect at once.
         $this->assertFalse($this->fromEnv("APP_NAME=x\n")->cache);
     }
 
-    public function testEnablesWhenRouteCacheIsTruthy(): void
+    public function test_enables_when_route_cache_is_truthy(): void
     {
         $this->assertTrue($this->fromEnv("ROUTE_CACHE=true\n")->cache);
     }
 
-    public function testStaysDisabledWhenRouteCacheIsFalsey(): void
+    public function test_stays_disabled_when_route_cache_is_falsey(): void
     {
         $this->assertFalse($this->fromEnv("ROUTE_CACHE=false\n")->cache);
     }

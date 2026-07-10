@@ -120,7 +120,7 @@ final class AdminAuthorizationFlowTest extends TestCase
         $this->assertSame(302, $response->getStatusCode(), "login as {$username} should succeed");
     }
 
-    public function testAnonymousVisitorIsRedirectedToLoginNotForbidden(): void
+    public function test_anonymous_visitor_is_redirected_to_login_not_forbidden(): void
     {
         // The auth guard fires first: not-logged-in is a 401 mapped to a redirect,
         // never the 403 (we don't tell anonymous visitors the page exists for some).
@@ -130,7 +130,7 @@ final class AdminAuthorizationFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function testLoggedInPlainUserIsForbidden(): void
+    public function test_logged_in_plain_user_is_forbidden(): void
     {
         $this->login('clerk');
 
@@ -141,7 +141,7 @@ final class AdminAuthorizationFlowTest extends TestCase
         $this->assertSame('', $response->getHeaderLine('Location'));
     }
 
-    public function testLoggedInAdminSeesTheUserListing(): void
+    public function test_logged_in_admin_sees_the_user_listing(): void
     {
         $this->login('boss');
 

@@ -28,7 +28,7 @@ final class ControllerTest extends TestCase
         return new AbortingController(new Responder($psr17, $psr17), new PhpView(sys_get_temp_dir()));
     }
 
-    public function testAbortThrowsHttpExceptionWithGivenStatus(): void
+    public function test_abort_throws_http_exception_with_given_status(): void
     {
         try {
             $this->controller()->run(403);
@@ -38,7 +38,7 @@ final class ControllerTest extends TestCase
         }
     }
 
-    public function testAbortCarriesMessage(): void
+    public function test_abort_carries_message(): void
     {
         try {
             $this->controller()->run(422, 'name is required');

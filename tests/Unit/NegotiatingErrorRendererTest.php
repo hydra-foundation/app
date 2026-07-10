@@ -34,7 +34,7 @@ final class NegotiatingErrorRendererTest extends TestCase
         return new ErrorContext($error, $request, $status, $debug);
     }
 
-    public function testHtmxRequestGetsAnHtmlFragmentRetargetedToTheErrorRegion(): void
+    public function test_htmx_request_gets_an_html_fragment_retargeted_to_the_error_region(): void
     {
         // htmx sends Accept: text/html too, so the htmx branch must win over the
         // full-page HTML branch — and retarget so the failed element isn't wiped.
@@ -55,7 +55,7 @@ final class NegotiatingErrorRendererTest extends TestCase
         $this->assertStringNotContainsString('<!doctype html>', $body);
     }
 
-    public function testJsonAcceptGetsAJsonBody(): void
+    public function test_json_accept_gets_a_json_body(): void
     {
         $response = $this->renderer()->render($this->context(
             new HttpException(404),
@@ -71,7 +71,7 @@ final class NegotiatingErrorRendererTest extends TestCase
         );
     }
 
-    public function testHtmlAcceptGetsAFullPage(): void
+    public function test_html_accept_gets_a_full_page(): void
     {
         $response = $this->renderer()->render($this->context(
             new HttpException(403, 'not yours'),
@@ -85,7 +85,7 @@ final class NegotiatingErrorRendererTest extends TestCase
         $this->assertStringContainsString('not yours', $body);
     }
 
-    public function testNoRecognisedAcceptFallsBackToPlainText(): void
+    public function test_no_recognised_accept_falls_back_to_plain_text(): void
     {
         // curl / health checks: no Accept negotiation, the plain-text default.
         $response = $this->renderer()->render($this->context(new HttpException(500), 500));
@@ -94,7 +94,7 @@ final class NegotiatingErrorRendererTest extends TestCase
         $this->assertStringContainsString('text/plain', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testProductionNeverLeaksAGenericThrowableMessage(): void
+    public function test_production_never_leaks_a_generic_throwable_message(): void
     {
         $response = $this->renderer()->render($this->context(
             new RuntimeException('secret dsn here'),
@@ -108,7 +108,7 @@ final class NegotiatingErrorRendererTest extends TestCase
         $this->assertStringNotContainsString('secret dsn', (string) $response->getBody());
     }
 
-    public function testDebugModeAddsExceptionDetailToJson(): void
+    public function test_debug_mode_adds_exception_detail_to_json(): void
     {
         $response = $this->renderer()->render($this->context(
             new RuntimeException('boom'),
@@ -122,7 +122,7 @@ final class NegotiatingErrorRendererTest extends TestCase
         $this->assertSame('boom', $decoded['message']);
     }
 
-    public function testHtmlFragmentEscapesTheMessage(): void
+    public function test_html_fragment_escapes_the_message(): void
     {
         // A developer-authored HttpException message still gets HTML-escaped so a
         // reflected value can't break out of the markup.

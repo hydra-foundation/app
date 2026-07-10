@@ -50,7 +50,7 @@ final class AppConfigTest extends TestCase
         return AppConfig::fromEnvironment(new Environment($this->dir));
     }
 
-    public function testExposesReadonlyFieldsFromConstructor(): void
+    public function test_exposes_readonly_fields_from_constructor(): void
     {
         $config = new AppConfig(
             name: 'Hydra',
@@ -71,7 +71,7 @@ final class AppConfigTest extends TestCase
         $this->assertTrue($config->trustForwardedProto);
     }
 
-    public function testMapsEnvironmentKeys(): void
+    public function test_maps_environment_keys(): void
     {
         $config = $this->fromEnv(
             "APP_NAME=MyApp\n" .
@@ -92,7 +92,7 @@ final class AppConfigTest extends TestCase
         $this->assertTrue($config->trustForwardedProto);
     }
 
-    public function testAppliesDefaultsWhenKeysAbsent(): void
+    public function test_applies_defaults_when_keys_absent(): void
     {
         $config = $this->fromEnv("APP_URL=http://localhost\n");
 
@@ -104,7 +104,7 @@ final class AppConfigTest extends TestCase
         $this->assertFalse($config->trustForwardedProto, 'header trust must be an explicit opt-in');
     }
 
-    public function testParsesDebugAsBoolean(): void
+    public function test_parses_debug_as_boolean(): void
     {
         $this->assertTrue($this->fromEnv("APP_DEBUG=true\n")->debug);
         $this->assertTrue($this->fromEnv("APP_DEBUG=1\n")->debug);

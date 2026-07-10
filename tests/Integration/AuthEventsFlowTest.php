@@ -117,7 +117,7 @@ final class AuthEventsFlowTest extends TestCase
         return $this->container->get(RequestHandlerInterface::class)->handle($request);
     }
 
-    public function testSuccessfulLoginEmitsAttemptingThenLoginAuditLines(): void
+    public function test_successful_login_emits_attempting_then_login_audit_lines(): void
     {
         $this->handle('POST', '/login', [
             'username' => self::USERNAME,
@@ -134,7 +134,7 @@ final class AuthEventsFlowTest extends TestCase
         $this->assertArrayHasKey('user', $login['context']);
     }
 
-    public function testWrongPasswordEmitsLoginFailedAuditLine(): void
+    public function test_wrong_password_emits_login_failed_audit_line(): void
     {
         $this->handle('POST', '/login', [
             'username' => self::USERNAME,
@@ -147,7 +147,7 @@ final class AuthEventsFlowTest extends TestCase
         $this->assertSame('warning', $this->log->firstWith('auth.login_failed')['level']);
     }
 
-    public function testLogoutEmitsLogoutAuditLine(): void
+    public function test_logout_emits_logout_audit_line(): void
     {
         $this->handle('POST', '/login', [
             'username' => self::USERNAME,

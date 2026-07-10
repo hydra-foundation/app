@@ -63,14 +63,14 @@ final class RequestLifecycleTest extends TestCase
         return $this->container->get(RequestHandlerInterface::class)->handle($request);
     }
 
-    public function testKernelGraphResolves(): void
+    public function test_kernel_graph_resolves(): void
     {
         // Resolving the kernel constructs the entire object graph (request
         // provider, pipeline, router, emitter, logger) — a wiring typo fails here.
         $this->assertInstanceOf(HttpKernel::class, $this->container->get(KernelInterface::class));
     }
 
-    public function testRootRouteReturnsWelcome(): void
+    public function test_root_route_returns_welcome(): void
     {
         $response = $this->handle('GET', '/');
 
@@ -81,7 +81,7 @@ final class RequestLifecycleTest extends TestCase
         $this->assertStringContainsString('<!doctype html>', (string) $response->getBody());
     }
 
-    public function testUnknownPathRendersA404(): void
+    public function test_unknown_path_renders_a404(): void
     {
         // The Router throws NotFoundException; the pipeline's ErrorHandlerMiddleware
         // catches it and renders a response — handle() never throws to the SAPI.
@@ -91,7 +91,7 @@ final class RequestLifecycleTest extends TestCase
         $this->assertSame('Not Found', (string) $response->getBody());
     }
 
-    public function testHeadRequestIsServedByTheGetRoute(): void
+    public function test_head_request_is_served_by_the_get_route(): void
     {
         // Proves HEAD->GET fallback survives the full pipeline, not just the unit.
         $response = $this->handle('HEAD', '/');

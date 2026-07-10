@@ -38,7 +38,7 @@ final class DbConfigTest extends TestCase
         return DbConfig::fromEnvironment(new Environment($this->dir));
     }
 
-    public function testMapsEnvironmentKeys(): void
+    public function test_maps_environment_keys(): void
     {
         $config = $this->fromEnv(
             "DB_DRIVER=mariadb\n" .
@@ -59,7 +59,7 @@ final class DbConfigTest extends TestCase
         $this->assertSame('utf8mb4', $config->charset);
     }
 
-    public function testAppliesDefaultsWhenKeysAbsent(): void
+    public function test_applies_defaults_when_keys_absent(): void
     {
         $config = $this->fromEnv("DB_NAME=hydra\n");
 
@@ -69,7 +69,7 @@ final class DbConfigTest extends TestCase
         $this->assertSame('utf8mb4', $config->charset);
     }
 
-    public function testBuildsMysqlDsnForMariadb(): void
+    public function test_builds_mysql_dsn_for_mariadb(): void
     {
         // mariadb maps onto the mysql PDO driver.
         $config = $this->fromEnv(
@@ -83,7 +83,7 @@ final class DbConfigTest extends TestCase
         $this->assertSame('mysql:host=db;port=3307;dbname=hydra;charset=utf8mb4', $config->dsn());
     }
 
-    public function testBuildsSqliteDsnFromDatabasePath(): void
+    public function test_builds_sqlite_dsn_from_database_path(): void
     {
         $config = $this->fromEnv(
             "DB_DRIVER=sqlite\n" .

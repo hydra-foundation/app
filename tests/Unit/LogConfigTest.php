@@ -37,19 +37,19 @@ final class LogConfigTest extends TestCase
         return LogConfig::fromEnvironment(new Environment($this->dir));
     }
 
-    public function testExposesReadonlyPathFromConstructor(): void
+    public function test_exposes_readonly_path_from_constructor(): void
     {
         $config = new LogConfig(path: '/var/log/app.log');
 
         $this->assertSame('/var/log/app.log', $config->path);
     }
 
-    public function testMapsLogPath(): void
+    public function test_maps_log_path(): void
     {
         $this->assertSame('/tmp/app.log', $this->fromEnv("LOG_PATH=/tmp/app.log\n")->path);
     }
 
-    public function testDefaultsToStderr(): void
+    public function test_defaults_to_stderr(): void
     {
         $this->assertSame('php://stderr', $this->fromEnv("APP_NAME=x\n")->path);
     }

@@ -115,7 +115,7 @@ final class AuthFlowTest extends TestCase
         return $this->container->get(RequestHandlerInterface::class)->handle($request);
     }
 
-    public function testLoginPageRendersTheForm(): void
+    public function test_login_page_renders_the_form(): void
     {
         $response = $this->handle('GET', '/login');
 
@@ -126,7 +126,7 @@ final class AuthFlowTest extends TestCase
         $this->assertStringContainsString('name="_token"', $body);
     }
 
-    public function testProtectedRouteRedirectsAnonymousBrowserToLogin(): void
+    public function test_protected_route_redirects_anonymous_browser_to_login(): void
     {
         $response = $this->handle('GET', '/dashboard');
 
@@ -134,7 +134,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function testProtectedRouteSignalsLoginToHtmxViaHeader(): void
+    public function test_protected_route_signals_login_to_htmx_via_header(): void
     {
         $response = $this->handle('GET', '/dashboard', ['HX-Request' => 'true']);
 
@@ -142,7 +142,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('HX-Redirect'));
     }
 
-    public function testWrongPasswordIsRejectedGenericallyWithoutLoggingIn(): void
+    public function test_wrong_password_is_rejected_generically_without_logging_in(): void
     {
         $response = $this->handle('POST', '/login', [], [
             'username' => self::USERNAME,
@@ -156,7 +156,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame(302, $this->handle('GET', '/dashboard')->getStatusCode());
     }
 
-    public function testEmptyFieldsShowRequiredErrors(): void
+    public function test_empty_fields_show_required_errors(): void
     {
         $response = $this->handle('POST', '/login', [], ['username' => '', 'password' => '']);
 
@@ -166,7 +166,7 @@ final class AuthFlowTest extends TestCase
         $this->assertStringContainsString('Enter your password.', $body);
     }
 
-    public function testSuccessfulLoginRedirectsAndGrantsTheProtectedPage(): void
+    public function test_successful_login_redirects_and_grants_the_protected_page(): void
     {
         $login = $this->handle('POST', '/login', [], [
             'username' => self::USERNAME,
@@ -183,7 +183,7 @@ final class AuthFlowTest extends TestCase
         $this->assertStringContainsString(self::USERNAME, (string) $dashboard->getBody());
     }
 
-    public function testHtmxLoginSignalsRedirectViaHeader(): void
+    public function test_htmx_login_signals_redirect_via_header(): void
     {
         $response = $this->handle('POST', '/login', ['HX-Request' => 'true'], [
             'username' => self::USERNAME,
@@ -193,7 +193,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/dashboard', $response->getHeaderLine('HX-Redirect'));
     }
 
-    public function testLogoutEndsTheSession(): void
+    public function test_logout_ends_the_session(): void
     {
         $this->handle('POST', '/login', [], [
             'username' => self::USERNAME,
@@ -209,7 +209,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame(302, $this->handle('GET', '/dashboard')->getStatusCode());
     }
 
-    public function testExpiredSessionPostRedirectsToLoginInsteadOf403(): void
+    public function test_expired_session_post_redirects_to_login_instead_of403(): void
     {
         // The user loaded a form, their session then expired (or the cookie was
         // cleared), and they submit: the fresh session knows no CSRF token, so
@@ -229,7 +229,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function testExpiredSessionHtmxPostSignalsLoginViaHeader(): void
+    public function test_expired_session_htmx_post_signals_login_via_header(): void
     {
         $request = (new Psr17Factory)->createServerRequest('POST', '/logout')
             ->withHeader('HX-Request', 'true')
@@ -240,7 +240,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('HX-Redirect'));
     }
 
-    public function testAuthenticatedUserWithBadTokenStillGets403(): void
+    public function test_authenticated_user_with_bad_token_still_gets403(): void
     {
         // A LIVE session with a wrong token is a real CSRF failure — the
         // redirect policy applies to guests only.

@@ -57,7 +57,7 @@ final class MakeUserCommandTest extends TestCase
         return $tester;
     }
 
-    public function testCreatesAUserWithAVerifiableHash(): void
+    public function test_creates_a_user_with_a_verifiable_hash(): void
     {
         $tester = $this->makeUser(['username' => 'alice'], ['s3cret-password', 's3cret-password']);
 
@@ -71,7 +71,7 @@ final class MakeUserCommandTest extends TestCase
         $this->assertTrue($this->hasher->verify('s3cret-password', $user->getAuthPassword()));
     }
 
-    public function testCreatesAnAdminWhenRoleOptionGiven(): void
+    public function test_creates_an_admin_when_role_option_given(): void
     {
         $tester = $this->makeUser(['username' => 'root', '--role' => 'admin'], ['longenough', 'longenough']);
 
@@ -79,7 +79,7 @@ final class MakeUserCommandTest extends TestCase
         $this->assertTrue($this->repo->byUsername('root')->isAdmin());
     }
 
-    public function testRejectsAnUnknownRole(): void
+    public function test_rejects_an_unknown_role(): void
     {
         $tester = $this->makeUser(['username' => 'bob', '--role' => 'superuser'], []);
 
@@ -88,7 +88,7 @@ final class MakeUserCommandTest extends TestCase
         $this->assertNull($this->repo->byUsername('bob'));
     }
 
-    public function testFailsWhenPasswordsDoNotMatch(): void
+    public function test_fails_when_passwords_do_not_match(): void
     {
         $tester = $this->makeUser(['username' => 'carol'], ['longenough', 'different1']);
 
@@ -97,7 +97,7 @@ final class MakeUserCommandTest extends TestCase
         $this->assertNull($this->repo->byUsername('carol'));
     }
 
-    public function testRejectsAStructurallyInvalidUsernameArgument(): void
+    public function test_rejects_a_structurally_invalid_username_argument(): void
     {
         $tester = $this->makeUser(['username' => 'no'], []); // too short
 
@@ -106,7 +106,7 @@ final class MakeUserCommandTest extends TestCase
         $this->assertNull($this->repo->byUsername('no'));
     }
 
-    public function testRejectsADuplicateUsernameArgument(): void
+    public function test_rejects_a_duplicate_username_argument(): void
     {
         $this->repo->create('will', 'existing-hash');
 
@@ -116,7 +116,7 @@ final class MakeUserCommandTest extends TestCase
         $this->assertStringContainsString('already taken', $tester->getDisplay());
     }
 
-    public function testPromptsForUsernameWhenArgumentOmitted(): void
+    public function test_prompts_for_username_when_argument_omitted(): void
     {
         $tester = $this->makeUser([], ['dave', 'longenough', 'longenough']);
 
