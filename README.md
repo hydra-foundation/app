@@ -2,6 +2,13 @@
 
 The skeleton every Hydra project starts from.
 
+## Status
+
+> **Experimental.** This is a personal project, built in the open for my own use.
+
+- Breaking changes are expected, between any two versions and without notice.
+- Anyone curious enough to use it is doing so at their own risk.
+
 ## Requirements
 
 - **PHP 8.2+** and **Composer**
