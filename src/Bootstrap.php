@@ -15,49 +15,29 @@ use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
 
 /**
- * The single composition root, shared by every entrypoint.
+ * Bootstrap
+ * ---
  *
- * Both the HTTP front controller (public/index.php) and the console
- * (bin/console) build the same container the same way — the difference is only
- * what they do with it afterwards (run the HTTP kernel, or dispatch a command).
+ * What does it do?
+ * - Creates an application DI container
+ * - Sets up the environment (ie, .env settings)
  *
- * The framework wiring — the standard provider stack and the HTTP plumbing —
- * lives in {@see Kernel}/{@see HttpServiceProvider}, so it can't drift between
- * this skeleton and other Hydra consumers: a new framework package joins the
- * stack in the kernel, not here. This file now declares only the app's own
- * policy: which container to use, its route/middleware/controller choices, and
- * its own {@see AppServiceProvider}.
+ * Returns a Kernel application
+ *   - Registers several services for the Kernel
+ *     - Nyholm (PSR7/17 request and response)
+ *     - Signer (Binds .env APP_KEY)
+ *     - Http (Controllers and middleware)
+ *     - App (Framework plumbing)
  */
 final class Bootstrap
 {
-    /**
-     * Build the container, compose the framework kernel with the app's policy,
-     * and register the app provider. Providers are registered (their bindings
-     * declared) but NOT booted here: booting is the caller's lifecycle — the HTTP
-     * path boots via {@see Application::run()}, the console calls boot()
-     * explicitly before dispatching a command. Both entrypoints boot; only the
-     * moment differs.
-     */
     public static function application(string $basePath): Application
     {
         $container = Container::create();
-
-        // Parse .env exactly once per request. This instance serves both the
-        // route-cache read below and — via Kernel::application(), which binds
-        // it in the container — every other consumer.
         $environment = new Environment($basePath);
-
-        // Read once, here, whether to serve routes from the compiled cache — the
-        // one route-cache decision the kernel's HTTP plumbing needs from the app.
         $routeCacheEnabled = RouteConfig::fromEnvironment($environment)->cache;
-
         return Kernel::application($container, $environment)
-            // The app names its PSR-7 vendor here, explicitly — the kernel's
-            // plumbing consumes only the interfaces this provider binds.
             ->register(new NyholmServiceProvider)
-            // Binds the Signer from APP_KEY — the CSRF guard signs its tokens
-            // with it, so a missing APP_KEY fails loud the first time a form is
-            // rendered rather than being ignorable dead config.
             ->register(new SignerServiceProvider)
             ->register(new HttpServiceProvider(
                 controllers: AppServiceProvider::CONTROLLERS,
