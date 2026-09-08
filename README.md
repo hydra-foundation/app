@@ -42,4 +42,4 @@ Open **http://localhost:8000**.
 
 ---
 
-Everything else — commands, architecture, configuration, migrations, tests — lives in the wiki.
+Everything else (commands, architecture, configuration, migrations, tests) lives in the wiki (coming soon?)
