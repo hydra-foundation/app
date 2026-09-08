@@ -4,4 +4,4 @@
 <?php $this->start('title') ?>Home · Hydra<?php $this->stop() ?>
 
 <h1>Welcome to Hydra</h1>
-<p>A small PHP framework built under restraint.</p>
+<p>A small PHP framework created by Will Hleucka.</p>
