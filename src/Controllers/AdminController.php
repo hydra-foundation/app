@@ -21,7 +21,6 @@ use Hydra\Http\Attributes\RouteGroup;
 use Hydra\Http\Responder;
 use Hydra\Http\Status;
 use Hydra\Session\Contracts\SessionInterface;
-use Hydra\Validation\Contracts\RuleInterface;
 use Hydra\Validation\Rules\MaxLength;
 use Hydra\Validation\Rules\MinLength;
 use Hydra\Validation\Rules\Pattern;
@@ -49,7 +48,7 @@ final class AdminController extends Controller
         parent::__construct($respond, $view);
     }
 
-    #[Route('/')] // → /admin (root collapses to the bare prefix)
+    #[Route('/')]
     public function index(): Response
     {
         // One-shot flash from a preceding create/update/delete (post-redirect-get).
@@ -64,13 +63,13 @@ final class AdminController extends Controller
         )]);
     }
 
-    #[Route('/users/new')] // → /admin/users/new
+    #[Route('/users/new')]
     public function create(): Response
     {
         return $this->render('admin/user_form', ['vm' => new UserFormViewModel]);
     }
 
-    #[Route('/users', methods: ['POST'])] // → POST /admin/users
+    #[Route('/users', methods: ['POST'])]
     public function store(Request $request): Response
     {
         $input = Input::fromRequest($request);
@@ -106,7 +105,7 @@ final class AdminController extends Controller
         return $this->respond->redirect('/admin');
     }
 
-    #[Route('/users/{id}/edit')] // → /admin/users/{id}/edit
+    #[Route('/users/{id}/edit')]
     public function edit(int $id): Response
     {
         $user = $this->find($id);
@@ -120,7 +119,7 @@ final class AdminController extends Controller
         )]);
     }
 
-    #[Route('/users/{id}', methods: ['POST'])] // → POST /admin/users/{id}
+    #[Route('/users/{id}', methods: ['POST'])]
     public function update(int $id, Request $request): Response
     {
         $user = $this->find($id);
@@ -152,7 +151,7 @@ final class AdminController extends Controller
         return $this->respond->redirect('/admin');
     }
 
-    #[Route('/users/{id}/delete', methods: ['POST'])] // → POST /admin/users/{id}/delete
+    #[Route('/users/{id}/delete', methods: ['POST'])]
     public function destroy(int $id): Response
     {
         $user = $this->find($id);
@@ -168,8 +167,6 @@ final class AdminController extends Controller
     /**
      * The shared username + role rules. Identity validation that create() and
      * update() both run; create() adds password rules on top with `+`.
-     *
-     * @return array<string, list<RuleInterface>>
      */
     private function identityRules(): array
     {
@@ -187,11 +184,7 @@ final class AdminController extends Controller
     /**
      * Add a "username taken" error unless the name is structurally invalid
      * already (no point querying for it) or it belongs to {@see $exceptId} (a
-     * user keeping their own name on an edit). Uniqueness is app data, checked
-     * here against the repository, not a generic validation rule.
-     *
-     * @param array<string, string> $errors
-     * @return array<string, string>
+     * user keeping their own name on an edit).
      */
     private function withUniquenessError(array $errors, string $username, ?int $exceptId = null): array
     {
@@ -207,7 +200,7 @@ final class AdminController extends Controller
         return $errors;
     }
 
-    /** Load a user by id or stop with a 404 — the load-or-abort the write routes share. */
+    /** Load a user by id or stop with a 404 */
     private function find(int $id): User
     {
         $user = $this->users->byIdentifier($id);

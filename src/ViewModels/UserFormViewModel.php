@@ -11,7 +11,6 @@ namespace App\ViewModels;
  */
 final readonly class UserFormViewModel
 {
-    /** @param array<string, string> $errors keyed by field name */
     public function __construct(
         public string $username = '',
         public string $role = 'user',
@@ -24,7 +23,6 @@ final readonly class UserFormViewModel
         return $this->id !== null;
     }
 
-    /** Where the form submits — create collects at the collection, edit at the member. */
     public function action(): string
     {
         return $this->isEdit() ? "/admin/users/{$this->id}" : '/admin/users';

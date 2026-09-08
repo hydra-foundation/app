@@ -13,7 +13,6 @@ use App\Entities\User;
  */
 final readonly class AdminViewModel
 {
-    /** @param list<User> $users */
     public function __construct(
         public array $users,
         public ?string $status = null,
@@ -30,7 +29,6 @@ final readonly class AdminViewModel
         return $this->status !== null && $this->status !== '';
     }
 
-    /** Whether the given row is the signed-in admin's own account. */
     public function isSelf(User $user): bool
     {
         return $user->id === $this->currentUserId;

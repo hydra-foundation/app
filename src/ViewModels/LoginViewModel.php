@@ -12,7 +12,6 @@ namespace App\ViewModels;
  */
 final readonly class LoginViewModel
 {
-    /** @param array<string, string> $errors */
     public function __construct(
         public string $username = '',
         public array $errors = [],
@@ -23,7 +22,6 @@ final readonly class LoginViewModel
         return $this->errors !== [];
     }
 
-    /** @return list<string> Every error message, for a flat summary. */
     public function messages(): array
     {
         return array_values($this->errors);

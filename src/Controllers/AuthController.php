@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Entities\User;
-use Hydra\Http\Htmx;
-use Hydra\Http\HtmxResponse;
 use Hydra\Http\Input;
 use App\Http\Middleware\RedirectAuthenticatedMiddleware;
 use Hydra\View\Contracts\ViewInterface;
@@ -39,8 +37,6 @@ final class AuthController extends Controller
     #[Route('/login', middleware: [RedirectAuthenticatedMiddleware::class])]
     public function showLogin(): Response
     {
-        // An already-signed-in visitor never reaches here: the guest middleware
-        // on this route redirects them away before the controller runs.
         return $this->render('auth/login', ['vm' => new LoginViewModel]);
     }
 
@@ -49,7 +45,7 @@ final class AuthController extends Controller
     {
         $input = Input::fromRequest($request);
         $username = trim($input->string('username'));
-        $password = $input->string('password'); // not trimmed — spaces may matter
+        $password = $input->string('password'); // not trimmed, spaces may matter
 
         // Both fields required before we touch the guard
         $result = $this->validator->validate(
@@ -92,17 +88,5 @@ final class AuthController extends Controller
         $username = $user instanceof User ? $user->username : (string) $user?->getAuthIdentifier();
 
         return $this->render('auth/dashboard', ['vm' => new AccountViewModel($username)]);
-    }
-
-    /**
-     * Redirect after a state change
-     */
-    private function redirectTo(Request $request, string $to): Response
-    {
-        if (Htmx::fromRequest($request)->isHtmx()) {
-            return (new HtmxResponse)->redirect($to)->applyTo($this->respond->noContent());
-        }
-
-        return $this->respond->redirect($to);
     }
 }

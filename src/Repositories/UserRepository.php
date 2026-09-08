@@ -77,7 +77,9 @@ final class UserRepository implements UserProviderInterface
         );
     }
 
-    /** Delete a user */
+    /** 
+     * Delete a user 
+     */
     public function delete(int $id): int
     {
         return $this->db->execute('DELETE FROM users WHERE id = ?', [$id]);
