@@ -15,16 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Creates a user account from the console — the seeding path the auth demo used
- * to need a hand-run `password_hash` one-liner for.
- *
- * Constraints mirror the admin user form (username 3–64 of [A-Za-z0-9_] and
- * unique, password ≥ 8, role user|admin) so the two entry points agree on what a
- * valid account is. The password is taken ONLY through a hidden prompt, never as
- * an argument: keeping it out of argv and shell history is the same "credential
- * handling stays in one audited place" rule auth is built around. Hashing goes
- * through the bound HasherInterface, so the digest the command stores is exactly
- * the one the guard later verifies.
+ * Make user account command
  */
 #[AsCommand(
     name: 'make:user',

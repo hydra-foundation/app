@@ -7,12 +7,7 @@ namespace App\Config;
 use Hydra\Core\Environment;
 
 /**
- * Typed, immutable view of the database connection settings.
- *
- * Built once from {@see Environment} at boot, same pattern as {@see AppConfig}.
- * The one piece of logic it carries is {@see dsn()}: turning the DB_* fields
- * into a PDO DSN string, including the mariadb->mysql driver mapping (MariaDB
- * speaks the mysql PDO driver) and the sqlite shape used by the test suite.
+ * Database connection settings
  */
 final readonly class DbConfig
 {

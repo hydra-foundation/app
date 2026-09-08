@@ -16,18 +16,9 @@ use Hydra\PhpDi\Container;
 
 /**
  * Bootstrap
- * ---
  *
- * What does it do?
- * - Creates an application DI container
- * - Sets up the environment (ie, .env settings)
- *
+ * Configures application DI container and environment
  * Returns a Kernel application
- *   - Registers several services for the Kernel
- *     - Nyholm (PSR7/17 request and response)
- *     - Signer (Binds .env APP_KEY)
- *     - Http (Controllers and middleware)
- *     - App (Framework plumbing)
  */
 final class Bootstrap
 {

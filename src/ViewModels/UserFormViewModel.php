@@ -6,14 +6,6 @@ namespace App\ViewModels;
 
 /**
  * View model for the admin user form, shared by the create and edit pages.
- *
- * Carries the field values to (re)fill and any per-field validation errors. A
- * null {@see $id} means the create form (POST /admin/users); a set id means the
- * edit form for that user (POST /admin/users/{id}). Unlike the login form, which
- * shows a single deliberately-vague summary, this admin form shows one message
- * per field — there is nothing to conceal from an admin fixing their own input.
- *
- * The password is never carried back: a re-render always starts that field empty.
  */
 final readonly class UserFormViewModel
 {

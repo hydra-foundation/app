@@ -31,29 +31,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
- * The authorization vertical slice: an admin-only area reached through two
- * gates, one per question — both answered in middleware, before any controller
- * body runs. Both gates guard every page in the area, so they ride the class as
- * a #[RouteGroup] rather than being repeated on each route:
- *
- *   - AuthenticateMiddleware answers "who are you?" — an anonymous visitor never
- *     reaches a controller (401 → redirect to /login, the auth slice's policy).
- *   - RequireAdmin then answers "are you allowed?" — a logged-in non-admin is
- *     stopped with a 403 (the package's AuthorizationException), a dead end, not
- *     a redirect. Order matters: authenticate OUTSIDE authorize, so the anonymous
- *     case is a 401 redirect, not a 403 from an ability that denies a null user.
- *
- * The group also supplies the shared /admin prefix, so each method's #[Route]
- * carries only its own tail. Grouping is a scan-time fold (see RouteGroup): the
- * Router still sees a flat list of fully-qualified routes.
- *
- * The two group gates answer the role question once for the whole area. What
- * stays in the controller body is the one question middleware can't answer: the
- * SUBJECT-bound rule — "may this admin manage THIS user?" — checked with
- * `gate->authorize(ManageUser::class, $target)` on edit/update/delete, because
- * the verdict depends on the record being acted on (see {@see ManageUser}). That
- * is the deliberate division: flat role checks ride the route as middleware;
- * record-specific checks stay here, next to the record they load.
+ * Admin controller
  */
 #[RouteGroup('/admin', middleware: [AuthenticateMiddleware::class, RequireAdmin::class])]
 final class AdminController extends Controller

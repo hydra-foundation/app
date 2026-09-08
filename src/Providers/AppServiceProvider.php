@@ -45,23 +45,15 @@ use PDO;
 use Psr\Log\LoggerInterface;
 
 /**
- * The app's own service provider: only what is genuinely this application's
- * policy. The framework plumbing (PSR-17 factories, request provider, emitter,
- * responder, router, pipeline, kernel) lives in {@see \Hydra\Kernel\HttpServiceProvider}
- * and the standard provider stack in {@see \Hydra\Kernel\Kernel} — so none of that
- * boilerplate can drift between this skeleton and other Hydra consumers.
+ * Application service provider
  *
- * What stays here: config value objects, the data layer, the app-supplied user
- * provider, the view, the logger, the two config-needing middleware, and the
- * app's event listeners. Everything the kernel binds is resolved from the
- * container by these bindings exactly as before.
+ * DI container registration
+ * The framework plumbing
  */
 final class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Controllers scanned for #[Route] attributes. Public because two readers
-     * consume the same list with no drift: the kernel's HttpServiceProvider
-     * (passed in at Bootstrap) and the route:cache console command.
+     * Controllers scanned for #[Route] attributes
      */
     public const CONTROLLERS = [
         HomeController::class,
@@ -70,93 +62,40 @@ final class AppServiceProvider extends ServiceProvider
     ];
 
     /**
-     * The app's middleware stack, outermost first. Each entry is a class-string
-     * the kernel's pipeline resolves through the container, so middleware get full
-     * dependency injection. The order here is the order requests travel inward.
-     * Public because Bootstrap hands it to the kernel's HttpServiceProvider.
+     * The app's middleware stack, outermost first
      */
     public const MIDDLEWARE = [
-        // Writes one access-log line per request once a response exists. Sits
-        // outermost so it times the whole pipeline and always sees a final
-        // status — the error handler beneath turns any throwable into a 500, so
-        // even a failed request returns here with something real to log.
         RequestLoggingMiddleware::class,
-        // Stamps conservative security headers (nosniff, frame-options,
-        // referrer-policy) onto every outgoing response. Outermost of the
-        // decorators so even the error handler's 500 and the https 301 — both
-        // produced inside it — carry the headers. Only decorates, never throws.
         SecurityHeadersMiddleware::class,
-        // Upgrades insecure requests to https with a 301 (and emits HSTS on
-        // secure ones) when FORCE_HTTPS is on; a no-op otherwise. Runs before
-        // the error handler and session so we don't do work for a request we're
-        // about to redirect. Honours X-Forwarded-Proto for proxy-terminated
-        // TLS only when TRUST_FORWARDED_PROTO says our proxy sets it.
         ForceHttpsMiddleware::class,
-        // Converts any uncaught Throwable into a 500 and logs it before
-        // responding, so it must wrap all the application work below it.
         ErrorHandlerMiddleware::class,
-        // Populates getParsedBody() for JSON bodies and urlencoded PUT/PATCH,
-        // which PHP's SAPI leaves empty (it only parses POST forms). Sits just
-        // inside the error handler so its 400 on malformed JSON renders through
-        // the normal error path, and before the CSRF check so a token submitted
-        // in a urlencoded PUT/PATCH body is visible to the guard. Needs no
-        // session, so it stays outside the session brackets.
         ParseBodyMiddleware::class,
-        // Opens the session on the way in and saves it on the way out, so a
-        // controller is handed an already-started session. Sits inside the
-        // error handler so a session save failure still becomes a clean 500.
         StartSessionMiddleware::class,
-        // Maps "not logged in" signals to a /login redirect — a 302 for
-        // browsers, an HX-Redirect for htmx: auth's 401 (thrown by the
-        // per-route AuthenticateMiddleware) always, and csrf's 403 token
-        // mismatch when the session holds no token at all (the expired-session
-        // POST — a mismatch against an issued token is rethrown as a real 403).
-        // Sits inside the session middleware (the CsrfGuard it consults reads
-        // the started session) but OUTSIDE the CSRF check, so it can catch what
-        // that check throws; every other HttpException passes out to the error
-        // handler.
         RedirectUnauthenticatedMiddleware::class,
-        // Rejects any unsafe request (POST/PUT/PATCH/DELETE) without a valid CSRF
-        // token with a 403 TokenMismatchException. Sits inside the session
-        // middleware because it reads the token from the started session, and
-        // inside RedirectUnauthenticatedMiddleware, which turns the no-token
-        // (expired-session) variant of that 403 into a login redirect. Autowires
-        // from CsrfGuard, which in turn autowires from the session binding — no
-        // provider to register.
         VerifyCsrfTokenMiddleware::class,
     ];
 
+    /**
+     * Register application classes and interfaces
+     */
     public function register(ContainerInterface $container): void
     {
-        // Typed, immutable view of the APP_* settings, built once from the
-        // environment. Consumers read a field instead of a magic string.
         $container->singleton(AppConfig::class, function () use ($container) {
             return AppConfig::fromEnvironment($container->get(Environment::class));
         });
 
-        // Logging settings (sink path). Same pattern as AppConfig.
         $container->singleton(LogConfig::class, function () use ($container) {
             return LogConfig::fromEnvironment($container->get(Environment::class));
         });
 
-        // Database settings (DB_* env), same typed-config pattern.
         $container->singleton(DbConfig::class, function () use ($container) {
             return DbConfig::fromEnvironment($container->get(Environment::class));
         });
 
-        // Routing settings (the ROUTE_CACHE toggle), same typed-config pattern.
-        // Bootstrap reads this to tell the kernel whether to use the cache; it
-        // stays bound for any other consumer that wants the typed view.
         $container->singleton(RouteConfig::class, function () use ($container) {
             return RouteConfig::fromEnvironment($container->get(Environment::class));
         });
 
-        // The raw PDO handle, bound once. Built here (not in PdoConnection) with
-        // the assumptions the rest of the data layer relies on: throw on error,
-        // fetch associative, real prepares. Two consumers share it — the
-        // ConnectionInterface seam below (prepared statements only) and the
-        // MigrationRunner (raw DDL via PDO::exec). Binding PDO separately keeps
-        // the seam pure while the runner still reaches the same connection.
         $container->singleton(PDO::class, function () use ($container) {
             $config = $container->get(DbConfig::class);
             return new PDO($config->dsn(), $config->username, $config->password, [
@@ -166,18 +105,10 @@ final class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        // The database connection behind its seam. Wraps the shared PDO so the
-        // connection class stays driver-agnostic. Binding the interface keeps the
-        // engine swappable, like the ViewInterface binding below.
         $container->singleton(ConnectionInterface::class, function () use ($container) {
             return new PdoConnection($container->get(PDO::class));
         });
 
-        // The migration runner: applies raw .sql files from database/migrations
-        // and tracks them in a `migrations` table. Takes the raw PDO (DDL needs
-        // PDO::exec, not the prepared-only seam) and the driver, which it uses to
-        // branch the drop-all step of migrate:fresh — the same dialect split
-        // DbConfig::dsn() already embraces.
         $container->singleton(MigrationRunner::class, function () use ($container) {
             return new MigrationRunner(
                 $container->get(PDO::class),
@@ -186,35 +117,20 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
-        // Fulfils auth's one deliberately-unbound contract: UserProviderInterface.
-        // The auth package ships the identity mechanism but cannot know our user
-        // storage, so this binding is what lets the guard resolve at all — without
-        // it, resolving the guard is a loud container error (never a silent
-        // insecure default). A hand-written repository over the connection seam.
         $container->singleton(UserProviderInterface::class, function () use ($container) {
             return new UserRepository($container->get(ConnectionInterface::class));
         });
 
-        // PSR-3 logger. Sink is LOG_PATH (default stderr); an unwritable path
-        // falls back to stderr so a bad config can never break booting.
         $container->singleton(LoggerInterface::class, function () use ($container) {
             $path = $container->get(LogConfig::class)->path;
             $stream = @fopen($path, 'a') ?: fopen('php://stderr', 'w');
             return new StreamLogger($stream);
         });
 
-        // Native PHP template renderer behind the ViewInterface seam. The
-        // templates live in app/views; binding the interface (not PhpView) keeps
-        // the engine swappable — a Twig adapter could replace it here untouched.
         $container->singleton(ViewInterface::class, function () use ($container) {
             return new PhpView(dirname(__DIR__, 2) . '/views', $container->get(CsrfGuard::class));
         });
 
-        // Https-upgrade middleware. Bound explicitly because its flags are
-        // plain bools (the package stays free of the app's config type), so it
-        // can't be autowired — the app supplies FORCE_HTTPS and
-        // TRUST_FORWARDED_PROTO here. The Responder it needs is bound by the
-        // kernel's HttpServiceProvider and resolved here.
         $container->singleton(ForceHttpsMiddleware::class, function () use ($container) {
             $config = $container->get(AppConfig::class);
             return new ForceHttpsMiddleware(
@@ -224,10 +140,6 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
-        // Rebind the error renderer: this app negotiates htmx/JSON/HTML instead
-        // of the kernel's plain-text default. Negotiation is app policy, so it
-        // lives here, in an app class — the package never inspects Accept. The
-        // plain-text renderer is composed in as the fallback branch.
         $container->singleton(ErrorRendererInterface::class, function () use ($container) {
             return new NegotiatingErrorRenderer(
                 $container->get(Responder::class),
@@ -235,10 +147,6 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
-        // Error handler middleware. Bound explicitly because its $debug flag and
-        // logger aren't autowirable; once bound, it's just another class-string
-        // in the MIDDLEWARE stack like any other. It resolves the renderer bound
-        // just above.
         $container->singleton(ErrorHandlerMiddleware::class, function () use ($container) {
             return new ErrorHandlerMiddleware(
                 $container->get(ErrorRendererInterface::class),
@@ -249,11 +157,7 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the app's event listeners. boot() runs after every provider has
-     * registered, so the shared ListenerProvider (from the kernel's
-     * EventServiceProvider) and the logger both exist by now. This is the "app
-     * supplies the noun" half of the event system: the framework ships the
-     * dispatcher and the audit listener; the app decides to wire them up.
+     * Register the application event listeners
      */
     public function boot(ContainerInterface $container): void
     {

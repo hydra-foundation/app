@@ -23,14 +23,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
- * The auth vertical slice: a login form, a logout action, and one route behind
- * the guard. It only ever talks to {@see GuardInterface} — never the session
- * key, the user provider, or the hasher — so the whole credential dance is the
- * guard's `attempt()` call.
- *
- * Like the other slices it serves htmx and plain browsers from the same routes:
- * a successful login/logout answers an htmx request with an HX-Redirect header
- * and a normal request with a 302.
+ * Authentication controller
  */
 final class AuthController extends Controller
 {
@@ -58,8 +51,7 @@ final class AuthController extends Controller
         $username = trim($input->string('username'));
         $password = $input->string('password'); // not trimmed — spaces may matter
 
-        // Both fields required before we touch the guard: don't run a credential
-        // check (or its timing-equalised dummy hash) for an obviously empty form.
+        // Both fields required before we touch the guard
         $result = $this->validator->validate(
             ['username' => $username, 'password' => $password],
             [
@@ -72,10 +64,7 @@ final class AuthController extends Controller
             return $this->redirectTo($request, '/dashboard');
         }
 
-        // A failed login is deliberately vague: a present-but-wrong username and a
-        // present-but-wrong password give the SAME message, so the form never
-        // reveals which accounts exist. The empty-field messages above are safe
-        // to show because they reveal nothing about stored data.
+        // A failed login is deliberately vague
         $errors = $result->passes()
             ? ['credentials' => 'Those credentials don\'t match our records.']
             : $result->errors();
@@ -98,9 +87,7 @@ final class AuthController extends Controller
     #[Route('/dashboard', middleware: [AuthenticateMiddleware::class])]
     public function dashboard(): Response
     {
-        // The route is guarded, so user() is never null here. The guard's contract
-        // returns the interface; in this app that object is always our User, which
-        // is the only place the username lives.
+        // The route is guarded, so user() is never null here.
         $user = $this->guard->user();
         $username = $user instanceof User ? $user->username : (string) $user?->getAuthIdentifier();
 
@@ -108,9 +95,7 @@ final class AuthController extends Controller
     }
 
     /**
-     * Redirect after a state change, in the transport the request speaks: an
-     * HX-Redirect header for htmx (which would otherwise swallow a 302's body),
-     * a plain 302 for a normal browser navigation.
+     * Redirect after a state change
      */
     private function redirectTo(Request $request, string $to): Response
     {

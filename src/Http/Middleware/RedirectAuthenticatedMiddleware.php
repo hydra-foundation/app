@@ -14,19 +14,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * The mirror of {@see RedirectUnauthenticatedMiddleware}: guards guest-only
- * routes by sending an already-authenticated visitor away instead of showing
- * the form again — a signed-in user has no reason to see the login page.
- *
- * It's a per-route middleware, the counterpart to auth's AuthenticateMiddleware
- * — drop it on a route's `middleware:` list. Unlike the unauthenticated case it
- * asks the guard directly rather than catching an exception: there's no 401 to
- * map here, just a "you're already in" check the route makes before running.
- *
- * Where to send them is app policy (the app owns its routes), so the
- * destination lives here, and the redirect is spoken in the request's
- * transport: a 302 for a browser, an HX-Redirect for htmx (which would
- * otherwise swallow a 302's body).
+ * Redirect authenticated user middleware
  */
 final class RedirectAuthenticatedMiddleware implements MiddlewareInterface
 {

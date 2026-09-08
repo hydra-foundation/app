@@ -7,11 +7,7 @@ namespace App\Config;
 use Hydra\Core\Environment;
 
 /**
- * Typed, immutable view of the logging settings.
- *
- * The default sink is php://stderr, which surfaces records via `docker logs`.
- * An unwritable path is the binding's concern (it falls back to stderr), not
- * this object's — config carries the intent, the wiring handles failure.
+ * Logging settings
  */
 final readonly class LogConfig
 {

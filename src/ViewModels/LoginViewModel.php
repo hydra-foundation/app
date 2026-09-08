@@ -7,13 +7,6 @@ namespace App\ViewModels;
 /**
  * View model for the login form: the submitted username (to refill the field on
  * a failed attempt) and any errors to show.
- *
- * A typed view model the login template annotates once. The password is
- * deliberately never carried back — a re-render always starts the password field
- * empty. Errors are keyed,
- * but the login template renders them as a single summary because a failed login
- * must NOT reveal which half was wrong (see the generic credentials message in
- * {@see \App\Controllers\AuthController}).
  */
 final readonly class LoginViewModel
 {

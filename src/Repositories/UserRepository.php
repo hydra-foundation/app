@@ -10,14 +10,7 @@ use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 
 /**
- * The app's fulfilment of auth's one unbound contract: where users come from.
- *
- * It is the usual Hydra repository shape — a connection and the hand-written SQL
- * the feature needs, no base class — and it does lookups ONLY, never a password
- * check. Verifying the submitted password against
- * the returned user's hash lives entirely in the guard and the hasher, so all
- * credential handling stays in one audited place (the "dumb provider" rule auth
- * is built around). This class just turns an id or a username into a {@see User}.
+ * User repository
  */
 final class UserRepository implements UserProviderInterface
 {
@@ -26,11 +19,7 @@ final class UserRepository implements UserProviderInterface
     public function __construct(private readonly ConnectionInterface $db) {}
 
     /**
-     * Every user, newest first — the listing the admin area renders. Outside the
-     * auth contract (which is lookups only); this is the app's own read for its
-     * own page, the usual hand-written-SQL repository shape.
-     *
-     * @return list<User>
+     * Every user, newest first
      */
     public function all(): array
     {
@@ -39,6 +28,9 @@ final class UserRepository implements UserProviderInterface
         return array_map(User::fromRow(...), $rows);
     }
 
+    /**
+     * Get user by id
+     */
     public function byIdentifier(int|string $id): ?AuthenticatableInterface
     {
         $row = $this->db->selectOne(
@@ -60,10 +52,7 @@ final class UserRepository implements UserProviderInterface
     }
 
     /**
-     * Insert a user and return its new id. The admin user-management slice's
-     * own write — outside the auth contract. The hash is produced upstream by
-     * NativeHasher and passed in already-digested; this method never hashes, so
-     * credential production stays in one audited place (the "dumb provider" rule).
+     * Insert a user and return its new id
      */
     public function create(string $username, string $passwordHash, string $role = 'user'): int
     {
@@ -72,16 +61,11 @@ final class UserRepository implements UserProviderInterface
             [$username, $passwordHash, $role],
         );
 
-        // lastInsertId() is a string (the seam's PDO-native surface, so UUID
-        // PKs survive); THIS schema's users.id is an integer, so the cast —
-        // the schema assumption — lives here, at the call site.
         return (int) $this->db->lastInsertId();
     }
 
     /**
-     * Update a user's username and role, returning the number of rows changed
-     * (0 if no such id). The password digest is intentionally left out — a
-     * credential change is a separate, audited flow, not part of an admin edit.
+     * Update a user's username and role
      */
     public function update(int $id, string $username, string $role): int
     {
@@ -91,7 +75,7 @@ final class UserRepository implements UserProviderInterface
         );
     }
 
-    /** Delete a user, returning the number of rows removed (0 if no such id). */
+    /** Delete a user */
     public function delete(int $id): int
     {
         return $this->db->execute('DELETE FROM users WHERE id = ?', [$id]);

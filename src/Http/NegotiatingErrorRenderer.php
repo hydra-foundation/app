@@ -13,20 +13,7 @@ use Hydra\Http\Responder;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * The app's error presentation policy: pick a representation from the request.
- *
- * This is the "app owns the noun" half of the pluggable error renderer — the
- * framework ships the {@see ErrorRendererInterface} seam and a plain-text
- * default; this class is where THIS app decides it also speaks htmx fragments,
- * JSON, and HTML. The negotiation is explicit and lives here, not auto-detected
- * in a package.
- *
- * Order matters: an htmx request wins first (htmx sets Accept: text/html too, so
- * checking it before the HTML branch is what distinguishes a fragment swap from
- * a full page). Then JSON, then HTML, then the plain-text default for anything
- * else (curl, health checks). The client-facing text always comes from
- * {@see ErrorContext::clientMessage()} so an internal message can't leak; debug
- * detail is added only when {@see ErrorContext::$debug} is set.
+ * Application error presentation
  */
 final class NegotiatingErrorRenderer implements ErrorRendererInterface
 {

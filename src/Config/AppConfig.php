@@ -7,11 +7,7 @@ namespace App\Config;
 use Hydra\Core\Environment;
 
 /**
- * Typed, immutable view of the application's core settings.
- *
- * Built once from {@see Environment} at boot via {@see fromEnvironment()} and
- * injected where needed, so the magic strings ("APP_DEBUG", ...) live in one
- * place and call sites read a typed field instead of a string bag.
+ * Application's core settings
  */
 final readonly class AppConfig
 {

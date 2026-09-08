@@ -8,15 +8,7 @@ use Hydra\Console\Commands\MakeClassCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 /**
- * Scaffolds an authorization ability under `App\Authorization` — the app's own
- * policy "noun" that the hydrakit/authorization package deliberately does not ship.
- *
- * The stub **denies by default** (returns false): an ability that does nothing
- * should refuse, never silently grant, so a half-written rule fails closed. No
- * suffix is forced (abilities read as verbs — AccessAdmin, ManageUser), and no
- * registration reminder is printed: abilities are referenced by `::class` at
- * their use site (a gate call or an AuthorizeMiddleware subclass), so there is no
- * central list to update.
+ * Make ability command
  */
 #[AsCommand(
     name: 'make:ability',

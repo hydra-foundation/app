@@ -9,15 +9,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Scaffolds a controller under `App\Controllers` — the base-class extension,
- * route attribute and imports that are easy to mistype by hand.
- *
- * The "Controller" suffix is guaranteed, and a starter `index()` route is
- * derived from the resource name (PostController → `#[Route('/post')]` rendering
- * the `post` template). It does NOT touch `AppServiceProvider::CONTROLLERS`:
- * that list is read by hand for a reason (the whole route contract in one place),
- * so the command emits a reminder instead of rewriting source — see
- * {@see afterCreate()}.
+ * Make controller command
  */
 #[AsCommand(
     name: 'make:controller',

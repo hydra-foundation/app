@@ -25,13 +25,7 @@ use Hydra\Http\RouteCache;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\CommandLoader\FactoryCommandLoader;
 
-// The console entrypoint. It builds the same composition root as the HTTP front
-// controller (public/index.php) and resolves command dependencies from it, so
-// commands see exactly the bindings the app runs with. It also boots the
-// providers, exactly as the HTTP path does via Application::run(): boot() is
-// where cross-provider wiring happens (AppServiceProvider::boot attaches the
-// auth audit listeners, for one), and a command that logs in a user or fires
-// events must see the same wired-up world a request does.
+// The console entrypoint
 $app = Bootstrap::application(__DIR__ . '/..');
 $app->boot();
 $container = $app->container();
@@ -47,9 +41,6 @@ $application->addCommands([
 ]);
 
 // The migrate:* commands need the database connection, so they are loaded lazily
-// — the MigrationRunner (and the PDO behind it) is built only when one of these
-// commands actually runs, never at console boot. This keeps DB-free commands like
-// key:generate usable before the database exists.
 $application->setCommandLoader(new FactoryCommandLoader([
     'migrate:run' => static fn () => new MigrateRunCommand($container->get(MigrationRunner::class)),
     'migrate:fresh' => static fn () => new MigrateFreshCommand(
