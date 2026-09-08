@@ -7,7 +7,9 @@ namespace App\ViewModels;
 use App\Entities\User;
 
 /**
- * View model for the admin user listing: the rows to render.
+ * Admin view model
+ *
+ * View model for the admin user listing: the rows to render
  */
 final readonly class AdminViewModel
 {

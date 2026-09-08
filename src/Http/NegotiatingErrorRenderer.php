@@ -13,7 +13,9 @@ use Hydra\Http\Responder;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Application error presentation
+ * Negotiating error renderer
+ *
+ * Error presentation
  */
 final class NegotiatingErrorRenderer implements ErrorRendererInterface
 {

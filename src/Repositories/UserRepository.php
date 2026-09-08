@@ -11,6 +11,8 @@ use Hydra\Auth\Contracts\UserProviderInterface;
 
 /**
  * User repository
+ *
+ * Database queries
  */
 final class UserRepository implements UserProviderInterface
 {

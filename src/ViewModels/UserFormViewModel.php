@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\ViewModels;
 
 /**
- * View model for the admin user form, shared by the create and edit pages.
+ * User form view model
+ *
+ * View model for the admin user form, shared by the create and edit pages
  */
 final readonly class UserFormViewModel
 {
