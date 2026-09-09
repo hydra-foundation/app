@@ -8,6 +8,7 @@ use Hydra\Database\PdoConnection;
 use App\Entities\User;
 use App\Repositories\UserRepository;
 use PDO;
+use App\Tests\Support\TestSchema;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,19 +30,7 @@ final class UserRepositoryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->pdo = new PDO('sqlite::memory:', null, null, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-        $this->pdo->exec(
-            'CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                role TEXT NOT NULL DEFAULT \'user\',
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )'
-        );
+        $this->pdo = TestSchema::connect();
         $this->pdo->exec("INSERT INTO users (username, password_hash) VALUES ('will', 'hashed-secret')");
 
         $this->repo = new UserRepository(new PdoConnection($this->pdo));

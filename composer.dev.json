@@ -29,7 +29,8 @@
         { "type": "path", "url": "../view", "options": { "symlink": true } },
         { "type": "path", "url": "../nyholm", "options": { "symlink": true } },
         { "type": "path", "url": "../console", "options": { "symlink": true } },
-        { "type": "path", "url": "../php-di", "options": { "symlink": true } }
+        { "type": "path", "url": "../php-di", "options": { "symlink": true } },
+        { "type": "path", "url": "../admin", "options": { "symlink": true } }
     ],
     "authors": [
         {
@@ -44,6 +45,7 @@
         "hydrakit/validation": "*",
         "hydrakit/session": "*",
         "hydrakit/csrf": "*",
+        "hydrakit/admin": "*",
         "hydrakit/auth": "*",
         "hydrakit/authorization": "*",
         "hydrakit/event": "*",

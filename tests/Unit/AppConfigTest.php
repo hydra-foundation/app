@@ -37,7 +37,7 @@ final class AppConfigTest extends TestCase
      */
     private function scrubProcessEnv(): void
     {
-        foreach (['APP_NAME', 'APP_URL', 'APP_DEBUG', 'APP_TIMEZONE', 'APP_KEY', 'FORCE_HTTPS', 'TRUST_FORWARDED_PROTO'] as $key) {
+        foreach (['APP_NAME', 'APP_URL', 'APP_DEBUG', 'APP_TIMEZONE', 'APP_KEY', 'FORCE_HTTPS', 'TRUST_FORWARDED_PROTO', 'TRUST_FORWARDED_FOR'] as $key) {
             putenv($key);
             unset($_ENV[$key], $_SERVER[$key]);
         }
@@ -60,6 +60,7 @@ final class AppConfigTest extends TestCase
             key: 'secret',
             forceHttps: true,
             trustForwardedProto: true,
+            trustForwardedFor: true,
         );
 
         $this->assertSame('Hydra', $config->name);
@@ -69,6 +70,7 @@ final class AppConfigTest extends TestCase
         $this->assertSame('secret', $config->key);
         $this->assertTrue($config->forceHttps);
         $this->assertTrue($config->trustForwardedProto);
+        $this->assertTrue($config->trustForwardedFor);
     }
 
     public function test_maps_environment_keys(): void
@@ -80,7 +82,8 @@ final class AppConfigTest extends TestCase
             "APP_TIMEZONE=America/Toronto\n" .
             "APP_KEY=deadbeef\n" .
             "FORCE_HTTPS=true\n" .
-            "TRUST_FORWARDED_PROTO=true\n"
+            "TRUST_FORWARDED_PROTO=true\n" .
+            "TRUST_FORWARDED_FOR=true\n"
         );
 
         $this->assertSame('MyApp', $config->name);
@@ -90,6 +93,7 @@ final class AppConfigTest extends TestCase
         $this->assertSame('deadbeef', $config->key);
         $this->assertTrue($config->forceHttps);
         $this->assertTrue($config->trustForwardedProto);
+        $this->assertTrue($config->trustForwardedFor);
     }
 
     public function test_applies_defaults_when_keys_absent(): void
@@ -102,6 +106,7 @@ final class AppConfigTest extends TestCase
         $this->assertSame('', $config->key);
         $this->assertFalse($config->forceHttps, 'forceHttps defaults to false (local http dev)');
         $this->assertFalse($config->trustForwardedProto, 'header trust must be an explicit opt-in');
+        $this->assertFalse($config->trustForwardedFor, 'header trust must be an explicit opt-in');
     }
 
     public function test_parses_debug_as_boolean(): void

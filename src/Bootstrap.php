@@ -8,6 +8,8 @@ use App\Config\RouteConfig;
 use App\Providers\AppServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Environment;
+use Hydra\Admin\AdminServiceProvider;
+use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Core\Security\SignerServiceProvider;
 use Hydra\Kernel\HttpServiceProvider;
 use Hydra\Kernel\Kernel;
@@ -36,6 +38,11 @@ final class Bootstrap
                 routeCacheEnabled: $routeCacheEnabled,
                 routeCachePath: $basePath . '/bootstrap/cache/routes.php',
             ))
-            ->register(new AppServiceProvider);
+            ->register(new AppServiceProvider)
+            ->register(new AdminServiceProvider(
+                modules: AppServiceProvider::MODULES,
+                prefix: '/admin',
+                middleware: [AuthenticateMiddleware::class],
+            ));
     }
 }

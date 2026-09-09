@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Admin\Modules\ActivityModule;
+use App\Admin\Modules\DashboardModule;
+use App\Admin\Modules\UsersModule;
 use App\Config\AppConfig;
 use App\Config\DbConfig;
 use App\Config\LogConfig;
@@ -11,8 +14,11 @@ use App\Config\RouteConfig;
 use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\HomeController;
+use App\Http\Middleware\RecordActivityMiddleware;
 use App\Http\Middleware\RedirectUnauthenticatedMiddleware;
+use App\Repositories\ActivityRepository;
 use App\Repositories\UserRepository;
+use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Auth\Events\Attempting;
 use Hydra\Auth\Events\LoggedIn;
@@ -63,6 +69,15 @@ final class AppServiceProvider extends ServiceProvider
     ];
 
     /**
+     * Admin modules, in sidebar order
+     */
+    public const MODULES = [
+        DashboardModule::class,
+        UsersModule::class,
+        ActivityModule::class,
+    ];
+
+    /**
      * The app's middleware stack, outermost first
      */
     public const MIDDLEWARE = [
@@ -73,6 +88,7 @@ final class AppServiceProvider extends ServiceProvider
         HtmxRedirectMiddleware::class,
         ParseBodyMiddleware::class,
         StartSessionMiddleware::class,
+        RecordActivityMiddleware::class,
         RedirectUnauthenticatedMiddleware::class,
         VerifyCsrfTokenMiddleware::class,
     ];
@@ -146,6 +162,15 @@ final class AppServiceProvider extends ServiceProvider
             return new NegotiatingErrorRenderer(
                 $container->get(Responder::class),
                 new PlainTextErrorRenderer($container->get(Responder::class)),
+            );
+        });
+
+        $container->singleton(RecordActivityMiddleware::class, function () use ($container) {
+            return new RecordActivityMiddleware(
+                new ActivityRepository($container->get(ConnectionInterface::class)),
+                $container->get(GuardInterface::class),
+                $container->get(LoggerInterface::class),
+                $container->get(AppConfig::class)->trustForwardedFor,
             );
         });
 

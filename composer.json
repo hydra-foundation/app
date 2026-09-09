@@ -26,6 +26,7 @@
         "hydrakit/validation": "^0.2",
         "hydrakit/session": "^0.2",
         "hydrakit/csrf": "^0.2",
+        "hydrakit/admin": "^0.2",
         "hydrakit/auth": "^0.2",
         "hydrakit/authorization": "^0.2",
         "hydrakit/event": "^0.2",

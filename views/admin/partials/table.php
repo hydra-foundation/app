@@ -1,0 +1,46 @@
+<?php /** @var \Hydra\View\Template $this */ ?>
+<?php /** @var \Hydra\Admin\ViewModels\ListViewModel $vm */ ?>
+<?php $columns = $vm->columns() ?>
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-3">
+        <thead>
+            <tr>
+                <?php foreach ($columns as $field): ?>
+                    <th scope="col">
+                        <?php if ($field->isSortable()): ?>
+                            <a class="text-decoration-none text-body-emphasis"
+                               href="<?= $this->e($vm->sortLink($field)) ?>"
+                               hx-get="<?= $this->e($vm->sortLink($field)) ?>"
+                               hx-target="#admin-body"
+                               hx-push-url="true">
+                                <?= $this->e($field->heading()) ?>
+                                <?php if ($vm->sortedBy($field) !== null): ?>
+                                    <span aria-hidden="true"><?= $vm->sortedBy($field) === 'asc' ? '&uarr;' : '&darr;' ?></span>
+                                <?php endif ?>
+                            </a>
+                        <?php else: ?>
+                            <?= $this->e($field->heading()) ?>
+                        <?php endif ?>
+                    </th>
+                <?php endforeach ?>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($vm->page->rows as $row): ?>
+                <tr>
+                    <?php foreach ($columns as $field): ?>
+                        <td><?= $this->e($vm->cell($field, $row)) ?></td>
+                    <?php endforeach ?>
+                </tr>
+            <?php endforeach ?>
+
+            <?php if ($vm->page->isEmpty()): ?>
+                <tr>
+                    <td class="text-center text-body-secondary py-4" colspan="<?= count($columns) ?>">Nothing to show.</td>
+                </tr>
+            <?php endif ?>
+        </tbody>
+    </table>
+</div>
+
+<?= $this->partial('admin/partials/pagination', ['vm' => $vm]) ?>

@@ -10,6 +10,9 @@ use App\Config\AppConfig;
 use App\Console\Commands\MakeAbilityCommand;
 use App\Console\Commands\MakeControllerCommand;
 use App\Console\Commands\MakeUserCommand;
+use App\Console\Commands\SeedActivityCommand;
+use Hydra\Admin\Console\AdminRoutesCommand;
+use Hydra\Admin\ModuleRegistry;
 use Hydra\Console\Commands\KeyGenerateCommand;
 use Hydra\Console\Commands\MakeMigrationCommand;
 use Hydra\Console\Commands\MigrateFreshCommand;
@@ -17,8 +20,10 @@ use Hydra\Console\Commands\MigrateRunCommand;
 use Hydra\Console\Commands\MigrateStatusCommand;
 use Hydra\Console\Commands\RouteCacheClearCommand;
 use Hydra\Console\Commands\RouteCacheCommand;
+use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\MigrationRunner;
 use App\Providers\AppServiceProvider;
+use App\Repositories\ActivityRepository;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\RouteCache;
@@ -38,6 +43,7 @@ $application->addCommands([
     new MakeMigrationCommand(__DIR__ . '/../database/migrations'),
     new MakeControllerCommand(__DIR__ . '/../src/Controllers'),
     new MakeAbilityCommand(__DIR__ . '/../src/Authorization'),
+    new AdminRoutesCommand($container->get(ModuleRegistry::class)),
 ]);
 
 // The migrate:* commands need the database connection, so they are loaded lazily
@@ -48,6 +54,10 @@ $application->setCommandLoader(new FactoryCommandLoader([
         $container->get(AppConfig::class)->debug,
     ),
     'migrate:status' => static fn () => new MigrateStatusCommand($container->get(MigrationRunner::class)),
+    'activity:seed' => static fn () => new SeedActivityCommand(
+        $container->get(ActivityRepository::class),
+        $container->get(ConnectionInterface::class),
+    ),
     'make:user' => static fn () => new MakeUserCommand(
         $container->get(UserRepository::class),
         $container->get(HasherInterface::class),

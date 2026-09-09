@@ -19,6 +19,7 @@ final readonly class AppConfig
         public string $key,
         public bool $forceHttps,
         public bool $trustForwardedProto,
+        public bool $trustForwardedFor = false,
     ) {}
 
     public static function fromEnvironment(Environment $env): self
@@ -37,6 +38,11 @@ final readonly class AppConfig
             // dev/prod stacks) terminates TLS and sets the header — otherwise
             // any direct client could spoof "https" past the redirect.
             trustForwardedProto: $env->bool('TRUST_FORWARDED_PROTO', false),
+            // Same bargain for the client IP the activity log records: behind a
+            // proxy REMOTE_ADDR is the proxy, and X-Forwarded-For is the only
+            // way to the real client — but any direct client can invent that
+            // header, so only trust it where a proxy we control overwrites it.
+            trustForwardedFor: $env->bool('TRUST_FORWARDED_FOR', false),
         );
     }
 }

@@ -7,7 +7,9 @@ namespace App\Tests\Integration;
 use Hydra\PhpDi\Container;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
+use App\Tests\Support\TestSchema;
 use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthServiceProvider;
 use Hydra\Authorization\AuthorizationServiceProvider;
@@ -22,7 +24,6 @@ use Hydra\Database\PdoConnection;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use PDO;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -30,7 +31,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * The auth slice end-to-end through the real composition root: the login form,
  * a failed attempt (generic 422, no session), a successful attempt (302 →
- * /admin, then the protected page renders), the htmx HX-Redirect variant,
+ * /admin, which lands on the dashboard), the htmx HX-Redirect variant,
  * logout, and the guard rejecting the protected route for an anonymous visitor.
  *
  * Backed by an in-memory sqlite swap for MariaDB (the ConnectionInterface seam),
@@ -59,6 +60,7 @@ final class AuthFlowTest extends TestCase
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(TestAdminProvider::make())
             ->boot();
 
         // Cheap bcrypt cost so the handful of hashes this test does stay fast.
@@ -67,24 +69,12 @@ final class AuthFlowTest extends TestCase
 
         // Swap MariaDB for in-memory sqlite — the ConnectionInterface seam means
         // the repository and guard wiring are untouched.
-        $pdo = new PDO('sqlite::memory:', null, null, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-        $pdo->exec(
-            'CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                role TEXT NOT NULL DEFAULT \'user\',
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )'
-        );
+        $pdo = TestSchema::connect();
         $container->instance(ConnectionInterface::class, new PdoConnection($pdo));
 
         // Seed one user, hashed by the very hasher the guard will verify against.
         $hash = $container->get(HasherInterface::class)->hash(self::PASSWORD);
-        // An admin: /admin is the only protected route, and it is admin-gated.
+        // An admin: the seeded account reaches every module, gated or not.
         $pdo->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
             ->execute([self::USERNAME, $hash, 'admin']);
 
@@ -156,7 +146,9 @@ final class AuthFlowTest extends TestCase
         $this->assertStringContainsString('match our records', (string) $response->getBody());
 
         // Still anonymous: the protected route bounces us.
-        $this->assertSame(302, $this->handle('GET', '/admin')->getStatusCode());
+        $bounced = $this->handle('GET', '/admin');
+        $this->assertSame(302, $bounced->getStatusCode());
+        $this->assertSame('/login', $bounced->getHeaderLine('Location'));
     }
 
     public function test_empty_fields_show_required_errors(): void
@@ -199,11 +191,15 @@ final class AuthFlowTest extends TestCase
         $this->assertSame(302, $login->getStatusCode());
         $this->assertSame('/admin', $login->getHeaderLine('Location'));
 
+        // The admin root names the landing module rather than rendering itself.
+        $root = $this->handle('GET', '/admin');
+        $this->assertSame(302, $root->getStatusCode());
+        $this->assertSame('/admin/dashboard', $root->getHeaderLine('Location'));
+
         // The session now carries the login, so the guarded page renders.
-        $admin = $this->handle('GET', '/admin');
-        $this->assertSame(200, $admin->getStatusCode());
-        $this->assertStringContainsString('You are now signed in.', (string) $admin->getBody());
-        $this->assertStringContainsString(self::USERNAME, (string) $admin->getBody());
+        $dashboard = $this->handle('GET', '/admin/dashboard');
+        $this->assertSame(200, $dashboard->getStatusCode());
+        $this->assertStringContainsString(self::USERNAME, (string) $dashboard->getBody());
     }
 
     public function test_htmx_login_signals_redirect_via_header(): void
@@ -222,14 +218,16 @@ final class AuthFlowTest extends TestCase
             'username' => self::USERNAME,
             'password' => self::PASSWORD,
         ]);
-        $this->assertSame(200, $this->handle('GET', '/admin')->getStatusCode());
+        $this->assertSame(200, $this->handle('GET', '/admin/dashboard')->getStatusCode());
 
         $logout = $this->handle('POST', '/logout');
         $this->assertSame(302, $logout->getStatusCode());
         $this->assertSame('/login', $logout->getHeaderLine('Location'));
 
         // Back to anonymous: the guard bounces the protected route again.
-        $this->assertSame(302, $this->handle('GET', '/admin')->getStatusCode());
+        $bounced = $this->handle('GET', '/admin/dashboard');
+        $this->assertSame(302, $bounced->getStatusCode());
+        $this->assertSame('/login', $bounced->getHeaderLine('Location'));
     }
 
     public function test_expired_session_post_redirects_to_login_instead_of403(): void

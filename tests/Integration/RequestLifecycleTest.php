@@ -7,13 +7,20 @@ namespace App\Tests\Integration;
 use Hydra\PhpDi\Container;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
+use App\Tests\Support\TestSchema;
+use Hydra\Auth\AuthServiceProvider;
+use Hydra\Authorization\AuthorizationServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Contracts\KernelInterface;
 use App\Tests\Support\FixedSignerServiceProvider;
 use Hydra\Core\Environment;
+use Hydra\Database\Contracts\ConnectionInterface;
+use Hydra\Database\PdoConnection;
 use Hydra\Http\HttpKernel;
+use Hydra\Event\EventServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
@@ -44,9 +51,17 @@ final class RequestLifecycleTest extends TestCase
             // The CSRF guard signs with a Signer; bind a fixed-key one (the .env-less
             // Environment has no APP_KEY for the real provider to read).
             ->register(new FixedSignerServiceProvider)
+            ->register(new EventServiceProvider)
             ->register(TestHttpProvider::make())
+            ->register(new AuthServiceProvider)
+            ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(TestAdminProvider::make())
             ->boot();
+
+        // The activity middleware writes a row per request; give it somewhere
+        // to write that isn't the developer's MariaDB.
+        $container->instance(ConnectionInterface::class, new PdoConnection(TestSchema::connect()));
 
         $this->container = $container;
     }

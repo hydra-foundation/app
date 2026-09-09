@@ -7,7 +7,9 @@ namespace App\Tests\Integration;
 use Hydra\PhpDi\Container;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
+use App\Tests\Support\TestSchema;
 use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthServiceProvider;
 use Hydra\Auth\Contracts\HasherInterface;
@@ -22,7 +24,6 @@ use Hydra\Event\EventServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use PDO;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -63,7 +64,8 @@ final class AuthEventsFlowTest extends TestCase
             ->register(TestHttpProvider::make())
             ->register(new EventServiceProvider)
             ->register(new AuthServiceProvider)
-            ->register(new AppServiceProvider);
+            ->register(new AppServiceProvider)
+            ->register(TestAdminProvider::make());
 
         // Swap the logger for a capturing one BEFORE boot(): boot() builds the
         // LogAuthEventsListener with whatever LoggerInterface resolves to, so the
@@ -75,19 +77,7 @@ final class AuthEventsFlowTest extends TestCase
 
         $container->instance(AuthConfig::class, new AuthConfig(hashCost: 4));
 
-        $pdo = new PDO('sqlite::memory:', null, null, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-        $pdo->exec(
-            'CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                role TEXT NOT NULL DEFAULT \'user\',
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )'
-        );
+        $pdo = TestSchema::connect();
         $container->instance(ConnectionInterface::class, new PdoConnection($pdo));
 
         $hash = $container->get(HasherInterface::class)->hash(self::PASSWORD);

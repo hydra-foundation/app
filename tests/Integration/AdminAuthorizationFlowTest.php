@@ -7,7 +7,9 @@ namespace App\Tests\Integration;
 use Hydra\PhpDi\Container;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
+use App\Tests\Support\TestSchema;
 use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthServiceProvider;
 use Hydra\Auth\Contracts\HasherInterface;
@@ -22,19 +24,21 @@ use Hydra\Database\PdoConnection;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use PDO;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * The /admin slice end-to-end through the real composition root, building on the
+ * The admin backend end-to-end through the real composition root, building on the
  * auth slice. The backend is gated on being signed in, not on holding a role —
  * standard users belong there too, so the split is anonymous vs authenticated:
  *
  *   - anonymous              → 401 mapped to a 302 /login (auth's policy);
  *   - logged-in plain user   → 200, same as an admin;
  *   - logged-in admin        → 200.
+ *
+ * The landing screen is the dashboard module, which declares no ability; /admin
+ * itself only names it.
  *
  * Backed by the same in-memory sqlite swap and cheap-cost hasher as AuthFlowTest,
  * with two seeded users (one admin, one plain), so both roles are covered.
@@ -59,23 +63,12 @@ final class AdminAuthorizationFlowTest extends TestCase
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(TestAdminProvider::make())
             ->boot();
 
         $container->instance(AuthConfig::class, new AuthConfig(hashCost: 4));
 
-        $pdo = new PDO('sqlite::memory:', null, null, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-        $pdo->exec(
-            'CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                role TEXT NOT NULL DEFAULT \'user\',
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )'
-        );
+        $pdo = TestSchema::connect();
         $container->instance(ConnectionInterface::class, new PdoConnection($pdo));
 
         // Two users, both with the same (cheap) hash: one admin, one plain.
@@ -130,11 +123,21 @@ final class AdminAuthorizationFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function test_logged_in_plain_user_reaches_the_admin_page(): void
+    public function test_the_admin_root_names_the_landing_module(): void
     {
         $this->login('clerk');
 
         $response = $this->handle('GET', '/admin');
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/admin/dashboard', $response->getHeaderLine('Location'));
+    }
+
+    public function test_logged_in_plain_user_reaches_the_admin_page(): void
+    {
+        $this->login('clerk');
+
+        $response = $this->handle('GET', '/admin/dashboard');
 
         // Signing in is the whole gate: no role check stands between a standard
         // user and the backend.
@@ -146,11 +149,11 @@ final class AdminAuthorizationFlowTest extends TestCase
     {
         $this->login('boss');
 
-        $response = $this->handle('GET', '/admin');
+        $response = $this->handle('GET', '/admin/dashboard');
 
         $this->assertSame(200, $response->getStatusCode());
         $body = (string) $response->getBody();
-        $this->assertStringContainsString('Admin', $body);
+        $this->assertStringContainsString('Dashboard', $body);
         // The page greets whoever is signed in.
         $this->assertStringContainsString('boss', $body);
     }
