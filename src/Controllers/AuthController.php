@@ -13,6 +13,7 @@ use App\ViewModels\LoginViewModel;
 use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\Attributes\Route;
+use Hydra\Http\Htmx;
 use Hydra\Http\Responder;
 use Hydra\Http\Status;
 use Hydra\Validation\Rules\Required;
@@ -49,7 +50,10 @@ final class AuthController extends Controller
 
         // Both fields required before we touch the guard
         $result = $this->validator->validate(
-            ['username' => $username, 'password' => $password],
+            [
+                'username' => $username,
+                'password' => $password
+            ],
             [
                 'username' => [new Required('Enter your username.')],
                 'password' => [new Required('Enter your password.')],
@@ -62,11 +66,15 @@ final class AuthController extends Controller
 
         // A failed login is deliberately vague
         $errors = $result->passes()
-            ? ['credentials' => 'Those credentials don\'t match our records.']
+            ? ['credentials' => "Those credentials don't match our records."]
             : $result->errors();
 
+        $route = Htmx::fromRequest($request)->isHtmx()
+            ? 'auth/login_form'
+            : 'auth/login';
+
         return $this->render(
-            'auth/login',
+            $route,
             ['vm' => new LoginViewModel(username: $username, errors: $errors)],
             Status::UnprocessableEntity,
         );

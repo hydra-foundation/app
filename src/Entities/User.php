@@ -21,14 +21,12 @@ final readonly class User implements AuthenticatableInterface
         public string $createdAt,
     ) {}
 
-    /** @param array<string, mixed> $row */
     public static function fromRow(array $row): self
     {
         return new self(
             id: (int) $row['id'],
             username: (string) $row['username'],
             passwordHash: (string) $row['password_hash'],
-            // Absent column defaults to a plain user — keeps older rows/tables safe.
             role: (string) ($row['role'] ?? 'user'),
             createdAt: (string) $row['created_at'],
         );
