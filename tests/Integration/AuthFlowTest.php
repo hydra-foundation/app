@@ -10,6 +10,7 @@ use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\TestHttpProvider;
 use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthServiceProvider;
+use Hydra\Authorization\AuthorizationServiceProvider;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Core\Application;
 use App\Tests\Support\FixedSignerServiceProvider;
@@ -29,7 +30,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * The auth slice end-to-end through the real composition root: the login form,
  * a failed attempt (generic 422, no session), a successful attempt (302 →
- * /dashboard, then the protected page renders), the htmx HX-Redirect variant,
+ * /admin, then the protected page renders), the htmx HX-Redirect variant,
  * logout, and the guard rejecting the protected route for an anonymous visitor.
  *
  * Backed by an in-memory sqlite swap for MariaDB (the ConnectionInterface seam),
@@ -56,6 +57,7 @@ final class AuthFlowTest extends TestCase
             ->register(new FixedSignerServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new AuthServiceProvider)
+            ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
             ->boot();
 
@@ -82,8 +84,9 @@ final class AuthFlowTest extends TestCase
 
         // Seed one user, hashed by the very hasher the guard will verify against.
         $hash = $container->get(HasherInterface::class)->hash(self::PASSWORD);
-        $pdo->prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)')
-            ->execute([self::USERNAME, $hash]);
+        // An admin: /admin is the only protected route, and it is admin-gated.
+        $pdo->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+            ->execute([self::USERNAME, $hash, 'admin']);
 
         $this->container = $container;
     }
@@ -128,7 +131,7 @@ final class AuthFlowTest extends TestCase
 
     public function test_protected_route_redirects_anonymous_browser_to_login(): void
     {
-        $response = $this->handle('GET', '/dashboard');
+        $response = $this->handle('GET', '/admin');
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/login', $response->getHeaderLine('Location'));
@@ -136,7 +139,7 @@ final class AuthFlowTest extends TestCase
 
     public function test_protected_route_signals_login_to_htmx_via_header(): void
     {
-        $response = $this->handle('GET', '/dashboard', ['HX-Request' => 'true']);
+        $response = $this->handle('GET', '/admin', ['HX-Request' => 'true']);
 
         // htmx swallows a 302 body, so the redirect must ride an HX-Redirect header.
         $this->assertSame('/login', $response->getHeaderLine('HX-Redirect'));
@@ -153,7 +156,7 @@ final class AuthFlowTest extends TestCase
         $this->assertStringContainsString('match our records', (string) $response->getBody());
 
         // Still anonymous: the protected route bounces us.
-        $this->assertSame(302, $this->handle('GET', '/dashboard')->getStatusCode());
+        $this->assertSame(302, $this->handle('GET', '/admin')->getStatusCode());
     }
 
     public function test_empty_fields_show_required_errors(): void
@@ -164,6 +167,26 @@ final class AuthFlowTest extends TestCase
         $body = (string) $response->getBody();
         $this->assertStringContainsString('Enter your username.', $body);
         $this->assertStringContainsString('Enter your password.', $body);
+        // Bootstrap only reveals .invalid-feedback next to an .is-invalid control.
+        $this->assertStringContainsString('id="username" class="form-control is-invalid"', $body);
+        $this->assertStringContainsString('<span id="usernameFeedback" class="invalid-feedback">', $body);
+    }
+
+    public function test_failed_htmx_login_returns_only_the_form(): void
+    {
+        $response = $this->handle('POST', '/login', ['HX-Request' => 'true'], [
+            'username' => self::USERNAME,
+            'password' => 'wrong',
+        ]);
+
+        $body = (string) $response->getBody();
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertStringContainsString('match our records', $body);
+        // 'credentials' matches no field, so it needs the form-level alert.
+        $this->assertStringContainsString('class="alert alert-danger"', $body);
+        // The swap target is the form, so the layout must not come with it.
+        $this->assertStringNotContainsString('<!doctype html>', $body);
+        $this->assertStringStartsWith('<form id="login-form"', trim($body));
     }
 
     public function test_successful_login_redirects_and_grants_the_protected_page(): void
@@ -174,13 +197,13 @@ final class AuthFlowTest extends TestCase
         ]);
 
         $this->assertSame(302, $login->getStatusCode());
-        $this->assertSame('/dashboard', $login->getHeaderLine('Location'));
+        $this->assertSame('/admin', $login->getHeaderLine('Location'));
 
         // The session now carries the login, so the guarded page renders.
-        $dashboard = $this->handle('GET', '/dashboard');
-        $this->assertSame(200, $dashboard->getStatusCode());
-        $this->assertStringContainsString('Signed in as', (string) $dashboard->getBody());
-        $this->assertStringContainsString(self::USERNAME, (string) $dashboard->getBody());
+        $admin = $this->handle('GET', '/admin');
+        $this->assertSame(200, $admin->getStatusCode());
+        $this->assertStringContainsString('You are now signed in.', (string) $admin->getBody());
+        $this->assertStringContainsString(self::USERNAME, (string) $admin->getBody());
     }
 
     public function test_htmx_login_signals_redirect_via_header(): void
@@ -190,7 +213,7 @@ final class AuthFlowTest extends TestCase
             'password' => self::PASSWORD,
         ]);
 
-        $this->assertSame('/dashboard', $response->getHeaderLine('HX-Redirect'));
+        $this->assertSame('/admin', $response->getHeaderLine('HX-Redirect'));
     }
 
     public function test_logout_ends_the_session(): void
@@ -199,14 +222,14 @@ final class AuthFlowTest extends TestCase
             'username' => self::USERNAME,
             'password' => self::PASSWORD,
         ]);
-        $this->assertSame(200, $this->handle('GET', '/dashboard')->getStatusCode());
+        $this->assertSame(200, $this->handle('GET', '/admin')->getStatusCode());
 
         $logout = $this->handle('POST', '/logout');
         $this->assertSame(302, $logout->getStatusCode());
         $this->assertSame('/login', $logout->getHeaderLine('Location'));
 
         // Back to anonymous: the guard bounces the protected route again.
-        $this->assertSame(302, $this->handle('GET', '/dashboard')->getStatusCode());
+        $this->assertSame(302, $this->handle('GET', '/admin')->getStatusCode());
     }
 
     public function test_expired_session_post_redirects_to_login_instead_of403(): void

@@ -21,16 +21,6 @@ final class UserRepository implements UserProviderInterface
     public function __construct(private readonly ConnectionInterface $db) {}
 
     /**
-     * Every user, newest first
-     */
-    public function all(): array
-    {
-        $rows = $this->db->select('SELECT ' . self::COLUMNS . ' FROM users ORDER BY id DESC');
-
-        return array_map(User::fromRow(...), $rows);
-    }
-
-    /**
      * Get user by id
      */
     public function byIdentifier(int|string $id): ?AuthenticatableInterface
@@ -64,24 +54,5 @@ final class UserRepository implements UserProviderInterface
         );
 
         return (int) $this->db->lastInsertId();
-    }
-
-    /**
-     * Update a user's username and role
-     */
-    public function update(int $id, string $username, string $role): int
-    {
-        return $this->db->execute(
-            'UPDATE users SET username = ?, role = ? WHERE id = ?',
-            [$username, $role, $id],
-        );
-    }
-
-    /** 
-     * Delete a user 
-     */
-    public function delete(int $id): int
-    {
-        return $this->db->execute('DELETE FROM users WHERE id = ?', [$id]);
     }
 }

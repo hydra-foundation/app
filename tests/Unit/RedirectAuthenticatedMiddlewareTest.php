@@ -34,17 +34,20 @@ final class RedirectAuthenticatedMiddlewareTest extends TestCase
 
         $this->assertSame(0, $handler->calls, 'an authenticated visitor never reaches the guest route');
         $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('/dashboard', $response->getHeaderLine('Location'));
+        $this->assertSame('/admin', $response->getHeaderLine('Location'));
     }
 
-    public function test_authenticated_htmx_request_gets_an_hx_redirect(): void
+    public function test_htmx_gets_the_same_plain_redirect(): void
     {
+        // HtmxRedirectMiddleware turns this into 204 + HX-Redirect further out;
+        // this middleware stays unaware of htmx.
         $request = $this->request()->withHeader('HX-Request', 'true');
 
         $response = $this->middleware(authenticated: true)->process($request, $this->handler());
 
-        $this->assertSame(204, $response->getStatusCode());
-        $this->assertSame('/dashboard', $response->getHeaderLine('HX-Redirect'));
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/admin', $response->getHeaderLine('Location'));
+        $this->assertFalse($response->hasHeader('HX-Redirect'));
     }
 
     private function middleware(bool $authenticated): RedirectAuthenticatedMiddleware

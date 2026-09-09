@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use Hydra\Http\Htmx;
-use Hydra\Http\HtmxResponse;
 use Hydra\Auth\Exceptions\AuthenticationException;
 use Hydra\Csrf\CsrfGuard;
 use Hydra\Csrf\Exceptions\TokenMismatchException;
@@ -33,24 +31,18 @@ final class RedirectUnauthenticatedMiddleware implements MiddlewareInterface
         try {
             return $handler->handle($request);
         } catch (AuthenticationException) {
-            return $this->redirectToLogin($request);
+            return $this->redirectToLogin();
         } catch (TokenMismatchException $e) {
             if ($this->csrf->issued()) {
                 throw $e;
             }
 
-            return $this->redirectToLogin($request);
+            return $this->redirectToLogin();
         }
     }
 
-    private function redirectToLogin(ServerRequestInterface $request): ResponseInterface
+    private function redirectToLogin(): ResponseInterface
     {
-        if (Htmx::fromRequest($request)->isHtmx()) {
-            return (new HtmxResponse)
-                ->redirect(self::LOGIN_PATH)
-                ->applyTo($this->respond->noContent());
-        }
-
         return $this->respond->redirect(self::LOGIN_PATH);
     }
 }

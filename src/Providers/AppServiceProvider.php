@@ -33,6 +33,7 @@ use Hydra\Http\Contracts\ErrorRendererInterface;
 use Hydra\Http\ErrorHandlerMiddleware;
 use Hydra\Http\PlainTextErrorRenderer;
 use Hydra\Http\ForceHttpsMiddleware;
+use Hydra\Http\HtmxRedirectMiddleware;
 use Hydra\Http\ParseBodyMiddleware;
 use Hydra\Http\RequestLoggingMiddleware;
 use Hydra\Http\Responder;
@@ -69,6 +70,7 @@ final class AppServiceProvider extends ServiceProvider
         SecurityHeadersMiddleware::class,
         ForceHttpsMiddleware::class,
         ErrorHandlerMiddleware::class,
+        HtmxRedirectMiddleware::class,
         ParseBodyMiddleware::class,
         StartSessionMiddleware::class,
         RedirectUnauthenticatedMiddleware::class,

@@ -77,24 +77,12 @@ final class UserRepositoryTest extends TestCase
 
     public function test_role_defaults_to_plain_user(): void
     {
-        // all() is typed list<User>, so role/isAdmin read without narrowing.
-        $user = $this->repo->all()[0];
+        // Seeded without an explicit role, so the column default applies.
+        $user = $this->repo->byUsername('will');
 
+        $this->assertInstanceOf(User::class, $user);
         $this->assertSame('user', $user->role);
         $this->assertFalse($user->isAdmin());
-    }
-
-    public function test_all_returns_every_user_newest_first(): void
-    {
-        $this->pdo->exec("INSERT INTO users (username, password_hash, role) VALUES ('ada', 'x', 'admin')");
-
-        $all = $this->repo->all();
-
-        $this->assertCount(2, $all);
-        // Newest first: the admin we just inserted leads.
-        $this->assertSame('ada', $all[0]->username);
-        $this->assertTrue($all[0]->isAdmin());
-        $this->assertSame('will', $all[1]->username);
     }
 
     public function test_create_inserts_and_returns_the_new_id(): void
@@ -115,35 +103,5 @@ final class UserRepositoryTest extends TestCase
         $id = $this->repo->create('grace', 'digest');
 
         $this->assertSame('user', $this->repo->byIdentifier($id)?->role);
-    }
-
-    public function test_update_changes_username_and_role_and_reports_the_row_changed(): void
-    {
-        $affected = $this->repo->update(1, 'will-admin', 'admin');
-
-        $this->assertSame(1, $affected);
-        $reloaded = $this->repo->byIdentifier(1);
-        $this->assertSame('will-admin', $reloaded?->username);
-        $this->assertTrue($reloaded->isAdmin());
-        // The password digest is untouched by an edit — credentials change elsewhere.
-        $this->assertSame('hashed-secret', $reloaded->getAuthPassword());
-    }
-
-    public function test_update_reports_zero_when_no_row_matches(): void
-    {
-        $this->assertSame(0, $this->repo->update(404, 'ghost', 'user'));
-    }
-
-    public function test_delete_removes_the_row_and_reports_the_count(): void
-    {
-        $affected = $this->repo->delete(1);
-
-        $this->assertSame(1, $affected);
-        $this->assertNull($this->repo->byIdentifier(1));
-    }
-
-    public function test_delete_reports_zero_when_no_row_matches(): void
-    {
-        $this->assertSame(0, $this->repo->delete(404));
     }
 }

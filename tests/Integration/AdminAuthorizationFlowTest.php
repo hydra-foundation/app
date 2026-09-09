@@ -28,16 +28,16 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * The authorization slice end-to-end through the real composition root, building
- * on the auth slice: the /admin route sits behind BOTH gates.
+ * The /admin slice end-to-end through the real composition root, building on the
+ * auth slice. The backend is gated on being signed in, not on holding a role —
+ * standard users belong there too, so the split is anonymous vs authenticated:
  *
  *   - anonymous              → 401 mapped to a 302 /login (auth's policy);
- *   - logged-in plain user   → 403 (the gate's AuthorizationException) — a dead
- *                              end, NOT a redirect, the 403-vs-401 distinction;
- *   - logged-in admin        → 200, the user listing renders.
+ *   - logged-in plain user   → 200, same as an admin;
+ *   - logged-in admin        → 200.
  *
  * Backed by the same in-memory sqlite swap and cheap-cost hasher as AuthFlowTest,
- * with two seeded users (one admin, one plain).
+ * with two seeded users (one admin, one plain), so both roles are covered.
  */
 final class AdminAuthorizationFlowTest extends TestCase
 {
@@ -130,18 +130,19 @@ final class AdminAuthorizationFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function test_logged_in_plain_user_is_forbidden(): void
+    public function test_logged_in_plain_user_reaches_the_admin_page(): void
     {
         $this->login('clerk');
 
         $response = $this->handle('GET', '/admin');
 
-        // Authenticated but not allowed: a 403 dead end, not a redirect.
-        $this->assertSame(403, $response->getStatusCode());
-        $this->assertSame('', $response->getHeaderLine('Location'));
+        // Signing in is the whole gate: no role check stands between a standard
+        // user and the backend.
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertStringContainsString('clerk', (string) $response->getBody());
     }
 
-    public function test_logged_in_admin_sees_the_user_listing(): void
+    public function test_logged_in_admin_reaches_the_admin_page(): void
     {
         $this->login('boss');
 
@@ -150,8 +151,7 @@ final class AdminAuthorizationFlowTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $body = (string) $response->getBody();
         $this->assertStringContainsString('Admin', $body);
-        // The listing renders both seeded users.
+        // The page greets whoever is signed in.
         $this->assertStringContainsString('boss', $body);
-        $this->assertStringContainsString('clerk', $body);
     }
 }

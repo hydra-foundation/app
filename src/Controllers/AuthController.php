@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Entities\User;
 use Hydra\Http\Input;
 use App\Http\Middleware\RedirectAuthenticatedMiddleware;
 use Hydra\View\Contracts\ViewInterface;
-use App\ViewModels\AccountViewModel;
 use App\ViewModels\LoginViewModel;
-use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\Attributes\Route;
 use Hydra\Http\Htmx;
@@ -38,7 +35,7 @@ final class AuthController extends Controller
     #[Route('/login', middleware: [RedirectAuthenticatedMiddleware::class])]
     public function showLogin(): Response
     {
-        return $this->render('auth/login', ['vm' => new LoginViewModel]);
+        return $this->render('auth/login/index', ['vm' => new LoginViewModel]);
     }
 
     #[Route('/login', methods: ['POST'], middleware: [RedirectAuthenticatedMiddleware::class])]
@@ -61,7 +58,7 @@ final class AuthController extends Controller
         );
 
         if ($result->passes() && $this->guard->attempt($username, $password)) {
-            return $this->redirectTo($request, '/dashboard');
+            return $this->respond->redirect('/admin');
         }
 
         // A failed login is deliberately vague
@@ -70,31 +67,20 @@ final class AuthController extends Controller
             : $result->errors();
 
         $route = Htmx::fromRequest($request)->isHtmx()
-            ? 'auth/login_form'
-            : 'auth/login';
+            ? 'auth/login/form'
+            : 'auth/login/index';
 
         return $this->render(
             $route,
-            ['vm' => new LoginViewModel(username: $username, errors: $errors)],
+            ['vm' => new LoginViewModel($username, $errors)],
             Status::UnprocessableEntity,
         );
     }
 
     #[Route('/logout', methods: ['POST'])]
-    public function logout(Request $request): Response
+    public function logout(): Response
     {
         $this->guard->logout();
-
-        return $this->redirectTo($request, '/login');
-    }
-
-    #[Route('/dashboard', middleware: [AuthenticateMiddleware::class])]
-    public function dashboard(): Response
-    {
-        // The route is guarded, so user() is never null here.
-        $user = $this->guard->user();
-        $username = $user instanceof User ? $user->username : (string) $user?->getAuthIdentifier();
-
-        return $this->render('auth/dashboard', ['vm' => new AccountViewModel($username)]);
+        return $this->respond->redirect('/login');
     }
 }

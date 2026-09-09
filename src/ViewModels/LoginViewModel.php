@@ -12,18 +12,15 @@ namespace App\ViewModels;
  */
 final readonly class LoginViewModel
 {
+    use FormErrors;
+
     public function __construct(
         public string $username = '',
         public array $errors = [],
     ) {}
 
-    public function hasErrors(): bool
+    private function fields(): array
     {
-        return $this->errors !== [];
-    }
-
-    public function messages(): array
-    {
-        return array_values($this->errors);
+        return ['username', 'password'];
     }
 }

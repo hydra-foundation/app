@@ -62,15 +62,18 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function test_token_mismatch_without_an_issued_token_on_htmx_gets_an_hx_redirect(): void
+    public function test_token_mismatch_on_htmx_gets_the_same_plain_redirect(): void
     {
+        // HtmxRedirectMiddleware turns this into 204 + HX-Redirect further out;
+        // this middleware stays unaware of htmx.
         $request = $this->request()->withHeader('HX-Request', 'true');
 
         $response = $this->middleware()
             ->process($request, $this->throwingHandler(new TokenMismatchException));
 
-        $this->assertSame(204, $response->getStatusCode());
-        $this->assertSame('/login', $response->getHeaderLine('HX-Redirect'));
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/login', $response->getHeaderLine('Location'));
+        $this->assertFalse($response->hasHeader('HX-Redirect'));
     }
 
     public function test_token_mismatch_against_an_issued_token_is_rethrown(): void

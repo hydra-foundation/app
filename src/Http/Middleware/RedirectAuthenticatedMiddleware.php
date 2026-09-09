@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use Hydra\Http\Htmx;
-use Hydra\Http\HtmxResponse;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\Responder;
 use Psr\Http\Message\ResponseInterface;
@@ -19,7 +17,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 final class RedirectAuthenticatedMiddleware implements MiddlewareInterface
 {
     /** Where an already-authenticated visitor is sent — the post-login landing. */
-    private const HOME_PATH = '/dashboard';
+    private const HOME_PATH = '/admin';
 
     public function __construct(
         private readonly GuardInterface $guard,
@@ -30,12 +28,6 @@ final class RedirectAuthenticatedMiddleware implements MiddlewareInterface
     {
         if (!$this->guard->check()) {
             return $handler->handle($request);
-        }
-
-        if (Htmx::fromRequest($request)->isHtmx()) {
-            return (new HtmxResponse)
-                ->redirect(self::HOME_PATH)
-                ->applyTo($this->respond->noContent());
         }
 
         return $this->respond->redirect(self::HOME_PATH);
