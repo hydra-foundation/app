@@ -116,7 +116,7 @@ final class AdminModuleFlowTest extends TestCase
         $this->assertStringNotContainsString('value="apply"', $body);
     }
 
-    public function test_a_create_screen_writes_the_row_and_returns_to_the_list(): void
+    public function test_a_create_screen_writes_the_row_and_opens_it(): void
     {
         $this->login('boss');
         $response = $this->handle('POST', '/admin/users/new', [], [
@@ -125,12 +125,13 @@ final class AdminModuleFlowTest extends TestCase
             'password' => 'correct-horse',
         ]);
 
+        // 22 seeded rows, so the row just written is 23 — the id create() returned.
         $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('/admin/users', $response->getHeaderLine('Location'));
+        $this->assertSame('/admin/users/23', $response->getHeaderLine('Location'));
         $this->assertStringContainsString('>newcomer</td>', $this->body('GET', '/admin/users?q=newcomer'));
     }
 
-    public function test_an_htmx_create_hands_back_the_list_it_would_have_fetched(): void
+    public function test_an_htmx_create_hands_back_the_row_it_wrote(): void
     {
         $this->login('boss');
         $response = $this->handle('POST', '/admin/users/new', ['HX-Request' => 'true', 'HX-Target' => 'div#admin-frame'], [
@@ -138,10 +139,14 @@ final class AdminModuleFlowTest extends TestCase
             'role' => 'user',
             'password' => 'correct-horse',
         ]);
+        $body = (string) $response->getBody();
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('/admin/users', $response->getHeaderLine('HX-Push-Url'));
-        $this->assertStringContainsString('Created', (string) $response->getBody());
+        $this->assertSame('/admin/users/23', $response->getHeaderLine('HX-Push-Url'));
+        $this->assertStringContainsString('Created', $body);
+        // The show screen for that row, not the table it is one line of.
+        $this->assertStringContainsString('>newcomer</dd>', $body);
+        $this->assertStringContainsString('hx-get="/admin/users/23/edit"', $body);
     }
 
     public function test_a_create_screen_can_require_what_the_edit_screen_leaves_optional(): void

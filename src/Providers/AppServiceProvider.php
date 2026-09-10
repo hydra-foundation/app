@@ -18,6 +18,7 @@ use App\Http\Middleware\RecordActivityMiddleware;
 use App\Http\Middleware\RedirectUnauthenticatedMiddleware;
 use App\Repositories\ActivityRepository;
 use App\Repositories\UserRepository;
+use Hydra\Admin\AdminServiceProvider;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Auth\Events\Attempting;
@@ -146,7 +147,11 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         $container->singleton(ViewInterface::class, function () use ($container) {
-            return new PhpView(dirname(__DIR__, 2) . '/views', $container->get(CsrfGuard::class));
+            return new PhpView(
+                dirname(__DIR__, 2) . '/views',
+                $container->get(CsrfGuard::class),
+                fallbacks: [AdminServiceProvider::views()],
+            );
         });
 
         $container->singleton(ForceHttpsMiddleware::class, function () use ($container) {
