@@ -48,19 +48,19 @@ final class ActivityModule implements ModuleInterface
             ->perPage(25)
             ->defaultSort('id', 'desc')
             ->fields(
-                Field::id()->label('ID')->sortable(),
-                Field::datetime('created_at')->label('Created at')->sortable(),
-                Field::text('username')->label('User')->sortable()->searchable()->emptyAs('guest'),
+                Field::id()->labelled('ID')->sortable(),
+                Field::datetime('created_at')->labelled('Created at')->sortable(),
+                Field::text('username')->labelled('User')->sortable()->searchable()->emptyAs('guest'),
                 Field::select('method', self::METHODS)->sortable()->filterable(),
-                Field::text('path')->label('URI')->sortable()->searchable()
+                Field::text('path')->labelled('URI')->sortable()->searchable()
                     ->decorate(static fn(mixed $value, array $row): string => ($row['query'] ?? '') === ''
                         ? (string) $value
                         : $value . '?' . $row['query']),
                 Field::select('status', self::STATUSES)->sortable()->filterable(),
-                Field::text('duration_ms')->label('Time')->sortable()
+                Field::text('duration_ms')->labelled('Time')->sortable()
                     ->format(static fn(mixed $value): string => $value . ' ms'),
-                Field::text('ip')->label('IP')->sortable()->searchable(),
-                Field::text('user_agent')->label('Agent')->hiddenOn(Surface::List),
+                Field::text('ip')->labelled('IP')->sortable()->searchable(),
+                Field::text('user_agent')->labelled('Agent')->hiddenOn(Surface::List),
                 Field::text('referer')->hiddenOn(Surface::List),
             )
             ->screens(ShowScreen::make()->title('Request'));

@@ -35,7 +35,7 @@ final class UsersModule implements ModuleInterface
             ->perPage(15)
             ->defaultSort('id', 'desc')
             ->fields(
-                Field::id()->label('ID')->sortable(),
+                Field::id()->labelled('ID')->sortable(),
                 Field::text('username')->sortable()->searchable(),
                 Field::select('role', self::ROLES)->sortable()->filterable(),
                 Field::datetime('created_at')->sortable(),

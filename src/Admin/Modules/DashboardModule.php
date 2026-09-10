@@ -23,7 +23,7 @@ final class DashboardModule implements ModuleInterface
             ->title('Dashboard')
             ->screens(
                 PageScreen::make('overview', 'admin/dashboard')
-                    ->presenter(DashboardPresenter::class),
+                    ->presentedBy(DashboardPresenter::class),
             );
     }
 }
