@@ -1,10 +1,5 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var \Hydra\Admin\ViewModels\ListViewModel $vm */ ?>
-<?php /* The toolbar sits above the swapped region so the search box keeps focus
-       across a swap. That means a sort click never re-renders it, so the sort
-       state lives inside #admin-body (see the table partial) and is pulled in
-       here — a copy held in this form would go stale the moment a column
-       heading was clicked. */ ?>
 <form class="row g-2 align-items-end mb-3"
       hx-get="<?= $this->e($vm->url()) ?>"
       hx-target="#admin-body"

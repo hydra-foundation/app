@@ -243,14 +243,10 @@ final class AdminModuleFlowTest extends TestCase
     {
         $this->login('boss');
 
-        // The toolbar renders above the swapped region, so it keeps no copy of
-        // the sort — it names the state element and htmx pulls it in.
         $full = $this->body('GET', '/admin/users');
         $this->assertStringContainsString('hx-include="#admin-sort-state"', $full);
         $this->assertSame(1, substr_count($full, 'name="sort"'));
 
-        // A sort click swaps the body alone, and the new sort rides along inside
-        // it, so the next keystroke in the search box does not revert the order.
         $sorted = $this->body('GET', '/admin/users?sort=username&dir=asc', [
             'HX-Request' => 'true',
             'HX-Target' => 'div#admin-body',
