@@ -233,6 +233,52 @@ final class AdminModuleFlowTest extends TestCase
         $this->assertStringNotContainsString('>clerk</td>', (string) $response->getBody());
     }
 
+    public function test_a_delete_comes_back_to_the_view_of_the_list_it_was_made_from(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/2/delete', [
+            'HX-Request' => 'true',
+            'HX-Target' => 'div#admin-frame',
+            'HX-Current-URL' => 'http://localhost/admin/users?q=temp&sort=username&dir=asc&page=2',
+        ]);
+        $body = (string) $response->getBody();
+
+        $this->assertSame(
+            '/admin/users?q=temp&sort=username&dir=asc&page=2',
+            urldecode($response->getHeaderLine('HX-Push-Url')),
+        );
+        // The search it came back to is the search it was sent from.
+        $this->assertStringContainsString('value="temp"', $body);
+        $this->assertStringContainsString('>temp16</td>', $body);
+        $this->assertStringNotContainsString('>temp01</td>', $body);
+    }
+
+    public function test_a_delete_that_empties_the_last_page_falls_back_to_the_new_end(): void
+    {
+        $this->login('boss');
+        // 22 rows, 15 to a page: page 2 holds seven, and one search holds one.
+        $response = $this->handle('POST', '/admin/users/22/delete', [
+            'HX-Request' => 'true',
+            'HX-Target' => 'div#admin-frame',
+            'HX-Current-URL' => 'http://localhost/admin/users?q=temp20&page=2',
+        ]);
+
+        // The page it was on is gone; the rest of the view it was asked for is not.
+        $this->assertSame(
+            '/admin/users?q=temp20&sort=id&dir=desc',
+            urldecode($response->getHeaderLine('HX-Push-Url')),
+        );
+        $this->assertStringContainsString('Nothing to show.', (string) $response->getBody());
+    }
+
+    public function test_a_write_sent_without_htmx_lands_on_the_modules_own_view(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/2/delete');
+
+        $this->assertSame('/admin/users', $response->getHeaderLine('Location'));
+    }
+
     public function test_the_source_refuses_to_delete_the_account_doing_the_deleting(): void
     {
         $this->login('boss');
