@@ -47,7 +47,7 @@ final class ActivityModule implements ModuleInterface
             ->perPage(25)
             ->defaultSort('id', 'desc')
             ->fields(
-                Field::id()->label('ID')->sortable()->hiddenOn(Surface::Form),
+                Field::id()->label('ID')->sortable(),
                 Field::datetime('created_at')->label('Created at')->sortable(),
                 Field::text('username')->label('User')->sortable()->searchable()->emptyAs('guest'),
                 Field::select('method', self::METHODS)->sortable()->filterable(),
