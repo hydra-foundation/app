@@ -365,8 +365,8 @@ final class AdminModuleFlowTest extends TestCase
         $body = $this->body('GET', '/admin/dashboard');
 
         // 22 seeded accounts, one of them an admin.
-        $this->assertMatchesRegularExpression('/Users<\/div>\s*<div class="fs-2">22</', $body);
-        $this->assertMatchesRegularExpression('/Admins<\/div>\s*<div class="fs-2">1</', $body);
+        $this->assertMatchesRegularExpression('/Users<\/div>\s*<div class="stat-value">22</', $body);
+        $this->assertMatchesRegularExpression('/Admins<\/div>\s*<div class="stat-value">1</', $body);
     }
 
     public function test_the_sidebar_shows_only_the_modules_the_visitor_may_reach(): void

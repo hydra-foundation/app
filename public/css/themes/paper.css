@@ -1,0 +1,62 @@
+/* Paper — the default Hydra palette, and the worked example of a theme.
+ *
+ * A theme is colour and nothing else: every token below is a colour, and the
+ * type scale, spacing, radii and fonts live in base.css because they are the
+ * design's proportions rather than its mood. Redefine all of these and the
+ * admin follows; redefine none and it stays as shipped.
+ *
+ * Two of them are not plain colours and are easy to miss:
+ *
+ *   --*-rgb    Bootstrap builds its own translucent variants from raw triplets,
+ *              so a colour that has one must keep the two in step.
+ *   --chevron  A url(), because the select arrow is an SVG data URI and a
+ *              custom property cannot reach inside one. Swap the whole image.
+ *
+ * A second theme is this file with different values, wrapped in
+ * [data-theme="its-name"] and loaded after this one. The :root here is the
+ * fallback for a document that names no theme at all.
+ *
+ * app/tests/Unit/ThemeContractTest.php checks a theme against what the
+ * stylesheets actually ask for, so a missing token fails rather than renders. */
+
+:root,
+[data-theme="paper"] {
+    /* Warm paper neutrals, so the one cool accent has something to push against. */
+    --paper: #f5f3ee;
+    --surface: #ffffff;
+    --sunk: #faf8f4;
+    --line: #e4e0d7;
+    --line-strong: #cfc9bc;
+
+    --ink: #26241f;
+    --ink-strong: #11100e;
+    --muted: #6c6659;
+    --ink-rgb: 38, 36, 31;
+
+    /* Verdigris: the accent carries links, active state, focus and primary actions. */
+    --accent: #0f6b60;
+    --accent-hover: #0a5049;
+    --accent-wash: #e9f1ee;
+    --accent-ring: rgba(15, 107, 96, 0.18);
+    --accent-rgb: 15, 107, 96;
+    --on-accent: #ffffff;
+
+    --danger: #a33121;
+    --danger-wash: #fbeeeb;
+    --danger-line: #e8cdc6;
+    --danger-ink: #7d2718;
+    --danger-ring: rgba(163, 49, 33, 0.15);
+    --danger-rgb: 163, 49, 33;
+    --on-danger: #ffffff;
+
+    --ok: #2e6b41;
+    --ok-wash: #ecf3ee;
+    --ok-line: #cadfd1;
+    --ok-ink: #23522f;
+    --ok-rgb: 46, 107, 65;
+
+    /* Incidentals that still have to move when the ground does. */
+    --hover-tint: rgba(0, 0, 0, 0.035);
+    --mark: #f6eecd;
+    --chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236c6659' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}

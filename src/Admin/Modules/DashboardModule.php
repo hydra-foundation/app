@@ -22,6 +22,7 @@ final class DashboardModule implements ModuleInterface
         return Definition::make('dashboard')
             ->title('Dashboard')
             ->group('Overview')
+            ->icon('grid-1x2')
             ->screens(
                 PageScreen::make('overview', 'admin/dashboard')
                     ->presentedBy(DashboardPresenter::class),

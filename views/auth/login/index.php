@@ -4,15 +4,12 @@
 
 <?php $this->start('title') ?>Sign in · Hydra<?php $this->stop() ?>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-12 col-sm-10 col-md-6 col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h1 class="h4 mb-4">Sign in</h1>
-                    <?= $this->partial('auth/login/form', ['vm' => $vm]) ?>
-                </div>
-            </div>
+<div class="auth">
+    <div class="auth-inner">
+        <div class="auth-brand">Hydra</div>
+        <div class="auth-panel">
+            <h1 class="auth-title">Sign in</h1>
+            <?= $this->partial('auth/login/form', ['vm' => $vm]) ?>
         </div>
     </div>
 </div>

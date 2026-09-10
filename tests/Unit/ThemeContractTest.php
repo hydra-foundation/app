@@ -1,0 +1,125 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit;
+
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * The contract between a theme and the stylesheets that consume it.
+ *
+ * A theme supplies colours and nothing else, so the split has to hold in both
+ * directions: no consuming sheet may name a colour of its own, and no sheet may
+ * ask for a token that a theme does not define. Either mistake renders — as an
+ * unthemed literal, or as an empty value that quietly falls back to whatever
+ * the browser does — which is precisely why it is worth a test.
+ */
+final class ThemeContractTest extends TestCase
+{
+    private const CSS = __DIR__ . '/../../public/css';
+
+    /** The palettes on offer. A new one is a file here and a link in the layout. */
+    private const THEMES = ['paper'];
+
+    /** Sheets that consume tokens rather than define them. */
+    private const CONSUMERS = ['base.css', 'admin.css', 'app.css'];
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function themes(): iterable
+    {
+        foreach (self::THEMES as $theme) {
+            yield $theme => [$theme];
+        }
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function consumers(): iterable
+    {
+        foreach (self::CONSUMERS as $sheet) {
+            yield $sheet => [$sheet];
+        }
+    }
+
+    #[DataProvider('themes')]
+    public function test_a_theme_defines_every_token_the_stylesheets_ask_for(string $theme): void
+    {
+        $defined = $this->defined($this->read("themes/{$theme}.css"));
+
+        // base.css declares the proportions — fonts, scale, radii — which are
+        // the design's and not a theme's, so they count as supplied too.
+        $defined = [...$defined, ...$this->defined($this->read('base.css'))];
+
+        $missing = array_values(array_diff($this->used(), $defined));
+
+        $this->assertSame([], $missing, "Theme \"{$theme}\" is missing: " . implode(', ', $missing));
+    }
+
+    #[DataProvider('consumers')]
+    public function test_a_stylesheet_that_consumes_a_theme_names_no_colour_of_its_own(string $sheet): void
+    {
+        preg_match_all('~#[0-9a-fA-F]{3,8}\b|\brgba?\([^)]*\)~', $this->read($sheet), $matches);
+
+        $this->assertSame([], $matches[0], "{$sheet} hardcodes a colour a theme cannot reach.");
+    }
+
+    public function test_the_default_theme_answers_a_document_that_names_none(): void
+    {
+        // The layout defaults the attribute, but a fragment rendered without the
+        // layout has no <html> at all and still has to be readable.
+        $this->assertStringContainsString(':root,', $this->read('themes/paper.css'));
+    }
+
+    public function test_every_theme_is_reachable_by_name(): void
+    {
+        foreach (self::THEMES as $theme) {
+            $this->assertStringContainsString(
+                "[data-theme=\"{$theme}\"]",
+                $this->read("themes/{$theme}.css"),
+                "Theme \"{$theme}\" cannot be selected by name.",
+            );
+        }
+    }
+
+    /**
+     * Tokens a sheet asks for. Bootstrap's own are excluded: it defines them.
+     *
+     * @return list<string>
+     */
+    private function used(): array
+    {
+        $used = [];
+
+        foreach (self::CONSUMERS as $sheet) {
+            preg_match_all('~var\(\s*(--[a-z0-9-]+)~i', $this->read($sheet), $matches);
+            $used = [...$used, ...$matches[1]];
+        }
+
+        return array_values(array_unique(array_filter(
+            $used,
+            static fn (string $token): bool => !str_starts_with($token, '--bs-'),
+        )));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function defined(string $css): array
+    {
+        preg_match_all('~^\s*(--[a-z0-9-]+)\s*:~im', $css, $matches);
+
+        return $matches[1];
+    }
+
+    private function read(string $path): string
+    {
+        $file = self::CSS . '/' . $path;
+
+        return file_get_contents($file) ?: self::fail("Missing stylesheet: {$path}.");
+    }
+}

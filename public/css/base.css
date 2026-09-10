@@ -1,0 +1,328 @@
+/* Hydra base — the design's proportions, the Bootstrap bridge, and the controls
+   every page shares. Loaded after Bootstrap and before a theme.
+
+   Nothing here may name a colour. Colours arrive as the tokens a theme file
+   defines (see themes/paper.css); this layer only decides what uses which. */
+
+:root {
+    --font-text: "Public Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-display: "Zilla Slab", Georgia, "Times New Roman", serif;
+    --font-mono: "DM Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    --t-micro: 0.6875rem;
+    --t-small: 0.75rem;
+    --t-data: 0.8125rem;
+    --t-base: 0.875rem;
+    --t-lead: 0.9375rem;
+    --t-h3: 1.0625rem;
+    --t-h2: 1.25rem;
+    --t-h1: 1.75rem;
+    --t-stat: 1.875rem;
+
+    --s-1: 0.25rem;
+    --s-2: 0.5rem;
+    --s-3: 0.75rem;
+    --s-4: 1rem;
+    --s-5: 1.5rem;
+    --s-6: 2rem;
+    --s-7: 3rem;
+
+    --r-1: 3px;
+    --r-2: 5px;
+    --r-3: 8px;
+
+    --ease: 120ms ease;
+
+    /* Bridge. Bootstrap reads these; nothing below should restate a colour that
+       one of them already carries. */
+    --bs-body-font-family: var(--font-text);
+    --bs-body-font-size: var(--t-base);
+    --bs-body-line-height: 1.55;
+    --bs-body-color: var(--ink);
+    --bs-body-color-rgb: var(--ink-rgb);
+    --bs-body-bg: var(--surface);
+    --bs-font-monospace: var(--font-mono);
+    --bs-border-color: var(--line);
+    --bs-border-color-translucent: var(--line);
+    --bs-border-radius: var(--r-2);
+    --bs-border-radius-sm: var(--r-1);
+    --bs-border-radius-lg: var(--r-3);
+    --bs-link-color: var(--accent);
+    --bs-link-hover-color: var(--accent-hover);
+    --bs-primary: var(--accent);
+    --bs-primary-rgb: var(--accent-rgb);
+    --bs-danger: var(--danger);
+    --bs-danger-rgb: var(--danger-rgb);
+    --bs-success: var(--ok);
+    --bs-success-rgb: var(--ok-rgb);
+    --bs-code-color: var(--accent-hover);
+    --bs-highlight-bg: var(--mark);
+}
+
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* Sizes are stepped deliberately; the display face is reserved for what names a
+   screen, never for what fills one. */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--ink-strong);
+    letter-spacing: -0.005em;
+    line-height: 1.25;
+}
+
+h1, .h1 { font-size: var(--t-h1); }
+h2, .h2 { font-size: var(--t-h2); }
+h3, .h3, h4, .h4 { font-size: var(--t-h3); }
+h5, .h5, h6, .h6 { font-size: var(--t-base); }
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+strong, b {
+    font-weight: 600;
+    color: var(--ink-strong);
+}
+
+code, kbd, samp, pre {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+}
+
+::selection {
+    background: var(--accent-wash);
+    color: var(--accent-hover);
+}
+
+:where(a, button, [tabindex]):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--r-1);
+}
+
+/* Both classes ship in Bootstrap 5.3; the templates already use them and 5.2.3
+   defines neither, so they land here rather than as edits across the views. */
+.text-body-secondary { color: var(--muted); }
+.text-body-emphasis { color: var(--ink-strong); }
+
+/* Buttons ------------------------------------------------------------------ */
+
+.btn {
+    --bs-btn-padding-y: 0.4375rem;
+    --bs-btn-padding-x: 0.875rem;
+    --bs-btn-font-size: var(--t-base);
+    --bs-btn-font-weight: 500;
+    --bs-btn-line-height: 1.35;
+    --bs-btn-border-radius: var(--r-2);
+    --bs-btn-box-shadow: none;
+    --bs-btn-focus-box-shadow: none;
+    --bs-btn-disabled-opacity: 0.45;
+    transition: background-color var(--ease), border-color var(--ease), color var(--ease);
+}
+
+.btn:hover {
+    text-decoration: none;
+}
+
+.btn-primary {
+    --bs-btn-color: var(--on-accent);
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-color: var(--on-accent);
+    --bs-btn-hover-bg: var(--accent-hover);
+    --bs-btn-hover-border-color: var(--accent-hover);
+    --bs-btn-active-color: var(--on-accent);
+    --bs-btn-active-bg: var(--accent-hover);
+    --bs-btn-active-border-color: var(--accent-hover);
+    --bs-btn-disabled-bg: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--accent);
+    --bs-btn-border-color: var(--line-strong);
+    --bs-btn-hover-color: var(--accent-hover);
+    --bs-btn-hover-bg: var(--accent-wash);
+    --bs-btn-hover-border-color: var(--accent);
+    --bs-btn-active-color: var(--accent-hover);
+    --bs-btn-active-bg: var(--accent-wash);
+    --bs-btn-active-border-color: var(--accent);
+    --bs-btn-disabled-color: var(--muted);
+    --bs-btn-disabled-border-color: var(--line);
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: var(--ink);
+    --bs-btn-bg: var(--surface);
+    --bs-btn-border-color: var(--line-strong);
+    --bs-btn-hover-color: var(--ink-strong);
+    --bs-btn-hover-bg: var(--sunk);
+    --bs-btn-hover-border-color: var(--line-strong);
+    --bs-btn-active-color: var(--ink-strong);
+    --bs-btn-active-bg: var(--paper);
+    --bs-btn-active-border-color: var(--line-strong);
+    --bs-btn-disabled-color: var(--muted);
+    --bs-btn-disabled-border-color: var(--line);
+}
+
+.btn-outline-danger {
+    --bs-btn-color: var(--danger);
+    --bs-btn-bg: var(--surface);
+    --bs-btn-border-color: var(--line-strong);
+    --bs-btn-hover-color: var(--on-danger);
+    --bs-btn-hover-bg: var(--danger);
+    --bs-btn-hover-border-color: var(--danger);
+    --bs-btn-active-color: var(--on-danger);
+    --bs-btn-active-bg: var(--danger);
+    --bs-btn-active-border-color: var(--danger);
+}
+
+/* After the variants: Bootstrap's own .btn-sm follows .btn, and so must this. */
+.btn-sm {
+    --bs-btn-padding-y: 0.25rem;
+    --bs-btn-padding-x: 0.625rem;
+    --bs-btn-font-size: var(--t-small);
+    --bs-btn-border-radius: var(--r-1);
+}
+
+/* Forms -------------------------------------------------------------------- */
+
+.form-label {
+    margin-bottom: var(--s-2);
+    font-size: var(--t-small);
+    font-weight: 600;
+    color: var(--ink-strong);
+    letter-spacing: 0.005em;
+}
+
+.form-control,
+.form-select {
+    padding: 0.4375rem 0.625rem;
+    font-size: var(--t-base);
+    line-height: 1.4;
+    color: var(--ink);
+    background-color: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-2);
+    box-shadow: none;
+    transition: border-color var(--ease), box-shadow var(--ease);
+}
+
+/* The arrow is an image, so a theme replaces it rather than recolouring it. */
+.form-select {
+    padding-right: 2rem;
+    background-image: var(--chevron);
+    background-position: right 0.625rem center;
+    background-size: 11px 8px;
+}
+
+.form-control::placeholder {
+    color: var(--muted);
+}
+
+.form-control:focus,
+.form-select:focus {
+    color: var(--ink);
+    background-color: var(--surface);
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.form-control[readonly],
+.form-control:disabled,
+.form-select:disabled {
+    background-color: var(--sunk);
+    color: var(--muted);
+}
+
+/* Bootstrap's validation glyph is one of its loudest tells, and the message
+   under the control already says what the glyph would. */
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: var(--danger);
+    background-image: none;
+    padding-right: 0.625rem;
+}
+
+.form-select.is-invalid {
+    padding-right: 2rem;
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px var(--danger-ring);
+}
+
+.invalid-feedback {
+    margin-top: var(--s-2);
+    font-size: var(--t-small);
+    color: var(--danger);
+}
+
+.form-text {
+    margin-top: var(--s-2);
+    font-size: var(--t-small);
+    color: var(--muted);
+}
+
+/* Alerts ------------------------------------------------------------------- */
+
+.alert {
+    --bs-alert-padding-x: var(--s-3);
+    --bs-alert-padding-y: 0.625rem;
+    --bs-alert-border-radius: var(--r-2);
+    --bs-alert-border: 1px solid transparent;
+    margin-bottom: var(--s-4);
+    font-size: var(--t-base);
+    border-left-width: 3px;
+}
+
+.alert-danger {
+    --bs-alert-color: var(--danger-ink);
+    --bs-alert-bg: var(--danger-wash);
+    --bs-alert-border-color: var(--danger-line);
+    border-left-color: var(--danger);
+}
+
+.alert-success {
+    --bs-alert-color: var(--ok-ink);
+    --bs-alert-bg: var(--ok-wash);
+    --bs-alert-border-color: var(--ok-line);
+    border-left-color: var(--ok);
+}
+
+/* Cards -------------------------------------------------------------------- */
+
+.card {
+    --bs-card-bg: var(--surface);
+    --bs-card-border-color: var(--line);
+    --bs-card-border-radius: var(--r-3);
+    --bs-card-inner-border-radius: var(--r-3);
+    --bs-card-spacer-x: var(--s-4);
+    --bs-card-spacer-y: var(--s-4);
+    box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

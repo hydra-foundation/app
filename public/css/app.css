@@ -1,12 +1,92 @@
-html {
-  margin: 0;
-  padding: 0;
+/* Hydra app — the pages outside the backend: sign in, and the front door. */
+
+.auth {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: var(--s-5);
+    background: var(--paper);
 }
 
-.admin {
-  min-height: 100vh;
+.auth-inner {
+    width: 100%;
+    max-width: 22rem;
 }
 
-.admin-sidebar {
-  flex: 0 0 15rem;
+.auth-brand {
+    margin-bottom: var(--s-4);
+    font-family: var(--font-display);
+    font-size: var(--t-h2);
+    font-weight: 600;
+    color: var(--ink-strong);
+}
+
+.auth-panel {
+    padding: var(--s-5);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+}
+
+.auth-title {
+    margin: 0 0 var(--s-5);
+    padding-bottom: var(--s-3);
+    font-size: var(--t-h2);
+    border-bottom: 1px solid var(--line);
+}
+
+.auth-panel .form-label {
+    font-family: var(--font-mono);
+    font-size: var(--t-micro);
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.auth-panel .mb-3 {
+    margin-bottom: var(--s-4) !important;
+}
+
+#login-submit {
+    margin-top: var(--s-2);
+}
+
+/* Front door --------------------------------------------------------------- */
+
+.page {
+    display: grid;
+    align-content: center;
+    min-height: 100dvh;
+    max-width: 34rem;
+    margin: 0 auto;
+    padding: var(--s-6) var(--s-5);
+}
+
+.page-title {
+    margin: 0;
+    font-size: 2.5rem;
+    letter-spacing: -0.015em;
+    color: var(--ink-strong);
+}
+
+.page-lead {
+    margin: var(--s-3) 0 0;
+    font-size: var(--t-lead);
+    color: var(--muted);
+    max-width: 26rem;
+}
+
+.page-actions {
+    margin-top: var(--s-5);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+}
+
+.page-actions a {
+    font-family: var(--font-mono);
+    font-size: var(--t-small);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
 }
