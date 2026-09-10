@@ -1,6 +1,17 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var \Hydra\Admin\ViewModels\ListViewModel $vm */ ?>
 <?php $columns = $vm->columns() ?>
+<?php $criteria = $vm->page->criteria ?>
+<?php /* The list's sort state, kept inside the swapped region so it is always as
+       fresh as the table it describes. The filter toolbar renders outside that
+       region and reaches in for it with hx-include. */ ?>
+<div id="admin-sort-state">
+    <?php if ($criteria->sort !== null): ?>
+        <input type="hidden" name="sort" value="<?= $this->e($criteria->sort) ?>">
+        <input type="hidden" name="dir" value="<?= $this->e($criteria->direction) ?>">
+    <?php endif ?>
+</div>
+
 <div class="table-responsive">
     <table class="table table-hover align-middle mb-3">
         <thead>

@@ -1,16 +1,16 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var \Hydra\Admin\ViewModels\ListViewModel $vm */ ?>
-<?php $criteria = $vm->page->criteria ?>
+<?php /* The toolbar sits above the swapped region so the search box keeps focus
+       across a swap. That means a sort click never re-renders it, so the sort
+       state lives inside #admin-body (see the table partial) and is pulled in
+       here — a copy held in this form would go stale the moment a column
+       heading was clicked. */ ?>
 <form class="row g-2 align-items-end mb-3"
       hx-get="<?= $this->e($vm->url()) ?>"
       hx-target="#admin-body"
+      hx-include="#admin-sort-state"
       hx-push-url="true"
       hx-trigger="submit, change, keyup changed delay:300ms">
-    <?php if ($criteria->sort !== null): ?>
-        <input type="hidden" name="sort" value="<?= $this->e($criteria->sort) ?>">
-        <input type="hidden" name="dir" value="<?= $this->e($criteria->direction) ?>">
-    <?php endif ?>
-
     <?php if ($vm->isSearchable()): ?>
         <div class="col-auto">
             <label class="form-label" for="admin-search">Search</label>

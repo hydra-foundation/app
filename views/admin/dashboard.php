@@ -3,7 +3,7 @@
 <?php /** @var int $total */ ?>
 <?php /** @var array<string, int> $byRole */ ?>
 <?php /** @var list<array<string, mixed>> $newest */ ?>
-<p class="text-body-secondary">Signed in as <strong><?= $this->e($user->username) ?></strong>.</p>
+<p class="text-body-secondary">Signed in as <strong><?= $this->e($user->username) ?></strong></p>
 
 <div class="row g-3 mb-4">
     <div class="col-sm-4">

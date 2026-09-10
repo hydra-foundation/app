@@ -3,7 +3,7 @@
 <?php /** @var string $body */ ?>
 <?php /** @var string|null $toolbar */ ?>
 <?php /** @var array<string, mixed> $data */ ?>
-<?php $this->extends('admin/layout') ?>
+<?php $this->extends('layouts/admin') ?>
 
 <?php $this->start('title') ?><?= $this->e($screen->title) ?> · Admin<?php $this->stop() ?>
 
