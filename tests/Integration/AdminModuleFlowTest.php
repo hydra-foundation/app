@@ -102,6 +102,192 @@ final class AdminModuleFlowTest extends TestCase
         $this->assertStringNotContainsString('password_hash', $body);
     }
 
+    public function test_a_create_screen_opens_a_blank_form(): void
+    {
+        $this->login('boss');
+        $body = $this->body('GET', '/admin/users/new');
+
+        $this->assertStringContainsString('<title>New user · Admin</title>', $body);
+        $this->assertSame(3, substr_count($body, 'breadcrumb-item'));
+        $this->assertMatchesRegularExpression('/breadcrumb-item active">\s*New\s*<\/li>/', $body);
+        $this->assertStringContainsString('hx-post="/admin/users/new"', $body);
+        $this->assertStringContainsString('value=""', $body);
+        // Apply saves and stays; a row that does not exist yet has nowhere to stay.
+        $this->assertStringNotContainsString('value="apply"', $body);
+    }
+
+    public function test_a_create_screen_writes_the_row_and_returns_to_the_list(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/new', [], [
+            'username' => 'newcomer',
+            'role' => 'user',
+            'password' => 'correct-horse',
+        ]);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/admin/users', $response->getHeaderLine('Location'));
+        $this->assertStringContainsString('>newcomer</td>', $this->body('GET', '/admin/users?q=newcomer'));
+    }
+
+    public function test_an_htmx_create_hands_back_the_list_it_would_have_fetched(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/new', ['HX-Request' => 'true', 'HX-Target' => 'div#admin-frame'], [
+            'username' => 'newcomer',
+            'role' => 'user',
+            'password' => 'correct-horse',
+        ]);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('/admin/users', $response->getHeaderLine('HX-Push-Url'));
+        $this->assertStringContainsString('Created', (string) $response->getBody());
+    }
+
+    public function test_a_create_screen_can_require_what_the_edit_screen_leaves_optional(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/new', [], [
+            'username' => 'newcomer',
+            'role' => 'user',
+            'password' => '',
+        ]);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertStringContainsString('Set a password.', (string) $response->getBody());
+        $this->assertStringContainsString('Nothing to show.', $this->body('GET', '/admin/users?q=newcomer'));
+    }
+
+    public function test_the_source_rejects_a_name_another_row_already_holds(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/new', [], [
+            'username' => 'clerk',
+            'role' => 'user',
+            'password' => 'correct-horse',
+        ]);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertStringContainsString('already taken', (string) $response->getBody());
+    }
+
+    public function test_the_list_offers_the_way_to_a_new_row(): void
+    {
+        $this->login('boss');
+
+        $this->assertStringContainsString('hx-get="/admin/users/new"', $this->body('GET', '/admin/users'));
+    }
+
+    public function test_a_show_screen_reads_one_row(): void
+    {
+        $this->login('boss');
+        $body = $this->body('GET', '/admin/users/1');
+
+        $this->assertStringContainsString('<title>User · Admin</title>', $body);
+        $this->assertSame(3, substr_count($body, 'breadcrumb-item'));
+        $this->assertStringContainsString('>boss</dd>', $body);
+        $this->assertStringContainsString('>Admin</dd>', $body);
+        $this->assertStringNotContainsString('password_hash', $body);
+        $this->assertStringContainsString('hx-get="/admin/users/1/edit"', $body);
+    }
+
+    public function test_a_show_screen_is_a_404_when_nothing_has_that_id(): void
+    {
+        $this->login('boss');
+
+        $this->assertSame(404, $this->handle('GET', '/admin/users/999')->getStatusCode());
+    }
+
+    public function test_the_table_offers_a_way_into_each_row(): void
+    {
+        $this->login('boss');
+        $body = $this->body('GET', '/admin/users');
+
+        // One of each per row, for the 15 rows this page holds.
+        $this->assertSame(15, substr_count($body, '>View</a>'));
+        $this->assertSame(15, substr_count($body, '>Edit</a>'));
+        $this->assertStringContainsString('hx-get="/admin/users/22"', $body);
+    }
+
+    public function test_a_delete_removes_the_row_and_returns_to_the_list(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/2/delete');
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/admin/users', $response->getHeaderLine('Location'));
+        $this->assertStringContainsString('Nothing to show.', $this->body('GET', '/admin/users?q=clerk'));
+    }
+
+    public function test_an_htmx_delete_hands_back_the_list_it_would_have_fetched(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/2/delete', [
+            'HX-Request' => 'true',
+            'HX-Target' => 'div#admin-frame',
+        ]);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('/admin/users', $response->getHeaderLine('HX-Push-Url'));
+        $this->assertStringContainsString('Deleted', (string) $response->getBody());
+        $this->assertStringNotContainsString('>clerk</td>', (string) $response->getBody());
+    }
+
+    public function test_the_source_refuses_to_delete_the_account_doing_the_deleting(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/1/delete');
+        $body = (string) $response->getBody();
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertStringContainsString('alert-danger', $body);
+        $this->assertStringContainsString('You cannot delete the account you are signed in as.', $body);
+        // A refusal is not a redirect: the row it refused to remove is still there.
+        $this->assertStringContainsString('>boss</td>', $this->body('GET', '/admin/users?q=boss'));
+    }
+
+    public function test_a_delete_screen_is_a_post_or_it_is_nothing(): void
+    {
+        $this->login('boss');
+
+        // The path is real, the method is not: anything that crawls links gets 405.
+        $this->assertSame(405, $this->handle('GET', '/admin/users/2/delete')->getStatusCode());
+    }
+
+    public function test_both_the_table_and_the_show_screen_offer_a_way_to_remove_a_row(): void
+    {
+        $this->login('boss');
+
+        $list = $this->body('GET', '/admin/users');
+        $this->assertSame(15, substr_count($list, '>Delete</button>'));
+        $this->assertStringContainsString('hx-post="/admin/users/22/delete"', $list);
+        $this->assertStringContainsString('hx-confirm="Delete this user? This cannot be undone."', $list);
+
+        $show = $this->body('GET', '/admin/users/2');
+        $this->assertStringContainsString('hx-post="/admin/users/2/delete"', $show);
+    }
+
+    public function test_an_edit_screen_hangs_below_its_module(): void
+    {
+        $this->login('boss');
+        $body = $this->body('GET', '/admin/users/1/edit');
+
+        $this->assertStringContainsString('<title>Edit user · Admin</title>', $body);
+        $this->assertSame(3, substr_count($body, 'breadcrumb-item'));
+        $this->assertStringContainsString('>Users</a>', $body);
+        $this->assertStringContainsString('Edit 1', $body);
+    }
+
+    public function test_a_breadcrumb_link_swaps_the_frame_rather_than_reloading(): void
+    {
+        $this->login('boss');
+        $body = $this->body('GET', '/admin/users/1/edit');
+
+        $this->assertStringContainsString('hx-get="/admin/users"', $body);
+        $this->assertStringContainsString('hx-get="/admin/dashboard"', $body);
+        $this->assertStringNotContainsString('hx-get="/admin"', $body);
+    }
+
     public function test_the_admin_root_redirects_to_the_landing_module(): void
     {
         $this->login('boss');

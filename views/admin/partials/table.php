@@ -31,6 +31,9 @@
                         <?php endif ?>
                     </th>
                 <?php endforeach ?>
+                <?php if ($vm->hasRowActions()): ?>
+                    <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+                <?php endif ?>
             </tr>
         </thead>
         <tbody>
@@ -39,12 +42,48 @@
                     <?php foreach ($columns as $field): ?>
                         <td><?= $this->e($vm->cell($field, $row)) ?></td>
                     <?php endforeach ?>
+                    <?php if ($vm->hasRowActions()): ?>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <?php if ($vm->showUrl($row) !== null): ?>
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       href="<?= $this->e($vm->showUrl($row)) ?>"
+                                       hx-get="<?= $this->e($vm->showUrl($row)) ?>"
+                                       hx-target="#admin-frame"
+                                       hx-push-url="true">View</a>
+                                <?php endif ?>
+                                <?php if ($vm->editUrl($row) !== null): ?>
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       href="<?= $this->e($vm->editUrl($row)) ?>"
+                                       hx-get="<?= $this->e($vm->editUrl($row)) ?>"
+                                       hx-target="#admin-frame"
+                                       hx-push-url="true">Edit</a>
+                                <?php endif ?>
+
+                                <?php if ($vm->deleteUrl($row) !== null): ?>
+                                    <?php /* A form, not a link: deleting is a POST, and this still
+                                       works when htmx is not the one sending it. It is a btn-group
+                                       of its own because Bootstrap joins direct children only, and
+                                       the form is what sits between the group and the button. */ ?>
+                                    <form class="btn-group"
+                                          method="post"
+                                          action="<?= $this->e($vm->deleteUrl($row)) ?>"
+                                          hx-post="<?= $this->e($vm->deleteUrl($row)) ?>"
+                                          hx-target="#admin-frame"
+                                          hx-confirm="<?= $this->e($vm->deletePrompt()) ?>">
+                                        <?= $this->csrf() ?>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                <?php endif ?>
+                            </div>
+                        </td>
+                    <?php endif ?>
                 </tr>
             <?php endforeach ?>
 
             <?php if ($vm->page->isEmpty()): ?>
                 <tr>
-                    <td class="text-center text-body-secondary py-4" colspan="<?= count($columns) ?>">Nothing to show.</td>
+                    <td class="text-center text-body-secondary py-4" colspan="<?= count($columns) + ($vm->hasRowActions() ? 1 : 0) ?>">Nothing to show.</td>
                 </tr>
             <?php endif ?>
         </tbody>

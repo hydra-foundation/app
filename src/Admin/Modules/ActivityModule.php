@@ -9,14 +9,15 @@ use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
+use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
 
 /**
  * Activity module
  *
  * The request log every visitor writes to. The two heaviest columns — agent and
- * referer — are declared but kept off the table: recorded for a detail screen,
- * not for a row that has to stay readable.
+ * referer — are declared but kept off the table: they belong to the show screen,
+ * not to a row that has to stay readable.
  */
 final class ActivityModule implements ModuleInterface
 {
@@ -61,6 +62,7 @@ final class ActivityModule implements ModuleInterface
                 Field::text('ip')->label('IP')->sortable()->searchable(),
                 Field::text('user_agent')->label('Agent')->hiddenOn(Surface::List),
                 Field::text('referer')->hiddenOn(Surface::List),
-            );
+            )
+            ->screens(ShowScreen::make()->title('Request'));
     }
 }

@@ -163,6 +163,32 @@ final class ActivityFlowTest extends TestCase
         $this->assertStringNotContainsString('>/admin/activity</td>', $body);
     }
 
+    public function test_the_show_screen_carries_the_columns_the_table_cannot(): void
+    {
+        $this->seed(new Activity(null, null, 'GET', '/pricing', '', 200, 7, '203.0.113.9', 'Mozilla/5.0 (X11)', 'https://example.test/'));
+        // Signing in records a row of its own, so take the id before that.
+        $id = $this->lastId();
+        $this->login('boss');
+        $body = $this->body('GET', '/admin/activity/' . $id);
+
+        $this->assertStringContainsString('<title>Request · Admin</title>', $body);
+        $this->assertStringContainsString('>Mozilla/5.0 (X11)</dd>', $body);
+        $this->assertStringContainsString('>https://example.test/</dd>', $body);
+        $this->assertStringContainsString('>200 OK</dd>', $body);
+    }
+
+    public function test_the_log_can_be_read_one_row_at_a_time_and_still_not_be_written(): void
+    {
+        $this->seed(new Activity(null, null, 'GET', '/pricing', '', 200, 7, null, null, null));
+        $id = $this->lastId();
+        $this->login('boss');
+
+        $this->assertStringNotContainsString('>Edit</a>', $this->body('GET', '/admin/activity/' . $id));
+        $this->assertStringNotContainsString('>Delete</button>', $this->body('GET', '/admin/activity'));
+        $this->assertSame(404, $this->handle('GET', '/admin/activity/' . $id . '/edit')->getStatusCode());
+        $this->assertSame(404, $this->handle('POST', '/admin/activity/' . $id . '/delete')->getStatusCode());
+    }
+
     public function test_the_module_is_admin_only(): void
     {
         $this->login('clerk');
@@ -234,6 +260,11 @@ final class ActivityFlowTest extends TestCase
     private function clear(): void
     {
         $this->db->execute('DELETE FROM activity');
+    }
+
+    private function lastId(): string
+    {
+        return (string) ($this->db->selectOne('SELECT MAX(id) AS id FROM activity')['id'] ?? '');
     }
 
     private function seed(Activity $activity): void
