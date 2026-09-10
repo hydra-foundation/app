@@ -30,6 +30,7 @@ final class UsersModule implements ModuleInterface
     {
         return Definition::make('users')
             ->title('Users')
+            ->group('Administration')
             ->ability(AccessAdmin::class)
             ->source(UserSource::class)
             ->perPage(15)

@@ -96,7 +96,7 @@ final class AdminModuleFlowTest extends TestCase
         $this->assertStringContainsString('<title>Users · Admin</title>', $body);
         $this->assertStringContainsString('id="admin-frame"', $body);
         $this->assertStringContainsString('id="admin-body"', $body);
-        $this->assertSame(2, substr_count($body, 'breadcrumb-item'));
+        $this->assertSame(['Admin', 'Administration', 'Users'], $this->crumbs($body));
         $this->assertStringContainsString('Showing 1–15 of 22', $body);
         $this->assertStringContainsString('>temp20</td>', $body);
         $this->assertStringNotContainsString('password_hash', $body);
@@ -108,7 +108,7 @@ final class AdminModuleFlowTest extends TestCase
         $body = $this->body('GET', '/admin/users/new');
 
         $this->assertStringContainsString('<title>New user · Admin</title>', $body);
-        $this->assertSame(3, substr_count($body, 'breadcrumb-item'));
+        $this->assertSame(['Admin', 'Administration', 'Users', 'New'], $this->crumbs($body));
         $this->assertMatchesRegularExpression('/breadcrumb-item active">\s*New\s*<\/li>/', $body);
         $this->assertStringContainsString('hx-post="/admin/users/new"', $body);
         $this->assertStringContainsString('value=""', $body);
@@ -189,7 +189,7 @@ final class AdminModuleFlowTest extends TestCase
         $body = $this->body('GET', '/admin/users/1');
 
         $this->assertStringContainsString('<title>User · Admin</title>', $body);
-        $this->assertSame(3, substr_count($body, 'breadcrumb-item'));
+        $this->assertSame(['Admin', 'Administration', 'Users', '1'], $this->crumbs($body));
         $this->assertStringContainsString('>boss</dd>', $body);
         $this->assertStringContainsString('>Admin</dd>', $body);
         $this->assertStringNotContainsString('password_hash', $body);
@@ -324,7 +324,7 @@ final class AdminModuleFlowTest extends TestCase
         $body = $this->body('GET', '/admin/users/1/edit');
 
         $this->assertStringContainsString('<title>Edit user · Admin</title>', $body);
-        $this->assertSame(3, substr_count($body, 'breadcrumb-item'));
+        $this->assertSame(['Admin', 'Administration', 'Users', 'Edit 1'], $this->crumbs($body));
         $this->assertStringContainsString('>Users</a>', $body);
         $this->assertStringContainsString('Edit 1', $body);
     }
@@ -356,7 +356,7 @@ final class AdminModuleFlowTest extends TestCase
         $this->assertStringContainsString('Dashboard', $body);
         $this->assertStringContainsString('Newest accounts', $body);
         $this->assertStringContainsString('Signed in as <strong>clerk</strong>', $body);
-        $this->assertSame(2, substr_count($body, 'breadcrumb-item'));
+        $this->assertSame(['Admin', 'Overview', 'Dashboard'], $this->crumbs($body));
     }
 
     public function test_the_presenter_supplies_the_page_its_numbers(): void
@@ -491,6 +491,22 @@ final class AdminModuleFlowTest extends TestCase
         $this->assertStringContainsString('id="admin-sort-state"', $sorted);
         $this->assertStringContainsString('name="sort" value="username"', $sorted);
         $this->assertStringContainsString('name="dir" value="asc"', $sorted);
+    }
+
+    /**
+     * The trail as a visitor reads it, link or not — a group contributes a
+     * crumb with no page behind it.
+     *
+     * @return list<string>
+     */
+    private function crumbs(string $body): array
+    {
+        preg_match_all('~<li class="breadcrumb-item[^"]*">(.*?)</li>~s', $body, $matches);
+
+        return array_map(
+            static fn (string $crumb): string => trim(strip_tags($crumb)),
+            $matches[1],
+        );
     }
 
     /** @param array<string, string> $headers */
