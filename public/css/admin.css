@@ -533,6 +533,115 @@
 
 /* Narrow screens ----------------------------------------------------------- */
 
+/* Settings ----------------------------------------------------------------- */
+
+/* A category strip, not a tab bar: each is a link to its own URL, so it is
+   underlined where a tab would be boxed. */
+.settings-nav {
+    display: flex;
+    gap: var(--s-4);
+    margin-bottom: var(--s-5);
+    border-bottom: 1px solid var(--line);
+}
+
+.settings-tab {
+    padding: 0 0 var(--s-3);
+    margin-bottom: -1px;
+    font-size: var(--t-base);
+    font-weight: 500;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    transition: color var(--ease), border-color var(--ease);
+}
+
+.settings-tab:hover {
+    color: var(--ink-strong);
+    text-decoration: none;
+}
+
+.settings-tab.active {
+    color: var(--accent-hover);
+    border-bottom-color: var(--accent);
+}
+
+/* The legend stays outside the grid: as a child of a grid container it takes a
+   cell of its own and pushes the first choice out of line. */
+.theme-field {
+    margin: 0 0 var(--s-5);
+    padding: 0;
+    border: 0;
+}
+
+.theme-field legend {
+    margin-bottom: var(--s-3);
+    padding: 0;
+}
+
+.theme-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: var(--s-3);
+    max-width: 34rem;
+}
+
+.theme-choice {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-3);
+    cursor: pointer;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-3);
+    transition: border-color var(--ease), background-color var(--ease);
+}
+
+.theme-choice:hover {
+    background: var(--hover-tint);
+}
+
+.theme-choice.selected {
+    border-color: var(--accent);
+    background: var(--accent-wash);
+}
+
+.theme-choice input {
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+/* The swatch is painted by the theme it names, so a palette shows itself
+   rather than being described. */
+.theme-swatch {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 2.25rem;
+    height: 1.75rem;
+    padding: 0.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-1);
+}
+
+.theme-swatch-bar {
+    height: 0.3125rem;
+    border-radius: 1px;
+    background: var(--ink);
+}
+
+.theme-swatch-dot {
+    width: 0.75rem;
+    height: 0.4375rem;
+    border-radius: 1px;
+    background: var(--accent);
+}
+
+.theme-name {
+    font-size: var(--t-base);
+    font-weight: 500;
+    color: var(--ink-strong);
+}
+
 @media (max-width: 56rem) {
     .admin-topbar {
         display: flex;

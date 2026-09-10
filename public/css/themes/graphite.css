@@ -1,0 +1,58 @@
+/* Graphite — the dark counterpart to paper.
+ *
+ * The roles do not invert, they darken: --paper is still the recessed ground
+ * the sidebar sits on and --surface still the raised one the content sits on,
+ * so every rule written against them holds without knowing which theme is in
+ * force. Warm-neutral again, because a warm palette going cold is the tell of
+ * a dark mode bolted on afterwards.
+ *
+ * The accent moves rather than inverting: verdigris at #0f6b60 has 6.4:1 on
+ * white and 1.7:1 here, so the dark theme takes a lighter draw of the same
+ * hue — and a button in that colour then needs dark text, which is what
+ * --on-accent is for.
+ *
+ * Every value below clears WCAG AA against the ground it is used on. */
+
+[data-theme="graphite"] {
+    --paper: #1a1917;
+    --surface: #201f1d;
+    --sunk: #1b1a18;
+    --line: #333029;
+    --line-strong: #4a463d;
+
+    --ink: #e6e2d9;
+    --ink-strong: #f7f4ed;
+    --muted: #9a9384;
+    --ink-rgb: 230, 226, 217;
+
+    --accent: #4fbfae;
+    --accent-hover: #6fd4c4;
+    --accent-wash: #16302c;
+    --accent-ring: rgba(79, 191, 174, 0.25);
+    --accent-rgb: 79, 191, 174;
+    --on-accent: #10201d;
+
+    --danger: #e0705c;
+    --danger-wash: #33201c;
+    --danger-line: #5a332b;
+    --danger-ink: #f0a494;
+    --danger-ring: rgba(224, 112, 92, 0.22);
+    --danger-rgb: 224, 112, 92;
+    --on-danger: #24100c;
+
+    --ok: #5fae78;
+    --ok-wash: #1b2c21;
+    --ok-line: #2f4b39;
+    --ok-ink: #9ed3ac;
+    --ok-rgb: 95, 174, 120;
+
+    /* Light lifts a surface here, where a shadow would only muddy it. */
+    --hover-tint: rgba(255, 255, 255, 0.05);
+    --mark: #4a3f1c;
+    --scrim: rgba(0, 0, 0, 0.62);
+    --chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%239a9384' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+    /* Browser furniture — form controls, scrollbars — has to be told too, or a
+       native select renders light inside a dark page. */
+    color-scheme: dark;
+}

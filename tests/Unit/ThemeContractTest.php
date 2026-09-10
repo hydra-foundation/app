@@ -20,8 +20,14 @@ final class ThemeContractTest extends TestCase
 {
     private const CSS = __DIR__ . '/../../public/css';
 
-    /** The palettes on offer. A new one is a file here and a link in the layout. */
-    private const THEMES = ['paper'];
+    /** Whatever palettes are on disk: adding one must not mean editing a test. */
+    private static function themeNames(): array
+    {
+        return array_map(
+            static fn (string $file): string => basename($file, '.css'),
+            glob(self::CSS . '/themes/*.css') ?: [],
+        );
+    }
 
     /** Sheets that consume tokens rather than define them. */
     private const CONSUMERS = ['base.css', 'admin.css', 'app.css'];
@@ -31,7 +37,7 @@ final class ThemeContractTest extends TestCase
      */
     public static function themes(): iterable
     {
-        foreach (self::THEMES as $theme) {
+        foreach (self::themeNames() as $theme) {
             yield $theme => [$theme];
         }
     }
@@ -70,20 +76,20 @@ final class ThemeContractTest extends TestCase
 
     public function test_the_default_theme_answers_a_document_that_names_none(): void
     {
-        // The layout defaults the attribute, but a fragment rendered without the
-        // layout has no <html> at all and still has to be readable.
-        $this->assertStringContainsString(':root,', $this->read('themes/paper.css'));
+        // The layout defaults the attribute, but a page that does not use it —
+        // or a fragment rendered without a layout — still has to be readable.
+        // :not() keeps the fallback from outranking a named palette.
+        $this->assertStringContainsString(':root:not([data-theme])', $this->read('themes/paper.css'));
     }
 
-    public function test_every_theme_is_reachable_by_name(): void
+    #[DataProvider('themes')]
+    public function test_every_theme_is_reachable_by_name(string $theme): void
     {
-        foreach (self::THEMES as $theme) {
-            $this->assertStringContainsString(
-                "[data-theme=\"{$theme}\"]",
-                $this->read("themes/{$theme}.css"),
-                "Theme \"{$theme}\" cannot be selected by name.",
-            );
-        }
+        $this->assertStringContainsString(
+            "[data-theme=\"{$theme}\"]",
+            $this->read("themes/{$theme}.css"),
+            "Theme \"{$theme}\" cannot be selected by name.",
+        );
     }
 
     /**

@@ -1,7 +1,11 @@
 <!doctype html>
+<?php /** @var \App\View\ThemeResolver $theme */ ?>
+<?php /** @var \App\View\Themes $themes */ ?>
 <?php /* The theme is a document-level attribute so one palette file can answer
-   for the whole page, and a screen that wants another names it in a section. */ ?>
-<html lang="en" data-theme="<?= $this->e($this->section('theme', 'paper')) ?>">
+   for the whole page, and a screen that wants another names it in a section.
+   Asked for here rather than at the view's construction: it reads the session,
+   and the console builds a view without one. */ ?>
+<html lang="en" data-theme="<?= $this->e($this->section('theme', $theme->current())) ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,9 +20,12 @@
     <link rel="stylesheet" href="/css/vendor/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/vendor/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="/css/base.css" />
-    <?php /* Palettes last of the shared sheets: base.css names tokens, a theme
-       gives them values, and a further theme need only be loaded after this. */ ?>
-    <link rel="stylesheet" href="/css/themes/paper.css" />
+    <?php /* Every palette on disk is linked and the data-theme attribute picks
+       one, so switching is a repaint rather than a new stylesheet. Order does
+       not matter: each is scoped to its own name. */ ?>
+    <?php foreach ($themes->names() as $name): ?>
+    <link rel="stylesheet" href="/css/themes/<?= $this->e($name) ?>.css" />
+    <?php endforeach ?>
     <link rel="stylesheet" href="/css/app.css" />
     <?php /* Screens that carry their own stylesheet append it here, after the
        shared theme so it can build on the tokens rather than fight them. */ ?>

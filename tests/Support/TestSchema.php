@@ -40,6 +40,15 @@ final class TestSchema
         );
 
         $pdo->exec(
+            'CREATE TABLE user_preferences (
+                user_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                value TEXT NOT NULL,
+                PRIMARY KEY (user_id, name)
+            )'
+        );
+
+        $pdo->exec(
             'CREATE TABLE activity (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NULL,

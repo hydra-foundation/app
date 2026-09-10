@@ -13,13 +13,14 @@
  *              custom property cannot reach inside one. Swap the whole image.
  *
  * A second theme is this file with different values, wrapped in
- * [data-theme="its-name"] and loaded after this one. The :root here is the
- * fallback for a document that names no theme at all.
+ * [data-theme="its-name"]. The first selector below is the fallback for a
+ * document that names no theme at all, and is written :not([data-theme]) so it
+ * cannot outrank a named palette on source order — link them in any sequence.
  *
  * app/tests/Unit/ThemeContractTest.php checks a theme against what the
  * stylesheets actually ask for, so a missing token fails rather than renders. */
 
-:root,
+:root:not([data-theme]),
 [data-theme="paper"] {
     /* Warm paper neutrals, so the one cool accent has something to push against. */
     --paper: #f5f3ee;

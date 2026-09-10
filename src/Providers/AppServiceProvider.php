@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Admin\Modules\ActivityModule;
 use App\Admin\Modules\DashboardModule;
+use App\Admin\Modules\SettingsModule;
 use App\Admin\Modules\UsersModule;
 use App\Config\AppConfig;
 use App\Config\DbConfig;
@@ -18,6 +19,8 @@ use App\Http\Middleware\RecordActivityMiddleware;
 use App\Http\Middleware\RedirectUnauthenticatedMiddleware;
 use App\Repositories\ActivityRepository;
 use App\Repositories\UserRepository;
+use App\View\ThemeResolver;
+use App\View\Themes;
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
@@ -76,6 +79,7 @@ final class AppServiceProvider extends ServiceProvider
         DashboardModule::class,
         UsersModule::class,
         ActivityModule::class,
+        SettingsModule::class,
     ];
 
     /**
@@ -146,11 +150,26 @@ final class AppServiceProvider extends ServiceProvider
             return new StreamLogger($stream);
         });
 
+        $container->singleton(Themes::class, function (): Themes {
+            return new Themes(dirname(__DIR__, 2) . '/public/css/themes');
+        });
+
         $container->singleton(ViewInterface::class, function () use ($container) {
+            $themes = $container->get(Themes::class);
+
             return new PhpView(
                 dirname(__DIR__, 2) . '/views',
                 $container->get(CsrfGuard::class),
                 fallbacks: [AdminServiceProvider::views()],
+                // Shared rather than passed through every render: the layout
+                // needs the palette on every page, admin or not, and no
+                // controller should have to remember to hand it over. The
+                // resolver is shared and not its answer — building the view
+                // must not read the session, or the console cannot build one.
+                shared: [
+                    'themes' => $themes,
+                    'theme' => $container->get(ThemeResolver::class),
+                ],
             );
         });
 
