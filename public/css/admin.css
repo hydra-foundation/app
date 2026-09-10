@@ -5,8 +5,51 @@
    this sheet move into the admin package without bringing a palette with it. */
 
 .admin {
+    display: flex;
+    flex-direction: column;
     min-height: 100dvh;
     background: var(--surface);
+}
+
+.admin-layout {
+    display: flex;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.admin-frame {
+    flex: 1 1 auto;
+}
+
+/* Top bar ------------------------------------------------------------------ */
+
+/* Wide screens navigate from the rail, so the bar and its scrim are not merely
+   hidden here — they are absent, and only the narrow-screen block below turns
+   them on. */
+.admin-topbar,
+.admin-scrim {
+    display: none;
+}
+
+.admin-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    font-size: 1.25rem;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--r-2);
+    transition: background-color var(--ease), border-color var(--ease);
+}
+
+.admin-toggle:hover {
+    background: var(--hover-tint);
+    border-color: var(--line);
 }
 
 /* Sidebar ------------------------------------------------------------------ */
@@ -491,21 +534,66 @@
 /* Narrow screens ----------------------------------------------------------- */
 
 @media (max-width: 56rem) {
-    .admin {
-        flex-direction: column;
-    }
-
-    .admin-sidebar {
-        position: static;
-        align-self: stretch;
-        height: auto;
-        flex: 0 0 auto;
-        border-right: 0;
+    .admin-topbar {
+        display: flex;
+        align-items: center;
+        gap: var(--s-2);
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        padding: var(--s-2) var(--s-3);
+        background: var(--paper);
         border-bottom: 1px solid var(--line);
     }
 
-    .admin-signout {
-        padding-top: var(--s-3);
+    .admin-topbar .admin-brand {
+        margin: 0;
+    }
+
+    /* The rail becomes a drawer. It keeps its own scroll, so the number of
+       modules stops being a layout problem the way a stacked list makes it. */
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 40;
+        flex: 0 0 auto;
+        width: min(19rem, 82vw);
+        height: 100dvh;
+        align-self: auto;
+        padding: var(--s-4);
+        border-right: 1px solid var(--line);
+        transform: translateX(-100%);
+        visibility: hidden;
+        transition: transform 180ms ease, visibility 0s linear 180ms;
+    }
+
+    :root[data-nav="open"] .admin-sidebar {
+        transform: none;
+        visibility: visible;
+        transition: transform 180ms ease, visibility 0s;
+    }
+
+    .admin-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 35;
+        background: var(--scrim);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+    }
+
+    :root[data-nav="open"] .admin-scrim {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* The drawer scrolls; the page behind it must not. */
+    :root[data-nav="open"] body {
+        overflow: hidden;
     }
 
     .admin-frame {
