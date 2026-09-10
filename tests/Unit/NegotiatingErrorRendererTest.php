@@ -34,10 +34,11 @@ final class NegotiatingErrorRendererTest extends TestCase
         return new ErrorContext($error, $request, $status, $debug);
     }
 
-    public function test_htmx_request_gets_an_html_fragment_retargeted_to_the_error_region(): void
+    public function test_htmx_request_gets_an_html_fragment_bound_for_the_error_region(): void
     {
         // htmx sends Accept: text/html too, so the htmx branch must win over the
-        // full-page HTML branch — and retarget so the failed element isn't wiped.
+        // full-page HTML branch — and land out-of-band so the failed element
+        // isn't wiped.
         $response = $this->renderer()->render($this->context(
             new HttpException(422, 'invalid'),
             422,
@@ -46,10 +47,12 @@ final class NegotiatingErrorRendererTest extends TestCase
 
         $this->assertSame(422, $response->getStatusCode());
         $this->assertStringContainsString('text/html', $response->getHeaderLine('Content-Type'));
-        $this->assertSame('#app-error', $response->getHeaderLine('HX-Retarget'));
-        $this->assertSame('innerHTML', $response->getHeaderLine('HX-Reswap'));
-
         $body = (string) $response->getBody();
+
+        // htmx 4 reads no response header; an out-of-band wrapper is how the
+        // fragment reaches a region other than the element that asked for it,
+        // and htmx drops the wrapper from the fragment once it has.
+        $this->assertStringStartsWith('<div hx-swap-oob="innerHTML:#app-error">', $body);
         $this->assertStringContainsString('invalid', $body);
         // A fragment, not a whole document.
         $this->assertStringNotContainsString('<!doctype html>', $body);

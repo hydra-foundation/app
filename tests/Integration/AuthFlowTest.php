@@ -19,6 +19,7 @@ use App\Tests\Support\FixedSignerServiceProvider;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
 use Hydra\Csrf\CsrfGuard;
+use Hydra\Http\HtmxResponse;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\Nyholm\NyholmServiceProvider;
@@ -31,7 +32,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * The auth slice end-to-end through the real composition root: the login form,
  * a failed attempt (generic 422, no session), a successful attempt (302 →
- * /admin, which lands on the dashboard), the htmx HX-Redirect variant,
+ * /admin, which lands on the dashboard), the htmx directive variant,
  * logout, and the guard rejecting the protected route for an anonymous visitor.
  *
  * Backed by an in-memory sqlite swap for MariaDB (the ConnectionInterface seam),
@@ -127,12 +128,14 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function test_protected_route_signals_login_to_htmx_via_header(): void
+    public function test_protected_route_signals_login_to_htmx(): void
     {
         $response = $this->handle('GET', '/admin', ['HX-Request' => 'true']);
 
-        // htmx swallows a 302 body, so the redirect must ride an HX-Redirect header.
-        $this->assertSame('/login', $response->getHeaderLine('HX-Redirect'));
+        // A 302 would be followed by fetch and the login page swapped into one
+        // element, so the redirect travels as a directive htmx 4 will act on.
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('/login', HtmxResponse::directive($response, 'redirect'));
     }
 
     public function test_wrong_password_is_rejected_generically_without_logging_in(): void
@@ -202,14 +205,17 @@ final class AuthFlowTest extends TestCase
         $this->assertStringContainsString(self::USERNAME, (string) $dashboard->getBody());
     }
 
-    public function test_htmx_login_signals_redirect_via_header(): void
+    public function test_htmx_login_signals_redirect(): void
     {
         $response = $this->handle('POST', '/login', ['HX-Request' => 'true'], [
             'username' => self::USERNAME,
             'password' => self::PASSWORD,
         ]);
 
-        $this->assertSame('/admin', $response->getHeaderLine('HX-Redirect'));
+        // Not a 204: htmx 4 skips the body of one, and the sign-in button would
+        // do nothing at all.
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('/admin', HtmxResponse::directive($response, 'redirect'));
     }
 
     public function test_logout_ends_the_session(): void
@@ -250,7 +256,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
-    public function test_expired_session_htmx_post_signals_login_via_header(): void
+    public function test_expired_session_htmx_post_signals_login(): void
     {
         $request = (new Psr17Factory)->createServerRequest('POST', '/logout')
             ->withHeader('HX-Request', 'true')
@@ -258,7 +264,7 @@ final class AuthFlowTest extends TestCase
 
         $response = $this->container->get(RequestHandlerInterface::class)->handle($request);
 
-        $this->assertSame('/login', $response->getHeaderLine('HX-Redirect'));
+        $this->assertSame('/login', HtmxResponse::directive($response, 'redirect'));
     }
 
     public function test_authenticated_user_with_bad_token_still_gets403(): void

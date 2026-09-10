@@ -7,7 +7,6 @@ namespace App\Http;
 use Hydra\Http\Contracts\ErrorRendererInterface;
 use Hydra\Http\ErrorContext;
 use Hydra\Http\Htmx;
-use Hydra\Http\HtmxResponse;
 use Hydra\Http\PlainTextErrorRenderer;
 use Hydra\Http\Responder;
 use Psr\Http\Message\ResponseInterface;
@@ -50,16 +49,16 @@ final class NegotiatingErrorRenderer implements ErrorRendererInterface
     }
 
     /**
-     * An HTML fragment htmx can swap into the layout's error region, retargeted
-     * so a failed request doesn't blow away the element it originated from.
+     * An HTML fragment htmx swaps into the layout's error region rather than the
+     * element the failed request came from — out-of-band, so that element keeps
+     * whatever the reader was looking at.
      */
     private function htmxFragment(ErrorContext $context): ResponseInterface
     {
         $response = $this->responder->html($this->errorMarkup($context), $context->status);
 
-        return (new HtmxResponse)
-            ->retarget(self::HTMX_ERROR_TARGET)
-            ->reswap('innerHTML')
+        return $this->responder->htmx()
+            ->retarget(self::HTMX_ERROR_TARGET, 'innerHTML')
             ->applyTo($response);
     }
 

@@ -90,3 +90,32 @@
     text-transform: uppercase;
     color: var(--accent);
 }
+
+/* Errors ------------------------------------------------------------------- */
+
+/* The region the error renderer targets out-of-band. It is in every page, so it
+   has to take up nothing at all until something is put in it. */
+#app-error:not(:empty) {
+    margin: var(--s-4) var(--s-5) 0;
+    padding: var(--s-4);
+    background: var(--danger-wash);
+    border: 1px solid var(--danger-line);
+    border-radius: var(--r-3);
+    color: var(--danger-ink);
+}
+
+#app-error h1 {
+    margin: 0;
+    font-size: var(--t-h3);
+    color: inherit;
+}
+
+#app-error p {
+    margin: var(--s-2) 0 0;
+}
+
+#app-error pre {
+    margin: var(--s-3) 0 0;
+    font-size: var(--t-small);
+    white-space: pre-wrap;
+}

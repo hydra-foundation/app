@@ -18,6 +18,7 @@ use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
 use Hydra\Csrf\CsrfGuard;
+use Hydra\Http\HtmxResponse;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\Nyholm\NyholmServiceProvider;
@@ -142,7 +143,7 @@ final class AdminModuleFlowTest extends TestCase
         $body = (string) $response->getBody();
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('/admin/users/23', $response->getHeaderLine('HX-Push-Url'));
+        $this->assertSame('/admin/users/23', HtmxResponse::directive($response, 'push-url'));
         $this->assertStringContainsString('Created', $body);
         // The show screen for that row, not the table it is one line of.
         $this->assertStringContainsString('>newcomer</dd>', $body);
@@ -233,7 +234,7 @@ final class AdminModuleFlowTest extends TestCase
         ]);
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('/admin/users', $response->getHeaderLine('HX-Push-Url'));
+        $this->assertSame('/admin/users', HtmxResponse::directive($response, 'push-url'));
         $this->assertStringContainsString('Deleted', (string) $response->getBody());
         $this->assertStringNotContainsString('>clerk</td>', (string) $response->getBody());
     }
@@ -250,7 +251,7 @@ final class AdminModuleFlowTest extends TestCase
 
         $this->assertSame(
             '/admin/users?q=temp&sort=username&dir=asc&page=2',
-            urldecode($response->getHeaderLine('HX-Push-Url')),
+            urldecode((string) HtmxResponse::directive($response, 'push-url')),
         );
         // The search it came back to is the search it was sent from.
         $this->assertStringContainsString('value="temp"', $body);
@@ -271,7 +272,7 @@ final class AdminModuleFlowTest extends TestCase
         // The page it was on is gone; the rest of the view it was asked for is not.
         $this->assertSame(
             '/admin/users?q=temp20&sort=id&dir=desc',
-            urldecode($response->getHeaderLine('HX-Push-Url')),
+            urldecode((string) HtmxResponse::directive($response, 'push-url')),
         );
         $this->assertStringContainsString('Nothing to show.', (string) $response->getBody());
     }

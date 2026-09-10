@@ -35,6 +35,11 @@
     <script src="/js/vendor/bootstrap.bundle.min.js" defer></script>
 </head>
 <body hx-headers:inherited='{"X-CSRF-Token": "<?= $this->e($this->csrfToken()) ?>"}'>
+    <?php /* Where a failed htmx request lands. The error renderer swaps into it
+       out-of-band, so a refusal is read here instead of replacing whatever the
+       reader was working in. Empty most of the time, and styled only when it is
+       not. */ ?>
+    <div id="app-error" role="alert"></div>
     <main><?= $this->section('content') ?></main>
 </body>
 </html>
