@@ -12,6 +12,7 @@ use App\Console\Commands\MakeControllerCommand;
 use App\Console\Commands\MakeUserCommand;
 use App\Console\Commands\SeedActivityCommand;
 use Hydra\Admin\Console\AdminRoutesCommand;
+use Hydra\View\Contracts\ViewInterface;
 use Hydra\Admin\ModuleRegistry;
 use Hydra\Console\Commands\KeyGenerateCommand;
 use Hydra\Console\Commands\MakeMigrationCommand;
@@ -43,7 +44,7 @@ $application->addCommands([
     new MakeMigrationCommand(__DIR__ . '/../database/migrations'),
     new MakeControllerCommand(__DIR__ . '/../src/Controllers'),
     new MakeAbilityCommand(__DIR__ . '/../src/Authorization'),
-    new AdminRoutesCommand($container->get(ModuleRegistry::class)),
+    new AdminRoutesCommand($container->get(ModuleRegistry::class), $container->get(ViewInterface::class)),
 ]);
 
 // The migrate:* commands need the database connection, so they are loaded lazily
