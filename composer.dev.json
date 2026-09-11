@@ -13,24 +13,9 @@
             "App\\Tests\\": "tests/"
         }
     },
-    "_comment": "LOCAL DEVELOPMENT ONLY. Use with: COMPOSER=composer.dev.json composer install. This resolves the hydrakit/* packages from your local sibling checkouts via symlink so edits are reflected immediately. Consumers use the plain composer.json, which resolves everything from Packagist.",
+    "_comment": "LOCAL DEVELOPMENT ONLY. Use with: COMPOSER=composer.dev.json composer install. The glob resolves every hydrakit/* package from the hydra monorepo checkout via symlink, so edits are reflected immediately and a new package needs no edit here. Consumers use the plain composer.json, which resolves everything from Packagist.",
     "repositories": [
-        { "type": "path", "url": "../core", "options": { "symlink": true } },
-        { "type": "path", "url": "../http", "options": { "symlink": true } },
-        { "type": "path", "url": "../validation", "options": { "symlink": true } },
-        { "type": "path", "url": "../session", "options": { "symlink": true } },
-        { "type": "path", "url": "../csrf", "options": { "symlink": true } },
-        { "type": "path", "url": "../auth", "options": { "symlink": true } },
-        { "type": "path", "url": "../authorization", "options": { "symlink": true } },
-        { "type": "path", "url": "../event", "options": { "symlink": true } },
-        { "type": "path", "url": "../kernel", "options": { "symlink": true } },
-        { "type": "path", "url": "../log", "options": { "symlink": true } },
-        { "type": "path", "url": "../database", "options": { "symlink": true } },
-        { "type": "path", "url": "../view", "options": { "symlink": true } },
-        { "type": "path", "url": "../nyholm", "options": { "symlink": true } },
-        { "type": "path", "url": "../console", "options": { "symlink": true } },
-        { "type": "path", "url": "../php-di", "options": { "symlink": true } },
-        { "type": "path", "url": "../admin", "options": { "symlink": true } }
+        { "type": "path", "url": "../hydra/packages/*", "options": { "symlink": true } }
     ],
     "authors": [
         {
