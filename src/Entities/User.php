@@ -17,7 +17,7 @@ final readonly class User implements AuthenticatableInterface
         public int $id,
         public string $username,
         public string $passwordHash,
-        public string $role,
+        public Role $role,
         public string $createdAt,
     ) {}
 
@@ -27,14 +27,14 @@ final readonly class User implements AuthenticatableInterface
             id: (int) $row['id'],
             username: (string) $row['username'],
             passwordHash: (string) $row['password_hash'],
-            role: (string) ($row['role'] ?? 'user'),
+            role: Role::coerce($row['role'] ?? null),
             createdAt: (string) $row['created_at'],
         );
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === Role::Admin;
     }
 
     public function getAuthIdentifier(): int|string

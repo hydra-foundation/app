@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Entities\Role;
 use App\Entities\User;
 use App\Http\Middleware\RecordActivityMiddleware;
 use App\Repositories\ActivityRepository;
@@ -140,7 +141,7 @@ final class RecordActivityMiddlewareTest extends TestCase
                     throw new RuntimeException('no session');
                 }
 
-                return new User(7, 'boss', 'hash', 'admin', '2026-09-09 00:00:00');
+                return new User(7, 'boss', 'hash', Role::Admin, '2026-09-09 00:00:00');
             }
 
             public function check(): bool { return true; }

@@ -365,9 +365,11 @@ final class AdminModuleFlowTest extends TestCase
         $this->login('boss');
         $body = $this->body('GET', '/admin/dashboard');
 
-        // 22 seeded accounts, one of them an admin.
+        // 22 seeded accounts, one of them an admin. One tile per role, labelled
+        // from the enum, so the plain-user tile carries the other 21.
         $this->assertMatchesRegularExpression('/Users<\/div>\s*<div class="stat-value">22</', $body);
-        $this->assertMatchesRegularExpression('/Admins<\/div>\s*<div class="stat-value">1</', $body);
+        $this->assertMatchesRegularExpression('/Admin<\/div>\s*<div class="stat-value">1</', $body);
+        $this->assertMatchesRegularExpression('/User<\/div>\s*<div class="stat-value">21</', $body);
     }
 
     public function test_the_sidebar_shows_only_the_modules_the_visitor_may_reach(): void

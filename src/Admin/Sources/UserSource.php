@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Sources;
 
+use App\Entities\Role;
 use Hydra\Admin\Contracts\CreateSourceInterface;
 use Hydra\Admin\Contracts\DeleteSourceInterface;
 use Hydra\Admin\Contracts\RowSourceInterface;
@@ -75,7 +76,7 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
             'INSERT INTO users (username, role, password_hash) VALUES (?, ?, ?)',
             [
                 $username,
-                (string) ($data['role'] ?? 'user'),
+                $this->role($data),
                 password_hash((string) ($data['password'] ?? ''), PASSWORD_DEFAULT),
             ],
         );
@@ -92,7 +93,7 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
         }
 
         $columns = ['username = ?', 'role = ?'];
-        $params = [$username, (string) ($data['role'] ?? 'user')];
+        $params = [$username, $this->role($data)];
 
         if (($data['password'] ?? '') !== '') {
             $columns[] = 'password_hash = ?';
@@ -114,6 +115,22 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
         }
 
         $this->db->execute('DELETE FROM users WHERE id = ?', [(int) $id]);
+    }
+
+    /**
+     * The role to store: the default when the form omitted it, never a value
+     * the select never offered. Rejected rather than coerced so a tampered
+     * post fails loudly instead of quietly saving something else.
+     */
+    private function role(array $data): string
+    {
+        $role = trim((string) ($data['role'] ?? ''));
+
+        if ($role === '') {
+            return Role::DEFAULT->value;
+        }
+
+        return (Role::tryFrom($role) ?? throw WriteRejected::on('role', 'Choose a role from the list.'))->value;
     }
 
     /** Whether the name is in use, ignoring the row that already holds it. */

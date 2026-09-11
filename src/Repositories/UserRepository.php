@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use Hydra\Database\Contracts\ConnectionInterface;
+use App\Entities\Role;
 use App\Entities\User;
 use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
@@ -46,11 +47,11 @@ final class UserRepository implements UserProviderInterface
     /**
      * Insert a user and return its new id
      */
-    public function create(string $username, string $passwordHash, string $role = 'user'): int
+    public function create(string $username, string $passwordHash, Role $role = Role::DEFAULT): int
     {
         $this->db->execute(
             'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)',
-            [$username, $passwordHash, $role],
+            [$username, $passwordHash, $role->value],
         );
 
         return (int) $this->db->lastInsertId();

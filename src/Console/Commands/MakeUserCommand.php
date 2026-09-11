@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Entities\Role;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,8 +24,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class MakeUserCommand extends Command
 {
-    private const ROLES = ['user', 'admin'];
-
     public function __construct(
         private readonly UserRepository $users,
         private readonly HasherInterface $hasher,
@@ -35,16 +34,22 @@ final class MakeUserCommand extends Command
     protected function configure(): void
     {
         $this->addArgument('username', InputArgument::OPTIONAL, 'The login username');
-        $this->addOption('role', 'r', InputOption::VALUE_REQUIRED, 'user or admin', 'user');
+        $this->addOption(
+            'role',
+            'r',
+            InputOption::VALUE_REQUIRED,
+            'One of: ' . implode(', ', Role::values()),
+            Role::DEFAULT->value,
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        $role = (string) $input->getOption('role');
-        if (!in_array($role, self::ROLES, true)) {
-            $io->error('Role must be user or admin.');
+        $role = Role::tryFrom((string) $input->getOption('role'));
+        if ($role === null) {
+            $io->error('Role must be one of: ' . implode(', ', Role::values()) . '.');
             return Command::FAILURE;
         }
 
@@ -74,7 +79,7 @@ final class MakeUserCommand extends Command
 
         $id = $this->users->create($username, $this->hasher->hash($password), $role);
 
-        $io->success("Created {$role} '{$username}' (id {$id}).");
+        $io->success("Created {$role->value} '{$username}' (id {$id}).");
 
         return Command::SUCCESS;
     }

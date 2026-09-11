@@ -17,11 +17,6 @@ use Hydra\Admin\Screens\PageScreen;
  * A category is a screen, not a tab pane: /admin/settings/appearance is a place
  * you can link someone to and step back out of, and the strip across the top of
  * the module is ordinary navigation rather than script.
- *
- * No ability is declared. Everything here is the signed-in person's own, so
- * gating it on the admin role would lock a standard user out of their own
- * preferences — the modules that read other people's rows are the ones that
- * require AccessAdmin.
  */
 final class SettingsModule implements ModuleInterface
 {
@@ -30,7 +25,7 @@ final class SettingsModule implements ModuleInterface
         return Definition::make('settings')
             ->title('Settings')
             ->icon('sliders')
-            ->group('You')
+            ->group('Application')
             ->screens(
                 PageScreen::make('general', 'admin/settings/general')
                     ->title('Settings')

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use Hydra\Database\PdoConnection;
+use App\Entities\Role;
 use App\Entities\User;
 use App\Repositories\UserRepository;
 use PDO;
@@ -70,13 +71,13 @@ final class UserRepositoryTest extends TestCase
         $user = $this->repo->byUsername('will');
 
         $this->assertInstanceOf(User::class, $user);
-        $this->assertSame('user', $user->role);
+        $this->assertSame(Role::User, $user->role);
         $this->assertFalse($user->isAdmin());
     }
 
     public function test_create_inserts_and_returns_the_new_id(): void
     {
-        $id = $this->repo->create('ada', 'digest', 'admin');
+        $id = $this->repo->create('ada', 'digest', Role::Admin);
 
         // Newest row, so id 2 (will seeded as 1), and the round-trip hydrates it.
         $this->assertSame(2, $id);
@@ -91,6 +92,6 @@ final class UserRepositoryTest extends TestCase
     {
         $id = $this->repo->create('grace', 'digest');
 
-        $this->assertSame('user', $this->repo->byIdentifier($id)?->role);
+        $this->assertSame(Role::User, $this->repo->byIdentifier($id)?->role);
     }
 }

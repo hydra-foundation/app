@@ -1,7 +1,7 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var \App\Entities\User $user */ ?>
 <?php /** @var int $total */ ?>
-<?php /** @var array<string, int> $byRole */ ?>
+<?php /** @var array<string, int> $byRole Count per role label, in role order */ ?>
 <?php /** @var list<array<string, mixed>> $newest */ ?>
 <p class="dash-meta">Signed in as <strong><?= $this->e($user->username) ?></strong></p>
 
@@ -10,14 +10,12 @@
         <div class="stat-label">Users</div>
         <div class="stat-value"><?= $this->e($total) ?></div>
     </div>
-    <div class="stat">
-        <div class="stat-label">Admins</div>
-        <div class="stat-value"><?= $this->e($byRole['admin'] ?? 0) ?></div>
-    </div>
-    <div class="stat">
-        <div class="stat-label">Standard</div>
-        <div class="stat-value"><?= $this->e($byRole['user'] ?? 0) ?></div>
-    </div>
+    <?php foreach ($byRole as $label => $count): ?>
+        <div class="stat">
+            <div class="stat-label"><?= $this->e($label) ?></div>
+            <div class="stat-value"><?= $this->e($count) ?></div>
+        </div>
+    <?php endforeach ?>
 </div>
 
 <h2 class="section-title">Newest accounts</h2>

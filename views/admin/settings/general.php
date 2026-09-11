@@ -8,7 +8,7 @@
     <dd class="type-text"><?= $this->e($user->username) ?></dd>
 
     <dt>Role</dt>
-    <dd class="type-select"><?= $this->e($user->role) ?></dd>
+    <dd class="type-select"><?= $this->e($user->role->label()) ?></dd>
 
     <dt>Preferences set</dt>
     <dd class="type-id"><?= $this->e(count($preferences)) ?></dd>

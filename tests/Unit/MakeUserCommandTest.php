@@ -73,7 +73,7 @@ final class MakeUserCommandTest extends TestCase
         $tester = $this->makeUser(['username' => 'bob', '--role' => 'superuser'], []);
 
         $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString('Role must be user or admin', $tester->getDisplay());
+        $this->assertStringContainsString('Role must be one of', $tester->getDisplay());
         $this->assertNull($this->repo->byUsername('bob'));
     }
 

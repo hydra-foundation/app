@@ -6,6 +6,7 @@ namespace App\Admin\Modules;
 
 use App\Admin\Sources\UserSource;
 use App\Authorization\AccessAdmin;
+use App\Entities\Role;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
@@ -18,14 +19,11 @@ use Hydra\Validation\Rules\MinLength;
 
 /**
  * Users module
+ *
+ * This is where you can add/edit users for the backend app.
  */
 final class UsersModule implements ModuleInterface
 {
-    private const ROLES = [
-        'user' => 'User',
-        'admin' => 'Admin'
-    ];
-
     public function define(): Definition
     {
         return Definition::make('users')
@@ -39,7 +37,7 @@ final class UsersModule implements ModuleInterface
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
                 Field::text('username')->sortable()->searchable(),
-                Field::select('role', self::ROLES)->sortable()->filterable(),
+                Field::select('role', Role::options())->sortable()->filterable(),
                 Field::datetime('created_at')->sortable(),
             )
             ->screens(
@@ -47,14 +45,14 @@ final class UsersModule implements ModuleInterface
                 FormScreen::create()->title('New user')->inputs(
                     Input::text('username')->required('Enter a username.')
                         ->rules(new MinLength(3), new MaxLength(64)),
-                    Input::select('role', self::ROLES),
+                    Input::select('role', Role::options()),
                     Input::password('password')->required('Set a password.')
                         ->rules(new MinLength(8)),
                 ),
                 FormScreen::edit()->title('Edit user')->inputs(
                     Input::text('username')->required('Enter a username.')
                         ->rules(new MinLength(3), new MaxLength(64)),
-                    Input::select('role', self::ROLES),
+                    Input::select('role', Role::options()),
                     Input::password('password')
                         ->rules(new MinLength(8))
                         ->help('Leave blank to keep the current password.'),
