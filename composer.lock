@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "hydrakit/admin",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/admin.git",
-                "reference": "7165ddc61abedf9cafdde8fcafb4739456920ee5"
+                "reference": "a246003a8d44bc1ab1852cd5f4744f9dd12532ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/admin/zipball/7165ddc61abedf9cafdde8fcafb4739456920ee5",
-                "reference": "7165ddc61abedf9cafdde8fcafb4739456920ee5",
+                "url": "https://api.github.com/repos/hydra-foundation/admin/zipball/a246003a8d44bc1ab1852cd5f4744f9dd12532ec",
+                "reference": "a246003a8d44bc1ab1852cd5f4744f9dd12532ec",
                 "shasum": ""
             },
             "require": {
@@ -55,25 +55,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Admin backend library for Hydra PHP framework",
+            "description": "A composable admin backend for Hydra apps: declare a module, get routes and htmx screens.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/admin/issues",
-                "source": "https://github.com/hydra-foundation/admin/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/admin/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:54+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/auth",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/auth.git",
-                "reference": "669b2d07c4f286ac19359de64fbc2bb5232602b9"
+                "reference": "a33ccb5af8072e91a6b4b4087e57c9f15fd0b8f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/auth/zipball/669b2d07c4f286ac19359de64fbc2bb5232602b9",
-                "reference": "669b2d07c4f286ac19359de64fbc2bb5232602b9",
+                "url": "https://api.github.com/repos/hydra-foundation/auth/zipball/a33ccb5af8072e91a6b4b4087e57c9f15fd0b8f1",
+                "reference": "a33ccb5af8072e91a6b4b4087e57c9f15fd0b8f1",
                 "shasum": ""
             },
             "require": {
@@ -112,25 +111,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Authentication library for Hydra PHP framework",
+            "description": "Authentication for Hydra: identity only, behind a swappable guard.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/auth/issues",
-                "source": "https://github.com/hydra-foundation/auth/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/auth/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:53+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/authorization",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/authorization.git",
-                "reference": "163488fc89cec09ec1eddf488ca3d0a2aaf17184"
+                "reference": "708f8821cbbe7258aa22dcc6ff00b599b1f16192"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/authorization/zipball/163488fc89cec09ec1eddf488ca3d0a2aaf17184",
-                "reference": "163488fc89cec09ec1eddf488ca3d0a2aaf17184",
+                "url": "https://api.github.com/repos/hydra-foundation/authorization/zipball/708f8821cbbe7258aa22dcc6ff00b599b1f16192",
+                "reference": "708f8821cbbe7258aa22dcc6ff00b599b1f16192",
                 "shasum": ""
             },
             "require": {
@@ -163,25 +161,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Authorization library for Hydra PHP framework",
+            "description": "Ability-based authorization for Hydra, on top of hydrakit/auth.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/authorization/issues",
-                "source": "https://github.com/hydra-foundation/authorization/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/authorization/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:53+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/console",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/console.git",
-                "reference": "b2d5d7eb4e3fa6c9a1cc0651f235a0678349f623"
+                "reference": "711b63f4d16276c06bcf29ddd86899b1c11fecdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/console/zipball/b2d5d7eb4e3fa6c9a1cc0651f235a0678349f623",
-                "reference": "b2d5d7eb4e3fa6c9a1cc0651f235a0678349f623",
+                "url": "https://api.github.com/repos/hydra-foundation/console/zipball/711b63f4d16276c06bcf29ddd86899b1c11fecdd",
+                "reference": "711b63f4d16276c06bcf29ddd86899b1c11fecdd",
                 "shasum": ""
             },
             "require": {
@@ -215,25 +212,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Console command library for Hydra PHP framework",
+            "description": "The generic console commands every Hydra app needs, powered by Symfony Console.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/console/issues",
-                "source": "https://github.com/hydra-foundation/console/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/console/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:54+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/core",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/core.git",
-                "reference": "dbbf2a7c18b40eaba459b06798974877eedd49e0"
+                "reference": "b22a4e9ff2b641fc683198b87f532f13e11951d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/core/zipball/dbbf2a7c18b40eaba459b06798974877eedd49e0",
-                "reference": "dbbf2a7c18b40eaba459b06798974877eedd49e0",
+                "url": "https://api.github.com/repos/hydra-foundation/core/zipball/b22a4e9ff2b641fc683198b87f532f13e11951d3",
+                "reference": "b22a4e9ff2b641fc683198b87f532f13e11951d3",
                 "shasum": ""
             },
             "require": {
@@ -264,25 +260,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Core library for Hydra PHP framework",
+            "description": "Application object, container and service-provider contracts, and typed environment loading. Interfaces only.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/core/issues",
-                "source": "https://github.com/hydra-foundation/core/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/core/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:52+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/csrf",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/csrf.git",
-                "reference": "dfb3abd9738797adf0f0b1fcfd926ab516e03cf2"
+                "reference": "f99535c5c344dd32d2cb686e880f045151472270"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/csrf/zipball/dfb3abd9738797adf0f0b1fcfd926ab516e03cf2",
-                "reference": "dfb3abd9738797adf0f0b1fcfd926ab516e03cf2",
+                "url": "https://api.github.com/repos/hydra-foundation/csrf/zipball/f99535c5c344dd32d2cb686e880f045151472270",
+                "reference": "f99535c5c344dd32d2cb686e880f045151472270",
                 "shasum": ""
             },
             "require": {
@@ -319,25 +314,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "CSRF library for Hydra PHP framework",
+            "description": "Synchronizer-token CSRF protection as PSR-15 middleware.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/csrf/issues",
-                "source": "https://github.com/hydra-foundation/csrf/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/csrf/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:54+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/database",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/database.git",
-                "reference": "b52f50771d7a8e11316db95f958abd984343da34"
+                "reference": "e6ff2e0b91512c72e31e86d47fc966065888b1dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/database/zipball/b52f50771d7a8e11316db95f958abd984343da34",
-                "reference": "b52f50771d7a8e11316db95f958abd984343da34",
+                "url": "https://api.github.com/repos/hydra-foundation/database/zipball/e6ff2e0b91512c72e31e86d47fc966065888b1dd",
+                "reference": "e6ff2e0b91512c72e31e86d47fc966065888b1dd",
                 "shasum": ""
             },
             "require": {
@@ -369,25 +363,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Database library for Hydra PHP framework",
+            "description": "A thin PDO data-access seam and a raw-SQL migration runner.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/database/issues",
-                "source": "https://github.com/hydra-foundation/database/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/database/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:53+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/event",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/event.git",
-                "reference": "b2c5ff4061715411f514d09a258d49fe2f0a8d03"
+                "reference": "96698ffaf6ea4c981c0e17c0f4b441acb3eeb2a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/event/zipball/b2c5ff4061715411f514d09a258d49fe2f0a8d03",
-                "reference": "b2c5ff4061715411f514d09a258d49fe2f0a8d03",
+                "url": "https://api.github.com/repos/hydra-foundation/event/zipball/96698ffaf6ea4c981c0e17c0f4b441acb3eeb2a4",
+                "reference": "96698ffaf6ea4c981c0e17c0f4b441acb3eeb2a4",
                 "shasum": ""
             },
             "require": {
@@ -419,25 +412,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "PSR-14 event dispatcher for Hydra PHP framework",
+            "description": "A minimal PSR-14 event dispatcher and listener provider.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/event/issues",
-                "source": "https://github.com/hydra-foundation/event/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/event/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:53+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/http",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/http.git",
-                "reference": "c5c1506b11dd9d4e023cd9135b2874065751f81a"
+                "reference": "2922a65271a082ae1ceb157e6995cb4d62effde3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/http/zipball/c5c1506b11dd9d4e023cd9135b2874065751f81a",
-                "reference": "c5c1506b11dd9d4e023cd9135b2874065751f81a",
+                "url": "https://api.github.com/repos/hydra-foundation/http/zipball/2922a65271a082ae1ceb157e6995cb4d62effde3",
+                "reference": "2922a65271a082ae1ceb157e6995cb4d62effde3",
                 "shasum": ""
             },
             "require": {
@@ -474,25 +466,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "HTTP library for Hydra PHP framework",
+            "description": "PSR-7/PSR-15 HTTP layer: request lifecycle, routing, and middleware pipeline.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/http/issues",
-                "source": "https://github.com/hydra-foundation/http/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/http/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:52+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/kernel",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/kernel.git",
-                "reference": "1fd40bd02b2520baacf0824bf47e6ffbf74bd8fb"
+                "reference": "7e16662ace80830fb555ed670441d78b6cfe5c9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/kernel/zipball/1fd40bd02b2520baacf0824bf47e6ffbf74bd8fb",
-                "reference": "1fd40bd02b2520baacf0824bf47e6ffbf74bd8fb",
+                "url": "https://api.github.com/repos/hydra-foundation/kernel/zipball/7e16662ace80830fb555ed670441d78b6cfe5c9f",
+                "reference": "7e16662ace80830fb555ed670441d78b6cfe5c9f",
                 "shasum": ""
             },
             "require": {
@@ -533,25 +524,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Default composition root and HTTP plumbing for the Hydra PHP framework",
+            "description": "Hydra's default composition root and HTTP plumbing, kept in one place instead of copied per app.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/kernel/issues",
-                "source": "https://github.com/hydra-foundation/kernel/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/kernel/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:52+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/log",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/log.git",
-                "reference": "bee1b3eeac45fe61914bceb5adf17bb12d8df363"
+                "reference": "ffc142eca7489ae0e2d8367dce005c101250bc5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/log/zipball/bee1b3eeac45fe61914bceb5adf17bb12d8df363",
-                "reference": "bee1b3eeac45fe61914bceb5adf17bb12d8df363",
+                "url": "https://api.github.com/repos/hydra-foundation/log/zipball/ffc142eca7489ae0e2d8367dce005c101250bc5c",
+                "reference": "ffc142eca7489ae0e2d8367dce005c101250bc5c",
                 "shasum": ""
             },
             "require": {
@@ -582,25 +572,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Logging library for Hydra PHP framework",
+            "description": "A minimal PSR-3 logger that writes one plain-text line per record to a stream.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/log/issues",
-                "source": "https://github.com/hydra-foundation/log/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/log/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:53+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/nyholm",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/nyholm.git",
-                "reference": "6e46ba029bff4ab7e3ec0b722e61e00bce9bf9e2"
+                "reference": "750ee02c3fc7c096af2068e223be4b6cb06775fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/nyholm/zipball/6e46ba029bff4ab7e3ec0b722e61e00bce9bf9e2",
-                "reference": "6e46ba029bff4ab7e3ec0b722e61e00bce9bf9e2",
+                "url": "https://api.github.com/repos/hydra-foundation/nyholm/zipball/750ee02c3fc7c096af2068e223be4b6cb06775fe",
+                "reference": "750ee02c3fc7c096af2068e223be4b6cb06775fe",
                 "shasum": ""
             },
             "require": {
@@ -635,25 +624,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Nyholm PSR-7/PSR-17 adapter for the Hydra PHP framework",
+            "description": "Nyholm PSR-7/PSR-17 adapter: the default message and factory implementation for Hydra.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/nyholm/issues",
-                "source": "https://github.com/hydra-foundation/nyholm/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/nyholm/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:52+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/php-di",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/php-di.git",
-                "reference": "3e9ebc7c11fc2ca3bedad816ad49ecc6146afbd2"
+                "reference": "a0fd668682793f4e3f2ff8c29318fda3cc99adcf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/php-di/zipball/3e9ebc7c11fc2ca3bedad816ad49ecc6146afbd2",
-                "reference": "3e9ebc7c11fc2ca3bedad816ad49ecc6146afbd2",
+                "url": "https://api.github.com/repos/hydra-foundation/php-di/zipball/a0fd668682793f4e3f2ff8c29318fda3cc99adcf",
+                "reference": "a0fd668682793f4e3f2ff8c29318fda3cc99adcf",
                 "shasum": ""
             },
             "require": {
@@ -685,25 +673,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "PHP-DI container adapter for the Hydra PHP framework",
+            "description": "PHP-DI PSR-11 adapter: the default container for Hydra.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/php-di/issues",
-                "source": "https://github.com/hydra-foundation/php-di/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/php-di/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:52+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/session",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/session.git",
-                "reference": "a85c5d9aa6c3eba0c4da0a95fe0966773418109d"
+                "reference": "ab8e90dcda3eb6542174b44becc9a329764aac04"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/session/zipball/a85c5d9aa6c3eba0c4da0a95fe0966773418109d",
-                "reference": "a85c5d9aa6c3eba0c4da0a95fe0966773418109d",
+                "url": "https://api.github.com/repos/hydra-foundation/session/zipball/ab8e90dcda3eb6542174b44becc9a329764aac04",
+                "reference": "ab8e90dcda3eb6542174b44becc9a329764aac04",
                 "shasum": ""
             },
             "require": {
@@ -737,25 +724,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Session library for Hydra PHP framework",
+            "description": "Session handling as PSR-15 middleware, behind split data and lifecycle interfaces.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/session/issues",
-                "source": "https://github.com/hydra-foundation/session/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/session/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:52+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/validation",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/validation.git",
-                "reference": "010e8304f92c7935f6c77080ddda0a1ec0baf2e5"
+                "reference": "34476a50b3e1dcbc9940ab2626b45f6d27812e5d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/validation/zipball/010e8304f92c7935f6c77080ddda0a1ec0baf2e5",
-                "reference": "010e8304f92c7935f6c77080ddda0a1ec0baf2e5",
+                "url": "https://api.github.com/repos/hydra-foundation/validation/zipball/34476a50b3e1dcbc9940ab2626b45f6d27812e5d",
+                "reference": "34476a50b3e1dcbc9940ab2626b45f6d27812e5d",
                 "shasum": ""
             },
             "require": {
@@ -785,25 +771,24 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Validation library for Hydra PHP framework",
+            "description": "Zero-dependency input validation: per-field rules, stateless, shareable.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/validation/issues",
-                "source": "https://github.com/hydra-foundation/validation/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/validation/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:53+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "hydrakit/view",
-            "version": "v0.3.0",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/view.git",
-                "reference": "36c375a69332c07cf9f908dcfbab080d7acc42e8"
+                "reference": "9df1d3d425d2a919a99fe7402f9f5bd456cc1a1d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/view/zipball/36c375a69332c07cf9f908dcfbab080d7acc42e8",
-                "reference": "36c375a69332c07cf9f908dcfbab080d7acc42e8",
+                "url": "https://api.github.com/repos/hydra-foundation/view/zipball/9df1d3d425d2a919a99fe7402f9f5bd456cc1a1d",
+                "reference": "9df1d3d425d2a919a99fe7402f9f5bd456cc1a1d",
                 "shasum": ""
             },
             "require": {
@@ -835,12 +820,11 @@
                     "email": "william.hleucka@gmail.com"
                 }
             ],
-            "description": "Native PHP templating for the Hydra PHP framework",
+            "description": "Native PHP templating with template inheritance and escape-by-convention safety. No compile step.",
             "support": {
-                "issues": "https://github.com/hydra-foundation/view/issues",
-                "source": "https://github.com/hydra-foundation/view/tree/v0.3.0"
+                "source": "https://github.com/hydra-foundation/view/tree/v0.3.1"
             },
-            "time": "2026-09-10T19:33:53+00:00"
+            "time": "2026-09-11T16:10:28+00:00"
         },
         {
             "name": "laravel/serializable-closure",
