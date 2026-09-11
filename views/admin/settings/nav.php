@@ -7,6 +7,7 @@
         <?php $url = rtrim('/admin/settings/' . $path, '/') ?>
         <a class="settings-tab<?= $path === $current ? ' active' : '' ?>"
            href="<?= $this->e($url) ?>"
+           hx-nonce="<?= $this->e($this->cspNonce()) ?>"
            hx-get="<?= $this->e($url) ?>"
            hx-target="#admin-frame"
            hx-push-url="true"

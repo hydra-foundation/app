@@ -6,6 +6,7 @@ namespace App;
 
 use App\Config\RouteConfig;
 use App\Providers\AppServiceProvider;
+use Hydra\Cache\CacheServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Environment;
 use Hydra\Admin\AdminServiceProvider;
@@ -32,6 +33,7 @@ final class Bootstrap
         return Kernel::application($container, $environment)
             ->register(new NyholmServiceProvider)
             ->register(new SignerServiceProvider)
+            ->register(new CacheServiceProvider)
             ->register(new HttpServiceProvider(
                 controllers: AppServiceProvider::CONTROLLERS,
                 middleware: AppServiceProvider::MIDDLEWARE,

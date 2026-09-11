@@ -11,6 +11,8 @@ use App\Repositories\ActivityRepository;
 use App\Tests\Support\TestSchema;
 use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\GuardInterface;
+use Hydra\Http\ClientIpResolver;
+use Hydra\Http\TrustedProxies;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\Http\Exceptions\HttpException;
@@ -50,7 +52,7 @@ final class RecordActivityMiddlewareTest extends TestCase
 
     public function test_a_trusted_forwarded_header_names_the_original_client(): void
     {
-        $this->middleware(trustForwardedFor: true)->process(
+        $this->middleware(trustedProxies: ['10.0.0.0/8'])->process(
             $this->request(['REMOTE_ADDR' => '10.0.0.8'])
                 ->withHeader('X-Forwarded-For', '203.0.113.5, 10.0.0.2'),
             $this->handler(),
@@ -59,9 +61,22 @@ final class RecordActivityMiddlewareTest extends TestCase
         $this->assertSame('203.0.113.5', $this->row()['ip']);
     }
 
+    public function test_a_client_cannot_name_itself_by_prepending_a_hop(): void
+    {
+        // The recorded address is what a per-client limit would be keyed on, so
+        // a caller that can choose it can choose a fresh budget every request.
+        $this->middleware(trustedProxies: ['10.0.0.0/8'])->process(
+            $this->request(['REMOTE_ADDR' => '10.0.0.8'])
+                ->withHeader('X-Forwarded-For', '1.2.3.4, 203.0.113.5'),
+            $this->handler(),
+        );
+
+        $this->assertSame('203.0.113.5', $this->row()['ip']);
+    }
+
     public function test_a_trusted_proxy_that_sent_no_header_falls_back_to_the_peer(): void
     {
-        $this->middleware(trustForwardedFor: true)
+        $this->middleware(trustedProxies: ['10.0.0.0/8'])
             ->process($this->request(['REMOTE_ADDR' => '10.0.0.8']), $this->handler());
 
         $this->assertSame('10.0.0.8', $this->row()['ip']);
@@ -120,13 +135,14 @@ final class RecordActivityMiddlewareTest extends TestCase
         $this->assertNull($this->db->selectOne('SELECT * FROM activity'));
     }
 
-    private function middleware(bool $trustForwardedFor = false): RecordActivityMiddleware
+    /** @param list<string> $trustedProxies */
+    private function middleware(array $trustedProxies = []): RecordActivityMiddleware
     {
         return new RecordActivityMiddleware(
             new ActivityRepository($this->db),
             $this->guard(),
             new NullLogger,
-            $trustForwardedFor,
+            new ClientIpResolver(new TrustedProxies($trustedProxies)),
         );
     }
 

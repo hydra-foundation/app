@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Admin\Modules\{ActivityModule, DashboardModule, SettingsModule, UsersModule};
-use App\Config\{AppConfig, DbConfig, LogConfig, RouteConfig};
+use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\{AdminController, AuthController, HomeController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Http\NegotiatingErrorRenderer;
@@ -24,6 +24,10 @@ use Hydra\Database\{MigrationRunner, PdoConnection};
 use Hydra\Event\ListenerProvider;
 use Hydra\Http\Contracts\ErrorRendererInterface;
 use Hydra\Http\{
+    ClientIpResolver,
+    ContentSecurityPolicy,
+    ContentSecurityPolicyMiddleware,
+    CspNonce,
     ErrorHandlerMiddleware,
     ForceHttpsMiddleware,
     HtmxRedirectMiddleware,
@@ -32,6 +36,7 @@ use Hydra\Http\{
     RequestLoggingMiddleware,
     Responder,
     SecurityHeadersMiddleware,
+    TrustedProxies,
 };
 use Hydra\Log\StreamLogger;
 use Hydra\Session\StartSessionMiddleware;
@@ -73,6 +78,7 @@ final class AppServiceProvider extends ServiceProvider
     public const MIDDLEWARE = [
         RequestLoggingMiddleware::class,
         SecurityHeadersMiddleware::class,
+        ContentSecurityPolicyMiddleware::class,
         ForceHttpsMiddleware::class,
         ErrorHandlerMiddleware::class,
         HtmxRedirectMiddleware::class,
@@ -102,6 +108,10 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(RouteConfig::class, function () use ($container) {
             return RouteConfig::fromEnvironment($container->get(Environment::class));
+        });
+
+        $container->singleton(CspConfig::class, function () use ($container) {
+            return CspConfig::fromEnvironment($container->get(Environment::class));
         });
 
         $container->singleton(PDO::class, function () use ($container) {
@@ -155,7 +165,46 @@ final class AppServiceProvider extends ServiceProvider
                     'themes' => $themes,
                     'theme' => $container->get(ThemeResolver::class),
                 ],
+                // Not shared data: the admin package's templates stamp it on
+                // every htmx element they render, and a missing nonce has to
+                // fail as a named error rather than as an undefined variable.
+                cspNonce: $container->get(CspNonce::class),
             );
+        });
+
+        $container->singleton(ContentSecurityPolicyMiddleware::class, function () use ($container) {
+            $config = $container->get(CspConfig::class);
+
+            $policy = ContentSecurityPolicy::default()
+                // Bootstrap's stylesheet draws its form-control and accordion
+                // glyphs from data: SVGs rather than from files.
+                ->with('img-src', "'self'", 'data:')
+                // Google Fonts answers from two hosts: the @font-face sheet
+                // comes from one and the files it names from the other.
+                ->with('style-src', "'self'", 'https://fonts.googleapis.com')
+                ->with('font-src', "'self'", 'https://fonts.gstatic.com');
+
+            if ($config->reportUri !== '') {
+                $policy = $policy->with('report-uri', $config->reportUri);
+            }
+
+            return new ContentSecurityPolicyMiddleware(
+                $policy,
+                $container->get(CspNonce::class),
+                $config->enabled,
+                $config->reportOnly,
+            );
+        });
+
+        // One declaration of who may speak for a client, shared by everything
+        // that asks: the forwarded scheme, the activity log, and anything that
+        // later counts requests per caller.
+        $container->singleton(TrustedProxies::class, function () use ($container) {
+            return new TrustedProxies($container->get(AppConfig::class)->trustedProxies);
+        });
+
+        $container->singleton(ClientIpResolver::class, function () use ($container) {
+            return new ClientIpResolver($container->get(TrustedProxies::class));
         });
 
         $container->singleton(ForceHttpsMiddleware::class, function () use ($container) {
@@ -164,6 +213,7 @@ final class AppServiceProvider extends ServiceProvider
                 $config->forceHttps,
                 $container->get(Responder::class),
                 $config->trustForwardedProto,
+                $container->get(ClientIpResolver::class),
             );
         });
 
@@ -179,7 +229,7 @@ final class AppServiceProvider extends ServiceProvider
                 new ActivityRepository($container->get(ConnectionInterface::class)),
                 $container->get(GuardInterface::class),
                 $container->get(LoggerInterface::class),
-                $container->get(AppConfig::class)->trustForwardedFor,
+                $container->get(ClientIpResolver::class),
             );
         });
 

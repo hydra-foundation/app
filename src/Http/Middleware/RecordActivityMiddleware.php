@@ -8,6 +8,7 @@ use App\Entities\Activity;
 use App\Entities\User;
 use App\Repositories\ActivityRepository;
 use Hydra\Auth\Contracts\GuardInterface;
+use Hydra\Http\ClientIpResolver;
 use Hydra\Http\Exceptions\HttpException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -36,7 +37,7 @@ final class RecordActivityMiddleware implements MiddlewareInterface
         private readonly ActivityRepository $activity,
         private readonly GuardInterface $guard,
         private readonly LoggerInterface $logger,
-        private readonly bool $trustForwardedFor = false,
+        private readonly ClientIpResolver $clients = new ClientIpResolver,
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -70,33 +71,13 @@ final class RecordActivityMiddleware implements MiddlewareInterface
                 query: $uri->getQuery(),
                 status: $status,
                 durationMs: intdiv(hrtime(true) - $started, 1_000_000),
-                ip: $this->ip($request),
+                ip: $this->clients->resolve($request),
                 userAgent: $this->header($request, 'User-Agent'),
                 referer: $this->header($request, 'Referer'),
             ));
         } catch (Throwable $e) {
             $this->logger->warning('Could not record activity: ' . $e->getMessage(), ['exception' => $e]);
         }
-    }
-
-    /**
-     * The socket peer, unless a proxy we control is in front: X-Forwarded-For is
-     * client-supplied and trivially spoofed, so it is only read when configured.
-     * The leftmost entry is the original client; the rest is the proxy chain.
-     */
-    private function ip(ServerRequestInterface $request): ?string
-    {
-        if ($this->trustForwardedFor) {
-            $forwarded = $this->header($request, 'X-Forwarded-For');
-
-            if ($forwarded !== null) {
-                return trim(explode(',', $forwarded)[0]);
-            }
-        }
-
-        $remote = $request->getServerParams()['REMOTE_ADDR'] ?? null;
-
-        return is_string($remote) && $remote !== '' ? $remote : null;
     }
 
     private function header(ServerRequestInterface $request, string $name): ?string

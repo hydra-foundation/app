@@ -11,6 +11,7 @@
 <form id="appearance-form"
       method="post"
       action="/admin/settings/appearance"
+      hx-nonce="<?= $this->e($this->cspNonce()) ?>"
       hx-post="/admin/settings/appearance"
       hx-target="#admin-frame">
     <?= $this->csrf() ?>

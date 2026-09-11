@@ -113,4 +113,42 @@ final class RequestLifecycleTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
     }
+
+    public function test_every_response_carries_the_content_security_policy(): void
+    {
+        $policy = $this->handle('GET', '/')->getHeaderLine('Content-Security-Policy');
+
+        $this->assertStringContainsString("default-src 'self'", $policy);
+        $this->assertStringContainsString("object-src 'none'", $policy);
+        $this->assertStringContainsString("form-action 'self'", $policy);
+        $this->assertStringContainsString("img-src 'self' data:", $policy);
+        $this->assertStringContainsString('font-src \'self\' https://fonts.gstatic.com', $policy);
+        $this->assertStringContainsString('style-src \'self\' https://fonts.googleapis.com', $policy);
+    }
+
+    public function test_the_policys_nonce_is_the_one_the_page_was_rendered_with(): void
+    {
+        // The header and the markup are written by different parts of the
+        // pipeline; a page whose nonce does not match its own policy would load
+        // with every inline script blocked.
+        $response = $this->handle('GET', '/');
+
+        $this->assertSame(
+            1,
+            preg_match("/script-src 'self' 'nonce-([A-Za-z0-9_-]+)'/", $response->getHeaderLine('Content-Security-Policy'), $header),
+        );
+        $this->assertStringContainsString(sprintf('<script nonce="%s"', $header[1]), (string) $response->getBody());
+    }
+
+    public function test_one_container_holds_one_nonce(): void
+    {
+        // What makes the header and the page agree: every reader resolves the
+        // same CspNonce out of the container, and a real SAPI builds one
+        // container per request. A second instance would mint a second token
+        // and leave the policy naming a nonce the page never carried.
+        $first = $this->handle('GET', '/')->getHeaderLine('Content-Security-Policy');
+        $second = $this->handle('GET', '/')->getHeaderLine('Content-Security-Policy');
+
+        $this->assertSame($first, $second);
+    }
 }

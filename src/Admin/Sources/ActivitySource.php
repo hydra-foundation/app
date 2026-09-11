@@ -66,7 +66,7 @@ final class ActivitySource implements SourceInterface, RowSourceInterface
             )) . ')';
 
             foreach (self::SEARCHABLE as $_) {
-                $params[] = '%' . $criteria->search . '%';
+                $params[] = $criteria->searchPattern();
             }
         }
 

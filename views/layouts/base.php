@@ -30,11 +30,25 @@
     <?php /* Screens that carry their own stylesheet append it here, after the
        shared theme so it can build on the tokens rather than fight them. */ ?>
     <?= $this->section('meta', '') ?>
-    <script src="/js/vendor/htmx.min.js" defer></script>
-    <script src="/js/app.js" defer></script>
-    <script src="/js/vendor/bootstrap.bundle.min.js" defer></script>
+    <?php /* hx-csp gates htmx on the nonce: an element is only processed when
+       its hx-nonce matches this page's, so markup that reached the document by
+       injection carries hx-attributes that do nothing. The extension reads the
+       page nonce off the first nonced script, which is why the tags below have
+       one — 'self' is what actually lets them load. safeEval trades htmx's
+       Function() constructor for a nonced script, so hx-on: and js: work
+       without 'unsafe-eval' in the policy.
+
+       There is deliberately no inlineScriptNonce here: it would stamp this
+       nonce on every <script> in a swapped fragment, injected ones included,
+       which is the hole the gate exists to close. A script the server means to
+       ship carries the nonce already, and hx-csp rewrites it to match. */ ?>
+    <meta name="htmx-config" content='extensions:"hx-csp",safeEval:true'>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/htmx.min.js" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/hx-csp.js" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/app.js" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/bootstrap.bundle.min.js" defer></script>
 </head>
-<body hx-headers:inherited='{"X-CSRF-Token": "<?= $this->e($this->csrfToken()) ?>"}'>
+<body hx-nonce="<?= $this->e($this->cspNonce()) ?>" hx-headers:inherited='{"X-CSRF-Token": "<?= $this->e($this->csrfToken()) ?>"}'>
     <?php /* Where a failed htmx request lands. The error renderer swaps into it
        out-of-band, so a refusal is read here instead of replacing whatever the
        reader was working in. Empty most of the time, and styled only when it is

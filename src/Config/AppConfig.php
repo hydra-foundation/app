@@ -19,7 +19,8 @@ final readonly class AppConfig
         public string $key,
         public bool $forceHttps,
         public bool $trustForwardedProto,
-        public bool $trustForwardedFor = false,
+        /** @var list<string> Addresses/CIDR blocks whose forwarding headers we believe. */
+        public array $trustedProxies = [],
     ) {}
 
     public static function fromEnvironment(Environment $env): self
@@ -38,11 +39,12 @@ final readonly class AppConfig
             // dev/prod stacks) terminates TLS and sets the header — otherwise
             // any direct client could spoof "https" past the redirect.
             trustForwardedProto: $env->bool('TRUST_FORWARDED_PROTO', false),
-            // Same bargain for the client IP the activity log records: behind a
-            // proxy REMOTE_ADDR is the proxy, and X-Forwarded-For is the only
-            // way to the real client — but any direct client can invent that
-            // header, so only trust it where a proxy we control overwrites it.
-            trustForwardedFor: $env->bool('TRUST_FORWARDED_FOR', false),
+            // The peers allowed to speak for a client: comma-separated
+            // addresses or CIDR blocks (e.g. "172.18.0.0/16"). Empty means no
+            // proxy is in front, so forwarding headers are ignored and the
+            // socket peer is the client — the only safe default, because
+            // anything else lets a direct caller name itself.
+            trustedProxies: $env->list('TRUSTED_PROXIES'),
         );
     }
 }

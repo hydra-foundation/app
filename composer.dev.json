@@ -15,7 +15,13 @@
     },
     "_comment": "LOCAL DEVELOPMENT ONLY. Use with: COMPOSER=composer.dev.json composer install. The glob resolves every hydrakit/* package from the hydra monorepo checkout via symlink, so edits are reflected immediately and a new package needs no edit here. Consumers use the plain composer.json, which resolves everything from Packagist.",
     "repositories": [
-        { "type": "path", "url": "../hydra/packages/*", "options": { "symlink": true } }
+        {
+            "type": "path",
+            "url": "../hydra/packages/*",
+            "options": {
+                "symlink": true
+            }
+        }
     ],
     "authors": [
         {
@@ -26,6 +32,7 @@
     "require": {
         "php": ">=8.2",
         "hydrakit/core": "*",
+        "hydrakit/cache": "^0.3",
         "hydrakit/http": "*",
         "hydrakit/validation": "*",
         "hydrakit/session": "*",

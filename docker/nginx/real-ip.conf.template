@@ -1,0 +1,16 @@
+# Recovering the client address from behind a reverse proxy.
+#
+# Mounted only by docker-compose.prod.yml, where a host-level proxy terminates
+# TLS and forwards to nginx. NGINX_TRUSTED_PROXY names that proxy — one address
+# or CIDR block, and never a range wide enough to include clients.
+#
+# With this in place REMOTE_ADDR is the resolved client, so the application's
+# own TRUSTED_PROXIES should stay empty: resolving the chain twice only adds a
+# second place for it to go wrong.
+set_real_ip_from ${NGINX_TRUSTED_PROXY};
+real_ip_header X-Forwarded-For;
+
+# Walk the chain from the right, skipping hops in the trusted range, and stop
+# at the first address that is not one of ours. Without this, a client that
+# prepends its own hop is handed back its own forgery.
+real_ip_recursive on;

@@ -1,6 +1,6 @@
 <?php /** @var \App\View\Template $this */ ?>
 <?php /** @var \App\ViewModels\LoginViewModel $vm */ ?>
-<form id="login-form" method="post" action="/login" hx-post="/login" hx-target="this" hx-swap="outerHTML">
+<form id="login-form" method="post" action="/login" hx-nonce="<?= $this->e($this->cspNonce()) ?>" hx-post="/login" hx-target="this" hx-swap="outerHTML">
     <?= $this->csrf() ?>
 
     <?= $this->partial('partials/form_errors', ['errors' => $vm->formErrors()]) ?>
