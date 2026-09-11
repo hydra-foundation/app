@@ -87,7 +87,7 @@ final class SettingsFlowTest extends TestCase
 
         // Linkable and steppable: the crumb trail names it and the strip is
         // links, so the back button works between categories.
-        $this->assertStringContainsString('Admin / You / Settings / Appearance', $this->crumbs($body));
+        $this->assertStringContainsString('Admin / Application / Settings / Appearance', $this->crumbs($body));
         $this->assertStringContainsString('href="/admin/settings"', $body);
         $this->assertStringContainsString('class="settings-tab active"', $body);
     }
