@@ -4,50 +4,35 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Admin\Modules\ActivityModule;
-use App\Admin\Modules\DashboardModule;
-use App\Admin\Modules\SettingsModule;
-use App\Admin\Modules\UsersModule;
-use App\Config\AppConfig;
-use App\Config\DbConfig;
-use App\Config\LogConfig;
-use App\Config\RouteConfig;
-use App\Controllers\AdminController;
-use App\Controllers\AuthController;
-use App\Controllers\HomeController;
-use App\Http\Middleware\RecordActivityMiddleware;
-use App\Http\Middleware\RedirectUnauthenticatedMiddleware;
-use App\Repositories\ActivityRepository;
-use App\Repositories\UserRepository;
-use App\View\ThemeResolver;
-use App\View\Themes;
+use App\Admin\Modules\{ActivityModule, DashboardModule, SettingsModule, UsersModule};
+use App\Config\{AppConfig, DbConfig, LogConfig, RouteConfig};
+use App\Controllers\{AdminController, AuthController, HomeController};
+use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
+use App\Http\NegotiatingErrorRenderer;
+use App\Repositories\{ActivityRepository, UserRepository};
+use App\View\{ThemeResolver, Themes};
 use Hydra\Admin\AdminServiceProvider;
-use Hydra\Auth\Contracts\GuardInterface;
-use Hydra\Auth\Contracts\UserProviderInterface;
-use Hydra\Auth\Events\Attempting;
-use Hydra\Auth\Events\LoggedIn;
-use Hydra\Auth\Events\LoggedOut;
-use Hydra\Auth\Events\LoginFailed;
+use Hydra\Auth\Contracts\{GuardInterface, UserProviderInterface};
+use Hydra\Auth\Events\{Attempting, LoggedIn, LoggedOut, LoginFailed};
 use Hydra\Auth\LogAuthEventsListener;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
 use Hydra\Core\Providers\ServiceProvider;
-use Hydra\Csrf\CsrfGuard;
-use Hydra\Csrf\VerifyCsrfTokenMiddleware;
+use Hydra\Csrf\{CsrfGuard, VerifyCsrfTokenMiddleware};
 use Hydra\Database\Contracts\ConnectionInterface;
-use Hydra\Database\MigrationRunner;
-use Hydra\Database\PdoConnection;
-use App\Http\NegotiatingErrorRenderer;
+use Hydra\Database\{MigrationRunner, PdoConnection};
 use Hydra\Event\ListenerProvider;
 use Hydra\Http\Contracts\ErrorRendererInterface;
-use Hydra\Http\ErrorHandlerMiddleware;
-use Hydra\Http\PlainTextErrorRenderer;
-use Hydra\Http\ForceHttpsMiddleware;
-use Hydra\Http\HtmxRedirectMiddleware;
-use Hydra\Http\ParseBodyMiddleware;
-use Hydra\Http\RequestLoggingMiddleware;
-use Hydra\Http\Responder;
-use Hydra\Http\SecurityHeadersMiddleware;
+use Hydra\Http\{
+    ErrorHandlerMiddleware,
+    ForceHttpsMiddleware,
+    HtmxRedirectMiddleware,
+    ParseBodyMiddleware,
+    PlainTextErrorRenderer,
+    RequestLoggingMiddleware,
+    Responder,
+    SecurityHeadersMiddleware,
+};
 use Hydra\Log\StreamLogger;
 use Hydra\Session\StartSessionMiddleware;
 use Hydra\View\Contracts\ViewInterface;
