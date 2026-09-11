@@ -1,6 +1,6 @@
 {
     "name": "hydrakit/app",
-    "description": "Hydra PHP framework application skeleton",
+    "description": "The application skeleton every Hydra project starts from.",
     "type": "project",
     "license": "MIT",
     "autoload": {
