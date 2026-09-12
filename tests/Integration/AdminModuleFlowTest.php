@@ -410,6 +410,32 @@ final class AdminModuleFlowTest extends TestCase
         $this->assertLessThan(strpos($sorted, '>clerk<'), strpos($sorted, '>boss<'));
     }
 
+    /**
+     * Criteria::searchPattern() escapes the term's own wildcards so a search
+     * cannot ask for a full scan, and the LIKE has to name the escape character
+     * for that to mean anything: SQLite assumes none, so without the ESCAPE
+     * clause the backslash is matched literally and an underscore — ordinary in
+     * a username — finds nothing.
+     */
+    public function test_a_search_term_containing_a_wildcard_matches_it_literally(): void
+    {
+        $this->login('boss');
+
+        $this->handle('POST', '/admin/users/new', [], [
+            'username' => 'ada_lovelace',
+            'role' => 'user',
+            'password' => 'correct-horse',
+        ]);
+
+        $found = $this->body('GET', '/admin/users?q=ada_lovelace');
+        $this->assertStringContainsString('>ada_lovelace</td>', $found);
+        $this->assertStringContainsString('Showing 1–1 of 1', $found);
+
+        // The other half of the same guard: a bare wildcard is a search for the
+        // character, not a request for every row in the table.
+        $this->assertStringContainsString('Nothing to show.', $this->body('GET', '/admin/users?q=%25'));
+    }
+
     public function test_an_undeclared_sort_column_is_ignored(): void
     {
         $this->login('boss');

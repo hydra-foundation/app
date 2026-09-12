@@ -150,7 +150,7 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
         $params = [];
 
         if ($criteria->search !== null) {
-            $clauses[] = 'username LIKE ?';
+            $clauses[] = "username LIKE ? ESCAPE '\\'";
             $params[] = $criteria->searchPattern();
         }
 
