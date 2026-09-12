@@ -30,14 +30,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * The auth slice end-to-end through the real composition root: the login form,
- * a failed attempt (generic 422, no session), a successful attempt (302 →
- * /admin, which lands on the dashboard), the htmx directive variant,
- * logout, and the guard rejecting the protected route for an anonymous visitor.
- *
- * Backed by an in-memory sqlite swap for MariaDB (the ConnectionInterface seam),
- * plus a seeded user hashed by the real bound hasher at a cheap cost so the suite
- * stays fast.
+ * The auth slice end to end through the real composition root: the login form, a
+ * failed attempt, a successful one, the htmx variant, logout, and the guard
+ * turning an anonymous visitor away from a protected route. Backed by an
+ * in-memory sqlite swap at the ConnectionInterface seam and a user hashed by the
+ * real bound hasher at a cheap cost, so the suite stays fast.
  */
 final class AuthFlowTest extends TestCase
 {
@@ -68,7 +65,7 @@ final class AuthFlowTest extends TestCase
         // Set before the hasher first resolves, so it builds with this config.
         $container->instance(AuthConfig::class, new AuthConfig(hashCost: 4));
 
-        // Swap MariaDB for in-memory sqlite — the ConnectionInterface seam means
+        // Swap MariaDB for in-memory sqlite; the ConnectionInterface seam means
         // the repository and guard wiring are untouched.
         $pdo = TestSchema::connect();
         $container->instance(ConnectionInterface::class, new PdoConnection($pdo));
@@ -241,7 +238,7 @@ final class AuthFlowTest extends TestCase
         // The user loaded a form, their session then expired (or the cookie was
         // cleared), and they submit: the fresh session knows no CSRF token, so
         // the token check fails. A GUEST failing the check must land on the
-        // login page — not a bare 403. Build the request by hand to bypass the
+        // login page, not a bare 403. Build the request by hand to bypass the
         // helper's automatic valid-token header.
         $request = (new Psr17Factory)->createServerRequest('POST', '/login')
             ->withParsedBody([
@@ -269,7 +266,7 @@ final class AuthFlowTest extends TestCase
 
     public function test_authenticated_user_with_bad_token_still_gets_403(): void
     {
-        // A LIVE session with a wrong token is a real CSRF failure — the
+        // A LIVE session with a wrong token is a real CSRF failure; the
         // redirect policy applies to guests only.
         $this->handle('POST', '/login', [], [
             'username' => self::USERNAME,

@@ -8,6 +8,11 @@ use App\Config\DbConfig;
 use Hydra\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Pins the environment keys, the defaults, and the DSN each driver is handed,
+ * the DSN especially: it is assembled from several settings, and a wrong one
+ * fails as a connection error that says nothing about which setting was wrong.
+ */
 final class DbConfigTest extends TestCase
 {
     private string $dir;

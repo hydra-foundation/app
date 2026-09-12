@@ -11,7 +11,7 @@ use Hydra\Auth\AuthenticateMiddleware;
 /**
  * The admin backend, configured for the integration harnesses exactly as
  * Bootstrap configures it. The harnesses hand-roll their provider stack, so this
- * keeps the module list, prefix and middleware from drifting across them — the
+ * keeps the module list, prefix and middleware from drifting across them, the
  * same reason {@see TestHttpProvider} exists.
  */
 final class TestAdminProvider

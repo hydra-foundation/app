@@ -8,7 +8,8 @@ use Hydra\Console\Commands\MakeClassCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 /**
- * Make ability command
+ * Generates an ability class in App\Authorization, the unit the authorization
+ * layer asks when it needs a yes or no.
  */
 #[AsCommand(
     name: 'make:ability',
@@ -42,7 +43,7 @@ final class MakeAbilityCommand extends MakeClassCommand
         {
             public function authorize(?AuthenticatableInterface \$user, mixed \$subject = null): bool
             {
-                // Deny by default — fill in the rule. An ability that grants
+                // Deny by default; fill in the rule. An ability that grants
                 // nothing should refuse, not silently allow.
                 return false;
             }

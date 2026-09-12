@@ -1,4 +1,4 @@
-/* Paper — the default Hydra palette, and the worked example of a theme.
+/* Paper: the default Hydra palette, and the worked example of a theme.
  *
  * A theme is colour and nothing else: every token below is a colour, and the
  * type scale, spacing, radii and fonts live in base.css because they are the
@@ -15,7 +15,7 @@
  * A second theme is this file with different values, wrapped in
  * [data-theme="its-name"]. The first selector below is the fallback for a
  * document that names no theme at all, and is written :not([data-theme]) so it
- * cannot outrank a named palette on source order — link them in any sequence.
+ * cannot outrank a named palette on source order, so link them in any sequence.
  *
  * app/tests/Unit/ThemeContractTest.php checks a theme against what the
  * stylesheets actually ask for, so a missing token fails rather than renders. */

@@ -13,8 +13,8 @@ use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
 
 /**
- * The request log every visitor writes to. The two heaviest columns — agent and
- * referer — are declared but kept off the table: they belong to the show screen,
+ * The request log every visitor writes to. The two heaviest columns (agent and
+ * referer) are declared but kept off the table: they belong to the show screen,
  * not to a row that has to stay readable.
  */
 final class ActivityModule implements ModuleInterface

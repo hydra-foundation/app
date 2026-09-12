@@ -21,7 +21,7 @@ use Throwable;
 /**
  * The app's login-redirect policy: auth's 401 always becomes a redirect, and
  * csrf's 403 becomes one ONLY when the session holds no token at all (the
- * expired-session POST) — a mismatch against an issued token is a real CSRF
+ * expired-session POST); a mismatch against an issued token is a real CSRF
  * failure and stays a 403.
  */
 final class RedirectUnauthenticatedMiddlewareTest extends TestCase
@@ -53,7 +53,7 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
     public function test_token_mismatch_without_an_issued_token_redirects_to_login(): void
     {
         // The expired-session POST: the old session (and its token) is gone,
-        // the fresh session never minted one, so the CSRF check failed — the
+        // the fresh session never minted one, so the CSRF check failed and the
         // user should land on the login page, not a bare 403.
         $response = $this->middleware()
             ->process($this->request(), $this->throwingHandler(new TokenMismatchException));
@@ -79,7 +79,7 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
     public function test_token_mismatch_against_an_issued_token_is_rethrown(): void
     {
         // A live session that HAS a token and still failed validation is a real
-        // CSRF failure — swallowing it into a redirect would blunt the
+        // CSRF failure; swallowing it into a redirect would blunt the
         // protection.
         $this->guard()->token(); // mint: the session now has a token
 

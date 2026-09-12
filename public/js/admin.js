@@ -69,7 +69,7 @@
     /* The palette is selected by an attribute on <html>, which no frame swap can
        reach. A screen that changes it says so in the fragment it returns, and
        the page repaints without a reload. There is no htmx response header to
-       carry this in 4.x — HX-Trigger and HX-Refresh are gone. */
+       carry this in 4.x, HX-Trigger and HX-Refresh being gone. */
     function applyTheme() {
         const declared = document.querySelector('#admin-theme')?.dataset.theme;
 

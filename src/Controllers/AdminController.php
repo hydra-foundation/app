@@ -9,9 +9,9 @@ use Hydra\Http\Attributes\{Route, RouteGroup};
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
- * Admin controller
- *
- * The admin root
+ * Owns /admin itself. The screens below it belong to the admin modules, so all
+ * this holds is the group that puts the whole area behind authentication, and a
+ * root that sends a visitor on to the dashboard.
  */
 #[RouteGroup('/admin', middleware: [AuthenticateMiddleware::class])]
 final class AdminController extends Controller

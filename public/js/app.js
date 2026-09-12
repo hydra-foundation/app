@@ -1,7 +1,7 @@
 /* Server directives.
  *
- * htmx 4 reads no response header — HX-Redirect, HX-Push-Url and the rest are
- * all gone — so the only thing a server can reach the client with is the body
+ * htmx 4 reads no response header. HX-Redirect, HX-Push-Url and the rest are
+ * all gone, so the only thing a server can reach the client with is the body
  * it swaps. Hydra\Http\HtmxResponse writes directives into that body as one
  * hidden marker element and this applies them. A retarget needs nothing here:
  * it is an out-of-band element, which htmx understands on its own.
@@ -60,7 +60,7 @@
             return;
         }
 
-        /* Only set if the directive survived the swap — the handler above reads
+        /* Only set if the directive survived the swap: the handler above reads
            an htmx internal, and a redirect must not be lost if it is renamed. */
         const url = marker.getAttribute(REDIRECT);
 

@@ -16,7 +16,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Make user account command
+ * Creates an account from the terminal, which is how the first admin comes to
+ * exist on a fresh install: there is no signup, and nobody can sign in to make
+ * one. The password is prompted for rather than taken as an argument, so it
+ * stays out of the shell history and the process list.
  */
 #[AsCommand(
     name: 'make:user',

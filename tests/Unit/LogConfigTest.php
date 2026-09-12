@@ -8,6 +8,11 @@ use App\Config\LogConfig;
 use Hydra\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Pins the log path key and its stderr fallback. A misread path sends the log
+ * somewhere nobody is watching rather than failing, so the default matters as
+ * much as the mapping.
+ */
 final class LogConfigTest extends TestCase
 {
     private string $dir;

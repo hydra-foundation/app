@@ -8,6 +8,11 @@ use App\Config\AppConfig;
 use Hydra\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Pins the environment keys the app reads and the defaults it falls back to,
+ * because a renamed key fails silently: the config still builds, just with the
+ * default, and the wrong setting only surfaces in production.
+ */
 final class AppConfigTest extends TestCase
 {
     private string $dir;
@@ -31,7 +36,7 @@ final class AppConfigTest extends TestCase
 
     /**
      * Environment exports .env values to putenv()/$_ENV, and the real process
-     * environment beats the file — so scrub the keys this suite touches before
+     * environment beats the file, so scrub the keys this suite touches before
      * every Environment construction (and in tearDown), or one fromEnv() call's
      * exports would override the next one's .env.
      */

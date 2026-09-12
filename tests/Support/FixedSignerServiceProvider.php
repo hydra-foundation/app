@@ -9,15 +9,11 @@ use Hydra\Core\Providers\ServiceProvider;
 use Hydra\Core\Security\Signer;
 
 /**
- * Test counterpart to {@see \Hydra\Core\Security\SignerServiceProvider}: binds a
- * {@see Signer} under a fixed test key, so graph tests get a working signer
- * (the CSRF guard needs one) without depending on an APP_KEY in the environment.
- *
- * The production provider reads APP_KEY via Environment::required(); these
- * integration tests deliberately boot from a bare, .env-less Environment, so
- * they swap in this fixed-key binding exactly as they swap the array session
- * store for the native one. {@see \Hydra\Core\Tests\Unit\SignerServiceProviderTest}
- * covers the real key-reading provider.
+ * Binds a {@see Signer} under a fixed key, so the integration tests get the
+ * working signer the CSRF guard needs while still booting from the bare,
+ * .env-less Environment they deliberately use. The production provider reads
+ * APP_KEY via Environment::required() and is covered by
+ * {@see \Hydra\Core\Tests\Unit\SignerServiceProviderTest}.
  */
 final class FixedSignerServiceProvider extends ServiceProvider
 {

@@ -29,7 +29,7 @@ final class AuthController extends Controller
 
     /**
      * bcrypt reads at most 72 bytes and silently ignores the rest, so a longer
-     * password is not a stronger one — the cap only refuses input that could
+     * password is not a stronger one, and the cap only refuses input that could
      * never change the outcome. Set above 72 so a pass phrase that trips it is
      * clearly the caller's mistake rather than a limit they had to discover.
      */

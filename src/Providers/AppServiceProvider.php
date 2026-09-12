@@ -46,10 +46,9 @@ use PDO;
 use Psr\Log\LoggerInterface;
 
 /**
- * Application service provider
- *
- * DI container registration
- * The framework plumbing
+ * Where this application is assembled: every binding, the route sources, the
+ * admin modules and the middleware order live here, so the composition of the
+ * app can be read in one file instead of inferred from the framework.
  */
 final class AppServiceProvider extends ServiceProvider
 {
@@ -89,9 +88,6 @@ final class AppServiceProvider extends ServiceProvider
         VerifyCsrfTokenMiddleware::class,
     ];
 
-    /**
-     * Register application classes and interfaces
-     */
     public function register(ContainerInterface $container): void
     {
         $container->singleton(AppConfig::class, function () use ($container) {
@@ -159,8 +155,8 @@ final class AppServiceProvider extends ServiceProvider
                 // Shared rather than passed through every render: the layout
                 // needs the palette on every page, admin or not, and no
                 // controller should have to remember to hand it over. The
-                // resolver is shared and not its answer — building the view
-                // must not read the session, or the console cannot build one.
+                // resolver is shared and not its answer: building the view must
+                // not read the session, or the console cannot build one.
                 shared: [
                     'themes' => $themes,
                     'theme' => $container->get(ThemeResolver::class),
@@ -168,7 +164,7 @@ final class AppServiceProvider extends ServiceProvider
                     // sent. The extension gates htmx on a nonce it recovers
                     // from the response's policy header, so with no header
                     // there is nothing to recover and every swap would be
-                    // stripped — turning CSP off has to turn the gate off with
+                    // stripped. Turning CSP off has to turn the gate off with
                     // it, or the switch that exists to rule the policy out
                     // breaks more than it rules out.
                     'csp' => $container->get(CspConfig::class),

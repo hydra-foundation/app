@@ -12,13 +12,11 @@ use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The console must boot the providers, not just register them.
- *
- * Regression: bin/console used to build the composition root and resolve
+ * Regression guard: bin/console used to build the composition root and resolve
  * bindings without ever calling Application::boot(), so everything wired in a
- * provider's boot() — the auth audit listeners, for one — silently did not
- * exist for commands. The HTTP path never had the bug because
- * Application::run() boots.
+ * provider's boot(), the auth audit listeners among them, silently did not exist
+ * for commands. The HTTP path never had the bug, because Application::run()
+ * boots.
  */
 final class ConsoleBootTest extends TestCase
 {
@@ -29,7 +27,7 @@ final class ConsoleBootTest extends TestCase
      * that AppServiceProvider::boot() attaches.
      *
      * Runs in its own process: building the REAL root parses the app's .env,
-     * and Environment exports those values to $_ENV/putenv — isolation keeps
+     * and Environment exports those values to $_ENV/putenv, so isolation keeps
      * that export from leaking into the other tests' environment handling.
      */
     #[RunInSeparateProcess]
@@ -44,7 +42,7 @@ final class ConsoleBootTest extends TestCase
 
         $this->assertNotEmpty(
             $matched,
-            'boot() must attach the auth audit listeners — a booted console sees the same wired world a request does.',
+            'boot() must attach the auth audit listeners: a booted console sees the same wired world a request does.',
         );
     }
 
@@ -60,7 +58,7 @@ final class ConsoleBootTest extends TestCase
         $this->assertIsString($source);
 
         $boot = strpos($source, '->boot();');
-        $this->assertNotFalse($boot, 'bin/console must call boot() on the Application — commands rely on booted providers.');
+        $this->assertNotFalse($boot, 'bin/console must call boot() on the Application; commands rely on booted providers.');
 
         // boot() must run before the first container resolution, otherwise
         // early-resolved services see a half-wired world.

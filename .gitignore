@@ -1,10 +1,10 @@
 # Dependencies
 /vendor/
 
-# Environment — never commit real secrets (keep a .env.example instead)
+# Environment: never commit real secrets (keep a .env.example instead)
 /.env
 
-# Docker — MariaDB bind-mount data and any local compose overrides
+# Docker: MariaDB bind-mount data and any local compose overrides
 /docker/db_data/
 /docker-compose.local.yml
 

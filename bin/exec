@@ -5,7 +5,7 @@
 #   ./bin/exec vendor/bin/phpunit   # run the tests
 #
 # The repo root is mounted at /var/www/html, and each project lives in a
-# subdirectory named after itself — commands run there so composer.json/vendor
+# subdirectory named after itself, and commands run there so composer.json/vendor
 # resolve. The workdir is derived from this project's directory name rather than
 # hardcoded, so a copy of this script works unchanged in any sibling project.
 set -euo pipefail

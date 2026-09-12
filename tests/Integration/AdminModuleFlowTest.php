@@ -126,7 +126,7 @@ final class AdminModuleFlowTest extends TestCase
             'password' => 'correct-horse',
         ]);
 
-        // 22 seeded rows, so the row just written is 23 — the id create() returned.
+        // 22 seeded rows, so the row just written is 23: the id create() returned.
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/admin/users/23', $response->getHeaderLine('Location'));
         $this->assertStringContainsString('>newcomer</td>', $this->body('GET', '/admin/users?q=newcomer'));
@@ -414,8 +414,8 @@ final class AdminModuleFlowTest extends TestCase
      * Criteria::searchPattern() escapes the term's own wildcards so a search
      * cannot ask for a full scan, and the LIKE has to name the escape character
      * for that to mean anything: SQLite assumes none, so without the ESCAPE
-     * clause the backslash is matched literally and an underscore — ordinary in
-     * a username — finds nothing.
+     * clause the backslash is matched literally and an underscore, ordinary in a
+     * username, finds nothing.
      */
     public function test_a_search_term_containing_a_wildcard_matches_it_literally(): void
     {
@@ -523,8 +523,8 @@ final class AdminModuleFlowTest extends TestCase
     }
 
     /**
-     * The trail as a visitor reads it, link or not — a group contributes a
-     * crumb with no page behind it.
+     * The trail as a visitor reads it, link or not: a group contributes a crumb
+     * with no page behind it.
      *
      * @return list<string>
      */

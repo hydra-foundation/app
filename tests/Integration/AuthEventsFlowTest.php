@@ -31,14 +31,11 @@ use Psr\Log\AbstractLogger;
 use Stringable;
 
 /**
- * The dogfood, end to end through the REAL composition root: EventServiceProvider
- * bound → AuthServiceProvider hands the guard the shared dispatcher → the guard
- * announces its lifecycle → auth's LogAuthEventsListener (registered by
- * AppServiceProvider's boot()) writes an audit line to the logger. Nothing here mocks the event path;
- * it drives actual HTTP requests and reads what landed in the log.
- *
- * This is the piece the unit tests can't prove: that the wiring in Bootstrap and
- * AppServiceProvider::boot actually connects the four packages in process.
+ * Proves the piece no unit test can: that Bootstrap and AppServiceProvider::boot
+ * actually connect four packages in process, so an event the guard announces
+ * reaches auth's LogAuthEventsListener and lands as an audit line in the logger.
+ * Nothing here mocks the event path; it drives real HTTP requests and reads the
+ * log.
  */
 final class AuthEventsFlowTest extends TestCase
 {
@@ -54,7 +51,7 @@ final class AuthEventsFlowTest extends TestCase
         $container->instance(ContainerInterface::class, $container);
         $container->instance(Environment::class, new Environment(__DIR__));
 
-        // EventServiceProvider is registered here exactly as Bootstrap does it —
+        // EventServiceProvider is registered here exactly as Bootstrap does it:
         // that binding is what makes AuthServiceProvider give the guard a real
         // dispatcher instead of null.
         $app = (new Application($container))
@@ -119,7 +116,7 @@ final class AuthEventsFlowTest extends TestCase
         $this->assertContains('auth.login', $this->log->messages());
         $this->assertNotContains('auth.login_failed', $this->log->messages());
 
-        // The identifier — not a password — is what got recorded.
+        // The identifier, not a password, is what got recorded.
         $login = $this->log->firstWith('auth.login');
         $this->assertArrayHasKey('user', $login['context']);
     }

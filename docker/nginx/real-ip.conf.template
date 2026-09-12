@@ -1,7 +1,7 @@
 # Recovering the client address from behind a reverse proxy.
 #
 # Mounted only by docker-compose.prod.yml, where a host-level proxy terminates
-# TLS and forwards to nginx. NGINX_TRUSTED_PROXY names that proxy — one address
+# TLS and forwards to nginx. NGINX_TRUSTED_PROXY names that proxy: one address
 # or CIDR block, and never a range wide enough to include clients.
 #
 # With this in place REMOTE_ADDR is the resolved client, so the application's

@@ -48,7 +48,7 @@ final class NegotiatingErrorRenderer implements ErrorRendererInterface
 
     /**
      * An HTML fragment htmx swaps into the layout's error region rather than the
-     * element the failed request came from — out-of-band, so that element keeps
+     * element the failed request came from. Out-of-band, so that element keeps
      * whatever the reader was looking at.
      */
     private function htmxFragment(ErrorContext $context): ResponseInterface

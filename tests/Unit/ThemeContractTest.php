@@ -8,13 +8,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The contract between a theme and the stylesheets that consume it.
- *
- * A theme supplies colours and nothing else, so the split has to hold in both
+ * Holds the contract between a theme and the stylesheets that consume it in both
  * directions: no consuming sheet may name a colour of its own, and no sheet may
- * ask for a token that a theme does not define. Either mistake renders — as an
- * unthemed literal, or as an empty value that quietly falls back to whatever
- * the browser does — which is precisely why it is worth a test.
+ * ask for a token no theme defines. Either mistake renders anyway, as an
+ * unthemed literal or as an empty value the browser silently decides for itself,
+ * which is precisely why it is worth a test.
  */
 final class ThemeContractTest extends TestCase
 {
@@ -57,7 +55,7 @@ final class ThemeContractTest extends TestCase
     {
         $defined = $this->defined($this->read("themes/{$theme}.css"));
 
-        // base.css declares the proportions — fonts, scale, radii — which are
+        // base.css declares the proportions (fonts, scale, radii), which are
         // the design's and not a theme's, so they count as supplied too.
         $defined = [...$defined, ...$this->defined($this->read('base.css'))];
 
@@ -76,8 +74,8 @@ final class ThemeContractTest extends TestCase
 
     public function test_the_default_theme_answers_a_document_that_names_none(): void
     {
-        // The layout defaults the attribute, but a page that does not use it —
-        // or a fragment rendered without a layout — still has to be readable.
+        // The layout defaults the attribute, but a page that does not use it,
+        // or a fragment rendered without a layout, still has to be readable.
         // :not() keeps the fallback from outranking a named palette.
         $this->assertStringContainsString(':root:not([data-theme])', $this->read('themes/paper.css'));
     }

@@ -10,7 +10,7 @@ use Hydra\Auth\Contracts\GuardInterface;
 
 /**
  * The account this page is about, and what it has chosen so far. Nothing here
- * is editable yet — the categories that write live on their own screens.
+ * is editable yet: the categories that write live on their own screens.
  */
 final class GeneralSettingsPresenter implements PresenterInterface
 {

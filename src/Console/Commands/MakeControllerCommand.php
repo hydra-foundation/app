@@ -9,7 +9,8 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Make controller command
+ * Generates a controller in App\Controllers, already carrying a #[Route] so the
+ * new class answers a URL the moment it is written.
  */
 #[AsCommand(
     name: 'make:controller',

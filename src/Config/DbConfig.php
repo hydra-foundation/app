@@ -36,8 +36,8 @@ final readonly class DbConfig
 
     /**
      * Build the PDO DSN for this connection. sqlite (used by tests) takes just
-     * a path; everything else assembles a mysql DSN — mariadb included, since
-     * it uses the mysql PDO driver.
+     * a path; everything else assembles a mysql DSN, mariadb included, since it
+     * uses the mysql PDO driver.
      */
     public function dsn(): string
     {

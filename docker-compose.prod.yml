@@ -21,7 +21,7 @@ services:
   nginx:
     restart: unless-stopped
     environment:
-      # The reverse proxy in front of this stack — one address or CIDR block.
+      # The reverse proxy in front of this stack: one address or CIDR block.
       # Only this peer's X-Forwarded-For is believed; everything else keeps the
       # address nginx actually accepted. Set NGINX_TRUSTED_PROXY in .env to the
       # proxy's address on the Docker network, NOT to the bridge subnet: a

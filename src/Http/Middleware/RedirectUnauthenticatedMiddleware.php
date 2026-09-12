@@ -18,7 +18,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 final class RedirectUnauthenticatedMiddleware implements MiddlewareInterface
 {
-    /** Where an unauthenticated visitor is sent — the app's own login route. */
+    /** Where an unauthenticated visitor is sent: the app's own login route. */
     private const LOGIN_PATH = '/login';
 
     public function __construct(

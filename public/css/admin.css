@@ -1,4 +1,4 @@
-/* Hydra admin — the backend's own layer, on top of base.css.
+/* Hydra admin: the backend's own layer, on top of base.css.
    Scoped to .admin / #admin-frame so nothing here reaches the public pages.
 
    Names no colour: every one comes from the theme in force, which is what lets
@@ -25,7 +25,7 @@
 /* Top bar ------------------------------------------------------------------ */
 
 /* Wide screens navigate from the rail, so the bar and its scrim are not merely
-   hidden here — they are absent, and only the narrow-screen block below turns
+   hidden here. They are absent, and only the narrow-screen block below turns
    them on. */
 .admin-topbar,
 .admin-scrim {
@@ -129,7 +129,7 @@
     text-decoration: none;
 }
 
-/* Active is a bar against the rail, not a filled pill — it marks a position
+/* Active is a bar against the rail, not a filled pill: it marks a position
    without turning the sidebar into a row of buttons. */
 .admin-sidebar .nav-link.active {
     font-weight: 500;

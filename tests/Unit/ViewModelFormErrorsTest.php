@@ -8,12 +8,11 @@ use App\ViewModels\LoginViewModel;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The field/form split the FormErrors trait provides.
- *
- * A validator error keyed to something the form draws no input for used to
- * render nowhere at all — a wrong-credentials login showed an empty form. These
- * pin the rule that closes that: a key the form does not own is form-level, and
- * the shared partials/form_errors partial draws it.
+ * The field/form split the FormErrors trait provides. A validator error keyed to
+ * something the form draws no input for used to render nowhere at all, so a
+ * wrong-credentials login showed an empty form. These pin the rule that closes
+ * that: a key the form does not own is form-level, and the shared
+ * partials/form_errors partial draws it.
  */
 final class ViewModelFormErrorsTest extends TestCase
 {

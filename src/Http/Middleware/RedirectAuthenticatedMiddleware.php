@@ -16,7 +16,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 final class RedirectAuthenticatedMiddleware implements MiddlewareInterface
 {
-    /** Where an already-authenticated visitor is sent — the post-login landing. */
+    /** Where an already-authenticated visitor is sent: the post-login landing. */
     private const HOME_PATH = '/admin';
 
     public function __construct(

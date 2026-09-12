@@ -36,13 +36,13 @@ final readonly class AppConfig
             forceHttps: $env->bool('FORCE_HTTPS', false),
             // Off by default because X-Forwarded-Proto is client-supplied:
             // only turn this on when a proxy we control (Traefik in the
-            // dev/prod stacks) terminates TLS and sets the header — otherwise
+            // dev/prod stacks) terminates TLS and sets the header; otherwise
             // any direct client could spoof "https" past the redirect.
             trustForwardedProto: $env->bool('TRUST_FORWARDED_PROTO', false),
             // The peers allowed to speak for a client: comma-separated
             // addresses or CIDR blocks (e.g. "172.18.0.0/16"). Empty means no
             // proxy is in front, so forwarding headers are ignored and the
-            // socket peer is the client — the only safe default, because
+            // socket peer is the client, the only safe default, because
             // anything else lets a direct caller name itself.
             trustedProxies: $env->list('TRUSTED_PROXIES'),
         );

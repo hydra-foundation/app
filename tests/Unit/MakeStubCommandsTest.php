@@ -12,7 +12,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * The class-emitting stub generators (make:controller, make:ability) over a temp
- * directory — covering name normalisation + suffix, the rendered body, the
+ * directory, covering name normalisation and suffix, the rendered body, the
  * overwrite guard, and the per-generator policy (controller prints a register
  * reminder; ability denies by default and forces no suffix).
  */
@@ -109,7 +109,7 @@ final class MakeStubCommandsTest extends TestCase
         $this->assertStringContainsString('final class ManagePost implements AbilityInterface', $body);
         $this->assertStringContainsString('return false;', $body);
         $this->assertStringContainsString('namespace App\\Authorization;', $body);
-        // No register reminder for abilities — referenced by ::class at use site.
+        // No register reminder for abilities: referenced by ::class at the use site.
         $this->assertStringNotContainsString('CONTROLLERS', $tester->getDisplay());
     }
 

@@ -23,12 +23,11 @@ use function hrtime;
  * Writes one row per request: who, what, from where, how it ended and how long
  * it took. Sits inside StartSessionMiddleware (it needs the guard to answer
  * "who") and outside the auth/CSRF middleware, so a redirect to the login page
- * or a rejected token is recorded as the response the visitor actually got.
- *
- * An error thrown further in is recorded at the status the error handler will
- * render, then re-thrown untouched — the log observes the request, it never
- * changes it. Failing to write a row is likewise swallowed: an unreachable
- * activity table must not take the site down with it.
+ * or a rejected token is recorded as the response the visitor actually got. An
+ * error thrown further in is recorded at the status the error handler will
+ * render and then re-thrown untouched, and a row that fails to write is
+ * swallowed: the log observes the request, it never changes it, and an
+ * unreachable activity table must not take the site down with it.
  */
 final class RecordActivityMiddleware implements MiddlewareInterface
 {

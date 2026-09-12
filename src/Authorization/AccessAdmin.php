@@ -9,9 +9,8 @@ use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Authorization\Contracts\AbilityInterface;
 
 /**
- * Access admin ability
- *
- * May the current user reach the admin area?
+ * May the current user reach the admin area at all? Unscoped, unlike
+ * {@see ManageUser}, because the answer is the same on every screen inside it.
  */
 final class AccessAdmin implements AbilityInterface
 {

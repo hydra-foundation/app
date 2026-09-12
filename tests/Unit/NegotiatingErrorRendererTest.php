@@ -13,6 +13,12 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
+/**
+ * Covers what an error looks like to each kind of caller, and what it must
+ * never say: a generic throwable's message is the one place an internal detail
+ * can reach the browser, so production gets a fixed string and only debug mode
+ * gets the exception.
+ */
 final class NegotiatingErrorRendererTest extends TestCase
 {
     private function renderer(): NegotiatingErrorRenderer
@@ -37,7 +43,7 @@ final class NegotiatingErrorRendererTest extends TestCase
     public function test_htmx_request_gets_an_html_fragment_bound_for_the_error_region(): void
     {
         // htmx sends Accept: text/html too, so the htmx branch must win over the
-        // full-page HTML branch — and land out-of-band so the failed element
+        // full-page HTML branch, and land out-of-band so the failed element
         // isn't wiped.
         $response = $this->renderer()->render($this->context(
             new HttpException(422, 'invalid'),

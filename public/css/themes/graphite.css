@@ -1,4 +1,4 @@
-/* Graphite — the dark counterpart to paper.
+/* Graphite: the dark counterpart to paper.
  *
  * The roles do not invert, they darken: --paper is still the recessed ground
  * the sidebar sits on and --surface still the raised one the content sits on,
@@ -8,8 +8,8 @@
  *
  * The accent moves rather than inverting: verdigris at #0f6b60 has 6.4:1 on
  * white and 1.7:1 here, so the dark theme takes a lighter draw of the same
- * hue — and a button in that colour then needs dark text, which is what
- * --on-accent is for.
+ * hue. A button in that colour then needs dark text, which is what --on-accent
+ * is for.
  *
  * Every value below clears WCAG AA against the ground it is used on. */
 
@@ -52,7 +52,7 @@
     --scrim: rgba(0, 0, 0, 0.62);
     --chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%239a9384' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 
-    /* Browser furniture — form controls, scrollbars — has to be told too, or a
+    /* Browser furniture (form controls, scrollbars) has to be told too, or a
        native select renders light inside a dark page. */
     color-scheme: dark;
 }

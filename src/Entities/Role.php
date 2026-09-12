@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Entities;
 
 /**
- * User role
- *
  * The set of roles a user may hold. Adding a case is the only edit needed:
  * the admin select, the console option and the dashboard tiles all read
  * their choices from here.
@@ -22,8 +20,8 @@ enum Role: string
     public const DEFAULT = self::User;
 
     /**
-     * Read a role off untrusted input — a form field, a console option, a
-     * column written before a case was renamed — falling back to the default
+     * Read a role off untrusted input (a form field, a console option, a column
+     * written before a case was renamed), falling back to the default.
      */
     public static function coerce(mixed $value): self
     {

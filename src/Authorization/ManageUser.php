@@ -9,9 +9,8 @@ use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Authorization\Contracts\AbilityInterface;
 
 /**
- * Manage user ability
- *
- * May the current admin manage THIS user — edit or delete them?
+ * May the current admin edit or delete THIS user? Scoped to a subject, unlike
+ * {@see AccessAdmin}, because the answer differs per row the admin is looking at.
  */
 final class ManageUser implements AbilityInterface
 {

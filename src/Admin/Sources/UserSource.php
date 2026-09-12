@@ -20,11 +20,10 @@ use Hydra\Database\Contracts\ConnectionInterface;
  * The admin's read and write side for the users table. Criteria arrives already
  * whitelisted against the module's fields; the ORDER BY column is checked again
  * here so this class is safe to call from anywhere, not only from a screen.
- *
- * Write policy lives here rather than in the form screen: a blank password means
- * "keep the current one" on an update, a name is unique against every row but
- * the one being written, and nobody deletes the account they are signed in as.
- * All three are facts about this table, not about forms.
+ * Write policy lives here too, because a blank password meaning "keep the
+ * current one", a name being unique against every row but the one being
+ * written, and nobody deleting the account they are signed in as are all facts
+ * about this table rather than about forms.
  */
 final class UserSource implements SourceInterface, RowSourceInterface, UpdateSourceInterface, CreateSourceInterface, DeleteSourceInterface
 {

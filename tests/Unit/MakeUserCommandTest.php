@@ -17,7 +17,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * make:user wired to a real UserRepository (in-memory sqlite) and the real
- * NativeHasher — covering the happy path (a verifiable hash actually lands),
+ * NativeHasher, covering the happy path (a verifiable hash actually lands),
  * the hidden-password confirm/mismatch/length checks, the role guard, and the
  * uniqueness + format rules it shares with the admin form.
  */
@@ -55,7 +55,7 @@ final class MakeUserCommandTest extends TestCase
 
         $user = $this->repo->byUsername('alice');
         $this->assertNotNull($user);
-        // The stored digest is a real hash — verifiable, never the plaintext.
+        // The stored digest is a real hash: verifiable, never the plaintext.
         $this->assertNotSame('s3cret-password', $user->getAuthPassword());
         $this->assertTrue($this->hasher->verify('s3cret-password', $user->getAuthPassword()));
     }

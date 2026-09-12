@@ -14,6 +14,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * Covers the middleware that keeps a signed-in user off the login page. The
+ * htmx case is the one worth pinning: the redirect has to stay an ordinary
+ * one, since htmx 4 reads no response header to follow.
+ */
 final class RedirectAuthenticatedMiddlewareTest extends TestCase
 {
     public function test_guest_reaches_the_handler(): void

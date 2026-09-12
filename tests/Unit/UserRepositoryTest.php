@@ -13,16 +13,14 @@ use App\Tests\Support\TestSchema;
 use PHPUnit\Framework\TestCase;
 
 /**
- * UserRepository over an in-memory sqlite connection — proves the lookups
- * (by id, by username) and the admin listing (all()) hydrate a User and return
- * null on a miss, hermetically and without Docker. This is the app's fulfilment
- * of auth's UserProviderInterface, so the two lookup methods do lookups only —
- * no password handling here.
- *
- * The write methods (create/update/delete) are the admin user-management
- * slice's own reads-and-writes — outside the auth contract — kept in the same
- * hand-written-SQL shape. create() still never HASHES a password: it stores the
- * digest it is handed, so all credential production stays in NativeHasher.
+ * UserRepository over an in-memory sqlite connection: the lookups (by id, by
+ * username) and the admin listing (all()) hydrate a User and return null on a
+ * miss, hermetically and without Docker. This is the app's fulfilment of auth's
+ * UserProviderInterface, so the two lookup methods do lookups only and no
+ * password handling. The write methods (create/update/delete) belong to the
+ * admin user-management slice rather than to the auth contract, and create()
+ * still never HASHES a password: it stores the digest it is handed, so all
+ * credential production stays in NativeHasher.
  */
 final class UserRepositoryTest extends TestCase
 {

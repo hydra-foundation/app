@@ -12,7 +12,7 @@
 # namespaced correctly with nothing to configure.
 #
 #   docker compose up -d            # base only
-#   ./bin/dev up -d --build         # base + dev (Traefik) — recommended
+#   ./bin/dev up -d --build         # base + dev (Traefik), recommended
 
 services:
   php:

@@ -35,7 +35,7 @@
        its hx-nonce matches this page's, so markup that reached the document by
        injection carries hx-attributes that do nothing. The extension reads the
        page nonce off the first nonced script, which is why the tags below have
-       one — 'self' is what actually lets them load. safeEval trades htmx's
+       one. 'self' is what actually lets them load. safeEval trades htmx's
        Function() constructor for a nonced script, so hx-on: and js: work
        without 'unsafe-eval' in the policy.
 

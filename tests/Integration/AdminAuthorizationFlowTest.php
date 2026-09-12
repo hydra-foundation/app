@@ -29,19 +29,12 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * The admin backend end-to-end through the real composition root, building on the
- * auth slice. The backend is gated on being signed in, not on holding a role —
- * standard users belong there too, so the split is anonymous vs authenticated:
- *
- *   - anonymous              → 401 mapped to a 302 /login (auth's policy);
- *   - logged-in plain user   → 200, same as an admin;
- *   - logged-in admin        → 200.
- *
- * The landing screen is the dashboard module, which declares no ability; /admin
- * itself only names it.
- *
- * Backed by the same in-memory sqlite swap and cheap-cost hasher as AuthFlowTest,
- * with two seeded users (one admin, one plain), so both roles are covered.
+ * The admin backend end to end through the real composition root. The backend is
+ * gated on being signed in, not on holding a role, so the split under test is
+ * anonymous against authenticated: an anonymous visitor gets the 401 that auth's
+ * policy maps to a 302 /login, and a plain user gets the same 200 an admin does.
+ * Two seeded users over the same in-memory sqlite swap as AuthFlowTest cover
+ * both roles.
  */
 final class AdminAuthorizationFlowTest extends TestCase
 {

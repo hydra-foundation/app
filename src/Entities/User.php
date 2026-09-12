@@ -7,9 +7,9 @@ namespace App\Entities;
 use Hydra\Auth\Contracts\AuthenticatableInterface;
 
 /**
- * User entity
- *
- * Models an application user
+ * An account, as the rest of the app sees it. Readonly and hydrated from a row,
+ * so what reaches a template or an ability is a snapshot of the database rather
+ * than a handle that can write back to it.
  */
 final readonly class User implements AuthenticatableInterface
 {

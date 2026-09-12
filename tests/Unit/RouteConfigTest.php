@@ -8,6 +8,10 @@ use App\Config\RouteConfig;
 use Hydra\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Pins ROUTE_CACHE to off unless it is explicitly truthy. Defaulting the other
+ * way would serve a stale route table on any machine that never built one.
+ */
 final class RouteConfigTest extends TestCase
 {
     private string $dir;

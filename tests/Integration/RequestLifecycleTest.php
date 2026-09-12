@@ -31,7 +31,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * Exercises the real composition root end-to-end: the same container and
  * AppServiceProvider that public/index.php wires, driven by actual nyholm
- * requests. Unit tests mock the seams; this one proves they actually connect —
+ * requests. Unit tests mock the seams; this one proves they actually connect, so
  * a wrong binding id or a circular get() shows up here, not at curl-time.
  */
 final class RequestLifecycleTest extends TestCase
@@ -82,7 +82,7 @@ final class RequestLifecycleTest extends TestCase
     public function test_kernel_graph_resolves(): void
     {
         // Resolving the kernel constructs the entire object graph (request
-        // provider, pipeline, router, emitter, logger) — a wiring typo fails here.
+        // provider, pipeline, router, emitter, logger), so a wiring typo fails here.
         $this->assertInstanceOf(HttpKernel::class, $this->container->get(KernelInterface::class));
     }
 
@@ -100,7 +100,7 @@ final class RequestLifecycleTest extends TestCase
     public function test_unknown_path_renders_a_404(): void
     {
         // The Router throws NotFoundException; the pipeline's ErrorHandlerMiddleware
-        // catches it and renders a response — handle() never throws to the SAPI.
+        // catches it and renders a response; handle() never throws to the SAPI.
         $response = $this->handle('GET', '/does-not-exist');
 
         $this->assertSame(404, $response->getStatusCode());
@@ -174,7 +174,7 @@ final class RequestLifecycleTest extends TestCase
     /**
      * Turning CSP off has to turn the htmx gate off with it. The gate is armed
      * by naming the extension in htmx-config, and it strips any element whose
-     * nonce it cannot match against the response's policy — so leaving it armed
+     * nonce it cannot match against the response's policy, so leaving it armed
      * with no policy to read would break every swap on a page that is meant to
      * be running without a policy at all.
      */

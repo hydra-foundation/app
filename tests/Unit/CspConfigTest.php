@@ -8,6 +8,11 @@ use App\Config\CspConfig;
 use Hydra\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Pins the CSP switches to a policy that is enforced, not merely reported, when
+ * nothing is configured. The two ways of weakening the policy have to be asked
+ * for, so a missing or misspelt key cannot quietly stop enforcing it.
+ */
 final class CspConfigTest extends TestCase
 {
     private const KEYS = ['CSP_ENABLED', 'CSP_REPORT_ONLY', 'CSP_REPORT_URI'];

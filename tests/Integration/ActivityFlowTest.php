@@ -107,7 +107,7 @@ final class ActivityFlowTest extends TestCase
     public function test_the_recorded_status_is_the_one_the_visitor_actually_got(): void
     {
         // The auth failure is turned into a redirect further in, so the log must
-        // say 302 — not the 401 the exception carried on its way past.
+        // say 302, not the 401 the exception carried on its way past.
         $this->assertSame(302, $this->handle('GET', '/admin/users')->getStatusCode());
         $this->assertSame(302, (int) $this->recorded()[0]['status']);
     }

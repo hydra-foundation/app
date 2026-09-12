@@ -37,7 +37,7 @@ RUN if [ "$BUILD_MODE" = "dev" ]; then \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # The repo is bind-mounted from the host (owned by the host user), but the
-# container runs as root — git's "dubious ownership" guard would otherwise
+# container runs as root, so git's "dubious ownership" guard would otherwise
 # block Composer from reading the package's VCS metadata.
 RUN git config --global --add safe.directory '*'
 

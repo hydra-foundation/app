@@ -7,8 +7,8 @@ namespace App\View;
 /**
  * What palettes this installation offers, read from the directory they live in
  * rather than from a list here. A theme is one CSS file of colour tokens, so
- * dropping one in is the whole of adding it — the picker, the validation and
- * the stylesheet links all follow from the same directory listing.
+ * dropping one in is the whole of adding it: the picker, the validation and the
+ * stylesheet links all follow from the same directory listing.
  */
 final class Themes
 {
