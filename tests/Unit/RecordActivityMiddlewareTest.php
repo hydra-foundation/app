@@ -151,7 +151,7 @@ final class RecordActivityMiddlewareTest extends TestCase
         return new class ($throws) implements GuardInterface {
             public function __construct(private readonly bool $throws) {}
 
-            public function user(): ?AuthenticatableInterface
+            public function user(): AuthenticatableInterface
             {
                 if ($this->throws) {
                     throw new RuntimeException('no session');
@@ -164,7 +164,7 @@ final class RecordActivityMiddlewareTest extends TestCase
             {
                 return true;
             }
-            public function id(): int|string|null
+            public function id(): int
             {
                 return 7;
             }

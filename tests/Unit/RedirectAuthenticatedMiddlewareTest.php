@@ -44,8 +44,8 @@ final class RedirectAuthenticatedMiddlewareTest extends TestCase
 
     public function test_htmx_gets_the_same_plain_redirect(): void
     {
-        // HtmxRedirectMiddleware turns this into 204 + HX-Redirect further out;
-        // this middleware stays unaware of htmx.
+        // HtmxRedirectMiddleware rewrites this further out into a body htmx
+        // navigates on; this middleware stays unaware of htmx.
         $request = $this->request()->withHeader('HX-Request', 'true');
 
         $response = $this->middleware(authenticated: true)->process($request, $this->handler());
@@ -70,17 +70,22 @@ final class RedirectAuthenticatedMiddlewareTest extends TestCase
         return (new Psr17Factory)->createServerRequest('GET', '/login');
     }
 
-    private function handler(): RequestHandlerInterface
+    private function handler(): CountingHandler
     {
-        return new class implements RequestHandlerInterface {
-            public int $calls = 0;
+        return new CountingHandler;
+    }
+}
 
-            public function handle(ServerRequestInterface $request): ResponseInterface
-            {
-                $this->calls++;
-                return (new Psr17Factory)->createResponse(200);
-            }
-        };
+/** Records whether the route behind the middleware was reached, and how often. */
+final class CountingHandler implements RequestHandlerInterface
+{
+    public int $calls = 0;
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->calls++;
+
+        return (new Psr17Factory)->createResponse(200);
     }
 }
 

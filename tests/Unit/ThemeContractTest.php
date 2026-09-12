@@ -18,7 +18,11 @@ final class ThemeContractTest extends TestCase
 {
     private const CSS = __DIR__ . '/../../public/css';
 
-    /** Whatever palettes are on disk: adding one must not mean editing a test. */
+    /**
+     * Whatever palettes are on disk: adding one must not mean editing a test.
+     *
+     * @return list<string>
+     */
     private static function themeNames(): array
     {
         return array_map(

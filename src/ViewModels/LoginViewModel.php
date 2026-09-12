@@ -12,11 +12,13 @@ final readonly class LoginViewModel
 {
     use FormErrors;
 
+    /** @param array<string, string> $errors */
     public function __construct(
         public string $username = '',
         public array $errors = [],
     ) {}
 
+    /** @return list<string> */
     private function fields(): array
     {
         return ['username', 'password'];

@@ -36,7 +36,10 @@ final class MakeUserCommandTest extends TestCase
         $this->hasher = new NativeHasher(new AuthConfig(hashCost: 4));
     }
 
-    /** @param list<string> $inputs answers fed to the interactive prompts */
+    /**
+     * @param array<string, mixed> $arguments
+     * @param list<string> $inputs answers fed to the interactive prompts
+     */
     private function makeUser(array $arguments, array $inputs): CommandTester
     {
         $tester = new CommandTester(new MakeUserCommand($this->repo, $this->hasher));

@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use Hydra\Database\Contracts\ConnectionInterface;
 use App\Entities\Role;
 use App\Entities\User;
-use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
+use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
- * Database queries
+ * Every query against the users table, and the app's answer to the auth
+ * package's user provider. Hands back a User rather than the bare contract the
+ * interface promises, so code that knows about roles does not have to ask what
+ * it just received.
  */
 final class UserRepository implements UserProviderInterface
 {
@@ -19,10 +21,7 @@ final class UserRepository implements UserProviderInterface
 
     public function __construct(private readonly ConnectionInterface $db) {}
 
-    /**
-     * Get user by id
-     */
-    public function byIdentifier(int|string $id): ?AuthenticatableInterface
+    public function byIdentifier(int|string $id): ?User
     {
         $row = $this->db->selectOne(
             'SELECT ' . self::COLUMNS . ' FROM users WHERE id = ?',
@@ -32,7 +31,7 @@ final class UserRepository implements UserProviderInterface
         return $row === null ? null : User::fromRow($row);
     }
 
-    public function byUsername(string $username): ?AuthenticatableInterface
+    public function byUsername(string $username): ?User
     {
         $row = $this->db->selectOne(
             'SELECT ' . self::COLUMNS . ' FROM users WHERE username = ?',
@@ -42,9 +41,7 @@ final class UserRepository implements UserProviderInterface
         return $row === null ? null : User::fromRow($row);
     }
 
-    /**
-     * Insert a user and return its new id
-     */
+    /** Returns the id of the inserted row. */
     public function create(string $username, string $passwordHash, Role $role = Role::DEFAULT): int
     {
         $this->db->execute(

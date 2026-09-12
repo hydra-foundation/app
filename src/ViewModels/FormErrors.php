@@ -9,6 +9,7 @@ namespace App\ViewModels;
  */
 trait FormErrors
 {
+    /** @return list<string> */
     abstract private function fields(): array;
 
     public function hasErrors(): bool
@@ -31,6 +32,7 @@ trait FormErrors
         return $this->formErrors() !== [];
     }
 
+    /** @return list<string> */
     public function formErrors(): array
     {
         return array_values(array_diff_key($this->errors, array_flip($this->fields())));

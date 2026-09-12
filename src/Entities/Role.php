@@ -38,6 +38,8 @@ enum Role: string
 
     /**
      * Value-keyed labels, the shape select fields and inputs expect
+     *
+     * @return array<string, string>
      */
     public static function options(): array
     {
@@ -52,6 +54,8 @@ enum Role: string
 
     /**
      * Every role's stored value, for a validation message or a choice list
+     *
+     * @return list<string>
      */
     public static function values(): array
     {

@@ -42,18 +42,27 @@
         "symfony/console": "^7.0"
     },
     "require-dev": {
+        "ext-pdo_sqlite": "*",
         "friendsofphp/php-cs-fixer": "^3.95",
+        "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^11.0"
     },
     "scripts": {
         "start": "php -S localhost:8000 -t public/",
+        "stan": "phpstan analyse",
         "lint": "php-cs-fixer check --diff",
         "lint:fix": "php-cs-fixer fix",
         "test": "phpunit",
         "qa": [
+            "@stan",
             "@lint",
             "@test"
         ]
+    },
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        }
     },
     "minimum-stability": "stable",
     "prefer-stable": true

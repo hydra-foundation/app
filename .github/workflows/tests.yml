@@ -1,0 +1,102 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo, pdo_sqlite
+          coverage: none
+
+      # Strict, and with the lock: an application commits its lock, so a lock
+      # that has drifted from the manifest is a bug a user would hit on install.
+      - name: Validate the manifest
+        run: composer validate --strict
+
+      - uses: ramsey/composer-install@v3
+
+      - name: PHPUnit
+        run: vendor/bin/phpunit
+
+  quality:
+    name: Static analysis and style
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          # One version is enough: php-cs-fixer only reads source, and phpstan
+          # pins its own analysis range in phpstan.neon.dist, so neither tool's
+          # verdict depends on the runtime here.
+          php-version: '8.4'
+          extensions: pdo, pdo_sqlite
+          coverage: none
+
+      - uses: ramsey/composer-install@v3
+
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse --no-progress --error-format=github
+
+      - name: php-cs-fixer
+        run: vendor/bin/php-cs-fixer check --diff
+
+  framework:
+    name: Against framework main
+    runs-on: ubuntu-latest
+
+    steps:
+      # composer.dev.json resolves hydrakit/* from ../hydra/packages/*, so the
+      # two checkouts have to sit side by side the way a local clone does.
+      - uses: actions/checkout@v4
+        with:
+          path: app
+
+      - uses: actions/checkout@v4
+        with:
+          repository: hydra-foundation/hydra
+          path: hydra
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_sqlite
+          coverage: none
+
+      # update, not install: the committed lock holds released packages, and
+      # the whole point of this job is to run the skeleton against the
+      # framework as it stands now. A change that breaks the sample app fails
+      # here, while it is still one commit, rather than after a release.
+      - name: Install against the framework checkout
+        working-directory: app
+        env:
+          COMPOSER: composer.dev.json
+        run: composer update --no-interaction --no-progress
+
+      - name: PHPUnit
+        working-directory: app
+        run: vendor/bin/phpunit
+
+      - name: PHPStan
+        working-directory: app
+        run: vendor/bin/phpstan analyse --no-progress --error-format=github

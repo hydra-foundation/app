@@ -64,8 +64,8 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
 
     public function test_token_mismatch_on_htmx_gets_the_same_plain_redirect(): void
     {
-        // HtmxRedirectMiddleware turns this into 204 + HX-Redirect further out;
-        // this middleware stays unaware of htmx.
+        // HtmxRedirectMiddleware rewrites this further out into a body htmx
+        // navigates on; this middleware stays unaware of htmx.
         $request = $this->request()->withHeader('HX-Request', 'true');
 
         $response = $this->middleware()

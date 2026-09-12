@@ -21,6 +21,7 @@ final readonly class User implements AuthenticatableInterface
         public string $createdAt,
     ) {}
 
+    /** @param array<string, mixed> $row */
     public static function fromRow(array $row): self
     {
         return new self(
@@ -37,7 +38,7 @@ final readonly class User implements AuthenticatableInterface
         return $this->role === Role::Admin;
     }
 
-    public function getAuthIdentifier(): int|string
+    public function getAuthIdentifier(): int
     {
         return $this->id;
     }

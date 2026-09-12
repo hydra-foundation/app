@@ -14,6 +14,10 @@ The skeleton every Hydra project starts from.
 - **PHP 8.2+** and **Composer**
 - **Docker** + Compose (for the full stack: PHP-FPM, nginx, MariaDB, Redis)
 
+`composer.json` pins `config.platform.php` to the oldest version above, so the
+committed lock installs on every version the skeleton claims rather than only on
+the one it happened to be generated with.
+
 ## Setup
 
 ```bash
@@ -39,6 +43,18 @@ composer start                   # php -S localhost:8000 -t public/
 ```
 
 Open **http://localhost:8000**.
+
+## Checks
+
+```bash
+composer qa                      # static analysis, style, tests
+```
+
+The three also run on their own as `composer stan`, `composer lint` and
+`composer test`; `composer lint:fix` applies the style fixes instead of
+reporting them. CI runs the same tools on PHP 8.2 through 8.5, and once more
+against the framework's `main` branch, so a change upstream that breaks the
+skeleton fails before it is released rather than after.
 
 ---
 

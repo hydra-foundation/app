@@ -1,0 +1,17 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - public
+        - tests
+
+    # The skeleton claims >=8.2, so a project generated from it has to analyse
+    # clean on 8.2 as well as on whatever the developer runs locally.
+    phpVersion:
+        min: 80200
+        max: 80500
+
+    # A PHPDoc type is a promise, not a runtime guarantee: a row out of the
+    # database or a value off the request can be anything. Trusting the promise
+    # turns the guards that check it into "redundant" errors.
+    treatPhpDocTypesAsCertain: false

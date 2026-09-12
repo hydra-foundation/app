@@ -118,6 +118,8 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
      * The role to store: the default when the form omitted it, never a value
      * the select never offered. Rejected rather than coerced so a tampered
      * post fails loudly instead of quietly saving something else.
+     *
+     * @param array<string, mixed> $data
      */
     private function role(array $data): string
     {
