@@ -1,12 +1,11 @@
 # Keep the lock out of the dist archive Packagist serves. `create-project`
-# installs from a lock when it finds one, and a skeleton's lock can never name
-# the release it ships in: the tag is cut before the packages are split and
-# indexed, so the newest version resolvable at tag time is the previous one.
-# Shipping it once pinned v0.2.1 inside v0.3.0 and broke create-project
-# outright. Without it Composer resolves the constraints fresh, which is what a
-# skeleton wants and what Symfony and Laravel do.
+# installs from a lock when it finds one, and a skeleton should resolve its
+# constraints fresh instead — which is what Symfony and Laravel do. Shipping it
+# once pinned v0.2.1 inside v0.3.0 and broke create-project outright.
 #
-# The lock stays tracked: it is still what this checkout and CI install from.
+# The lock stays tracked: it is what this checkout and CI install from, and
+# bin/release.sh in the hydra monorepo refreshes it onto each release before
+# tagging this repository, so it names the release it sits in.
 /composer.lock      export-ignore
 
 # Development against a sibling monorepo checkout. Meaningless in a new app,
