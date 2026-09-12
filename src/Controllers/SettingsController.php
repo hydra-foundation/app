@@ -14,7 +14,7 @@ use Hydra\Admin\Notice;
 use Hydra\Admin\Renderer;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\Exceptions\NotFoundException;
-use Hydra\Http\Input as SubmittedInput;
+use Hydra\Http\ParsedBody;
 use Hydra\Http\Status;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -39,7 +39,7 @@ final class SettingsController
     public function saveAppearance(Request $request): Response
     {
         $user = $this->guard->user() ?? throw new NotFoundException;
-        $chosen = SubmittedInput::fromRequest($request)->string(ThemeResolver::PREFERENCE);
+        $chosen = ParsedBody::fromRequest($request)->string(ThemeResolver::PREFERENCE);
 
         // Validated against the directory rather than a list: a theme that is
         // not on disk cannot be applied, so accepting its name would leave the

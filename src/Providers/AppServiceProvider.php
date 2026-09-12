@@ -25,8 +25,8 @@ use Hydra\Event\ListenerProvider;
 use Hydra\Http\Contracts\ErrorRendererInterface;
 use Hydra\Http\{
     ClientIpResolver,
-    ContentSecurityPolicy,
-    ContentSecurityPolicyMiddleware,
+    Csp,
+    CspMiddleware,
     CspNonce,
     ErrorHandlerMiddleware,
     ForceHttpsMiddleware,
@@ -78,7 +78,7 @@ final class AppServiceProvider extends ServiceProvider
     public const MIDDLEWARE = [
         RequestLoggingMiddleware::class,
         SecurityHeadersMiddleware::class,
-        ContentSecurityPolicyMiddleware::class,
+        CspMiddleware::class,
         ForceHttpsMiddleware::class,
         ErrorHandlerMiddleware::class,
         HtmxRedirectMiddleware::class,
@@ -180,10 +180,10 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
-        $container->singleton(ContentSecurityPolicyMiddleware::class, function () use ($container) {
+        $container->singleton(CspMiddleware::class, function () use ($container) {
             $config = $container->get(CspConfig::class);
 
-            $policy = ContentSecurityPolicy::default()
+            $policy = Csp::default()
                 // Bootstrap's stylesheet draws its form-control and accordion
                 // glyphs from data: SVGs rather than from files.
                 ->with('img-src', "'self'", 'data:')
@@ -196,7 +196,7 @@ final class AppServiceProvider extends ServiceProvider
                 $policy = $policy->with('report-uri', $config->reportUri);
             }
 
-            return new ContentSecurityPolicyMiddleware(
+            return new CspMiddleware(
                 $policy,
                 $container->get(CspNonce::class),
                 $config->enabled,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use Hydra\Http\Input;
+use Hydra\Http\ParsedBody;
 use App\Http\Middleware\RedirectAuthenticatedMiddleware;
 use Hydra\View\Contracts\ViewInterface;
 use App\ViewModels\LoginViewModel;
@@ -53,7 +53,7 @@ final class AuthController extends Controller
     #[Route('/login', methods: ['POST'], middleware: [RedirectAuthenticatedMiddleware::class])]
     public function login(Request $request): Response
     {
-        $input = Input::fromRequest($request);
+        $input = ParsedBody::fromRequest($request);
         $username = trim($input->string('username'));
         $password = $input->string('password'); // not trimmed, spaces may matter
 
