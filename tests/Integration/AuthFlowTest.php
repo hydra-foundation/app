@@ -236,7 +236,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/login', $bounced->getHeaderLine('Location'));
     }
 
-    public function test_expired_session_post_redirects_to_login_instead_of403(): void
+    public function test_expired_session_post_redirects_to_login_instead_of_403(): void
     {
         // The user loaded a form, their session then expired (or the cookie was
         // cleared), and they submit: the fresh session knows no CSRF token, so
@@ -267,7 +267,7 @@ final class AuthFlowTest extends TestCase
         $this->assertSame('/login', HtmxResponse::directive($response, 'redirect'));
     }
 
-    public function test_authenticated_user_with_bad_token_still_gets403(): void
+    public function test_authenticated_user_with_bad_token_still_gets_403(): void
     {
         // A LIVE session with a wrong token is a real CSRF failure — the
         // redirect policy applies to guests only.

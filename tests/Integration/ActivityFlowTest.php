@@ -119,7 +119,7 @@ final class ActivityFlowTest extends TestCase
         $this->assertSame(404, (int) $this->recorded()[0]['status']);
     }
 
-    public function test_a_forbidden_screen_is_recorded_as403(): void
+    public function test_a_forbidden_screen_is_recorded_as_403(): void
     {
         $this->login('clerk');
         $this->clear();

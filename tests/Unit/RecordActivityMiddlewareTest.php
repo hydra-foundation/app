@@ -104,7 +104,7 @@ final class RecordActivityMiddlewareTest extends TestCase
         $this->assertSame(403, (int) $this->row()['status']);
     }
 
-    public function test_any_other_failure_is_recorded_as_a500(): void
+    public function test_any_other_failure_is_recorded_as_a_500(): void
     {
         try {
             $this->middleware()->process($this->request(), $this->throwingHandler(new RuntimeException('boom')));

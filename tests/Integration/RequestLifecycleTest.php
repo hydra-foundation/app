@@ -97,7 +97,7 @@ final class RequestLifecycleTest extends TestCase
         $this->assertStringContainsString('<!doctype html>', (string) $response->getBody());
     }
 
-    public function test_unknown_path_renders_a404(): void
+    public function test_unknown_path_renders_a_404(): void
     {
         // The Router throws NotFoundException; the pipeline's ErrorHandlerMiddleware
         // catches it and renders a response — handle() never throws to the SAPI.
