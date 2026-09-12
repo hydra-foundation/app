@@ -16,8 +16,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Seed activity command
- *
  * Backfills plausible traffic so the Activity module has something to page,
  * sort and filter before the site has earned any real visitors. Rows are
  * attributed to the accounts that actually exist, plus a share of guests.

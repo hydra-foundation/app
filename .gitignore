@@ -24,3 +24,6 @@
 # sibling checkouts, use: COMPOSER=composer.dev.json composer install
 # That produces composer.dev.lock, which is machine-specific and NOT committed:
 /composer.dev.lock
+
+# php-cs-fixer
+.php-cs-fixer.cache

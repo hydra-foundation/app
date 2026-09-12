@@ -13,8 +13,6 @@ use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
 
 /**
- * Activity module
- *
  * The request log every visitor writes to. The two heaviest columns — agent and
  * referer — are declared but kept off the table: they belong to the show screen,
  * not to a row that has to stay readable.
@@ -55,12 +53,12 @@ final class ActivityModule implements ModuleInterface
                 Field::text('username')->labelled('User')->sortable()->searchable()->emptyAs('guest'),
                 Field::select('method', self::METHODS)->sortable()->filterable(),
                 Field::text('path')->labelled('URI')->sortable()->searchable()
-                    ->decorate(static fn(mixed $value, array $row): string => ($row['query'] ?? '') === ''
+                    ->decorate(static fn (mixed $value, array $row): string => ($row['query'] ?? '') === ''
                         ? (string) $value
                         : $value . '?' . $row['query']),
                 Field::select('status', self::STATUSES)->sortable()->filterable(),
                 Field::text('duration_ms')->labelled('Time')->sortable()
-                    ->format(static fn(mixed $value): string => $value . ' ms'),
+                    ->format(static fn (mixed $value): string => $value . ' ms'),
                 Field::text('ip')->labelled('IP')->sortable()->searchable(),
                 Field::text('user_agent')->labelled('Agent')->hiddenOn(Surface::List),
                 Field::text('referer')->hiddenOn(Surface::List),

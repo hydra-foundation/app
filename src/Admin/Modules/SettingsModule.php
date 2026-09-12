@@ -12,8 +12,6 @@ use Hydra\Admin\Definition;
 use Hydra\Admin\Screens\PageScreen;
 
 /**
- * Settings module
- *
  * A category is a screen, not a tab pane: /admin/settings/appearance is a place
  * you can link someone to and step back out of, and the strip across the top of
  * the module is ordinary navigation rather than script.
@@ -30,7 +28,6 @@ final class SettingsModule implements ModuleInterface
                 PageScreen::make('general', 'admin/settings/general')
                     ->title('Settings')
                     ->presentedBy(GeneralSettingsPresenter::class),
-
                 PageScreen::make('appearance', 'admin/settings/appearance')
                     ->at('appearance')
                     ->title('Appearance')

@@ -17,8 +17,6 @@ use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
- * User source
- *
  * The admin's read and write side for the users table. Criteria arrives already
  * whitelisted against the module's fields; the ORDER BY column is checked again
  * here so this class is safe to call from anywhere, not only from a screen.

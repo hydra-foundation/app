@@ -16,11 +16,10 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
+
 use function hrtime;
 
 /**
- * Record activity middleware
- *
  * Writes one row per request: who, what, from where, how it ended and how long
  * it took. Sits inside StartSessionMiddleware (it needs the guard to answer
  * "who") and outside the auth/CSRF middleware, so a redirect to the login page

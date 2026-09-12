@@ -148,7 +148,7 @@ final class RecordActivityMiddlewareTest extends TestCase
 
     private function guard(bool $throws = false): GuardInterface
     {
-        return new class($throws) implements GuardInterface {
+        return new class ($throws) implements GuardInterface {
             public function __construct(private readonly bool $throws) {}
 
             public function user(): ?AuthenticatableInterface
@@ -160,9 +160,18 @@ final class RecordActivityMiddlewareTest extends TestCase
                 return new User(7, 'boss', 'hash', Role::Admin, '2026-09-09 00:00:00');
             }
 
-            public function check(): bool { return true; }
-            public function id(): int|string|null { return 7; }
-            public function attempt(string $username, string $password): bool { return false; }
+            public function check(): bool
+            {
+                return true;
+            }
+            public function id(): int|string|null
+            {
+                return 7;
+            }
+            public function attempt(string $username, string $password): bool
+            {
+                return false;
+            }
             public function login(AuthenticatableInterface $user): void {}
             public function logout(): void {}
         };
@@ -195,7 +204,7 @@ final class RecordActivityMiddlewareTest extends TestCase
 
     private function throwingHandler(Throwable $e): RequestHandlerInterface
     {
-        return new class($e) implements RequestHandlerInterface {
+        return new class ($e) implements RequestHandlerInterface {
             public function __construct(private readonly Throwable $e) {}
 
             public function handle(ServerRequestInterface $request): ResponseInterface

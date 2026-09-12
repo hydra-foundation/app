@@ -10,8 +10,6 @@ use Hydra\Admin\Definition;
 use Hydra\Admin\Screens\PageScreen;
 
 /**
- * Dashboard module
- *
  * No source, no fields — one page screen. Signing in is the whole gate, so it
  * declares no ability and every authenticated user sees it.
  */

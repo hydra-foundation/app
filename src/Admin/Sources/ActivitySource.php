@@ -11,8 +11,6 @@ use Hydra\Admin\Page;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
- * Activity source
- *
  * The admin's read side for the activity table, and only the read side: it
  * implements no write contract, so the log cannot be rewritten from the admin.
  * Criteria arrives whitelisted against the module's fields; the ORDER BY column

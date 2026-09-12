@@ -7,8 +7,6 @@ namespace App\Repositories;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
- * Preference repository
- *
  * One person's settings, as name/value rows. A preference is not a column on
  * users because adding one should not need a migration, and because nothing
  * outside the settings screen ever selects on it.

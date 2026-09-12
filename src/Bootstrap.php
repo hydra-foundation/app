@@ -18,8 +18,6 @@ use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
 
 /**
- * Bootstrap
- *
  * Configures application DI container and environment
  * Returns a Kernel application
  */

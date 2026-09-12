@@ -8,8 +8,6 @@ use App\Entities\Activity;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
- * Activity repository
- *
  * The write side of the activity log. Values are clipped to the column widths
  * here rather than at the call site: a 4 KB referer or a novelty user agent is
  * a fact about the request, not a reason to fail it.

@@ -18,8 +18,6 @@ use Hydra\Validation\Rules\MaxLength;
 use Hydra\Validation\Rules\MinLength;
 
 /**
- * Users module
- *
  * This is where you can add/edit users for the backend app.
  */
 final class UsersModule implements ModuleInterface

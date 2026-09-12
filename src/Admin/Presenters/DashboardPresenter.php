@@ -10,8 +10,6 @@ use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
- * Dashboard presenter
- *
  * The admin dashboard's numbers
  */
 final class DashboardPresenter implements PresenterInterface

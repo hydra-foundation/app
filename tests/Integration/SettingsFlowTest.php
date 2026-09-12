@@ -200,7 +200,7 @@ final class SettingsFlowTest extends TestCase
     }
 
     /**
-     * @param array<string, string>     $headers
+     * @param array<string, string> $headers
      * @param array<string, mixed>|null $body
      */
     private function handle(string $method, string $path, array $headers = [], ?array $body = null): ResponseInterface

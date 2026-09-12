@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\View;
 
 /**
- * Themes
- *
  * What palettes this installation offers, read from the directory they live in
  * rather than from a list here. A theme is one CSS file of colour tokens, so
  * dropping one in is the whole of adding it — the picker, the validation and

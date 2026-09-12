@@ -20,8 +20,6 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
- * Settings controller
- *
  * The write half of the settings module. Its screens are declared there and
  * routed by the scanner like any other, so this is an ordinary action that
  * happens to render back into the admin's own chrome.

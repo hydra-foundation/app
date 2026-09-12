@@ -129,7 +129,7 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
 
     private function throwingHandler(Throwable $e): RequestHandlerInterface
     {
-        return new class($e) implements RequestHandlerInterface {
+        return new class ($e) implements RequestHandlerInterface {
             public function __construct(private readonly Throwable $e) {}
 
             public function handle(ServerRequestInterface $request): ResponseInterface

@@ -13,6 +13,4 @@ use Hydra\Kernel\Controller as KernelController;
  * they don't drift between Hydra apps; this thin subclass is the app-owned
  * extension point for project-wide controller helpers.
  */
-abstract class Controller extends KernelController
-{
-}
+abstract class Controller extends KernelController {}

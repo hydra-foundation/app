@@ -8,8 +8,6 @@ use App\Repositories\PreferenceRepository;
 use Hydra\Auth\Contracts\GuardInterface;
 
 /**
- * Theme resolver
- *
  * Which palette this visitor gets. A preference belongs to a person, so a
  * signed-out page — the login screen, the public home page — has nobody to ask
  * and takes the fallback.

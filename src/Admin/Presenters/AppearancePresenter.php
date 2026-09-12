@@ -9,8 +9,6 @@ use App\View\Themes;
 use Hydra\Admin\Contracts\PresenterInterface;
 
 /**
- * Appearance presenter
- *
  * The palettes on offer and the one in force. Both come from the same places
  * the layout reads, so the picker cannot show a theme the page cannot apply or
  * disagree about which is selected.
