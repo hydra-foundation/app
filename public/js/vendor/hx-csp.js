@@ -11,7 +11,9 @@
 //    its htmx attributes are stripped. Fail closed if no page
 //    nonce is found. Also re-checks nonce presence before internal eval
 //    to also cover extension eval use like hx-live.
-//    Nonce source: script[nonce].nonce property on page load.
+//    Nonce source: script[nonce].nonce property on page load; a
+//    swapped fragment's own nonce comes from either policy header
+//    (enforcing or report-only) and is rewritten to match.
 //
 // 2. Trusted Types: creates an 'htmx' TT policy (passthrough;
 //    trust established by the nonce gate). Add trusted-types htmx
@@ -50,6 +52,15 @@
     // Anchors to script-src/default-src to avoid matching nonces in other CSP directives
     function extractNonceFromCSP(csp) {
         return csp?.match(/(?:script-src|default-src)[^;]*'nonce-([^']+)'/i)?.[1] ?? null;
+    }
+
+    // Both policy headers, because report-only is the mode a policy is rolled
+    // out in and its nonces are just as real. Reading only the enforcing header
+    // leaves every fragment carrying a nonce this page will not recognise, so
+    // the gate strips the very content the rollout was meant to observe.
+    function extractNonceFromHeaders(headers) {
+        return extractNonceFromCSP(headers?.get('Content-Security-Policy'))
+            ?? extractNonceFromCSP(headers?.get('Content-Security-Policy-Report-Only'));
     }
 
     // Fallback: parse raw response HTML and extract nonce from meta CSP tag in <head>.
@@ -185,7 +196,7 @@
             try { if (new URL(responseURL).origin !== location.origin) return; }
             catch (_) { return; }
 
-            let responseNonce = extractNonceFromCSP(ctx?.response?.headers?.get('Content-Security-Policy'))
+            let responseNonce = extractNonceFromHeaders(ctx?.response?.headers)
                              ?? extractNonceFromMetaTag(ctx?.text);
             if (responseNonce && responseNonce !== pageNonce) {
                 ctx.text = rewriteNoncesInText(ctx.text, responseNonce);

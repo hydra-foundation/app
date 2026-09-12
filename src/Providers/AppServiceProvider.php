@@ -164,6 +164,14 @@ final class AppServiceProvider extends ServiceProvider
                 shared: [
                     'themes' => $themes,
                     'theme' => $container->get(ThemeResolver::class),
+                    // The layout arms hx-csp only when a policy is actually
+                    // sent. The extension gates htmx on a nonce it recovers
+                    // from the response's policy header, so with no header
+                    // there is nothing to recover and every swap would be
+                    // stripped — turning CSP off has to turn the gate off with
+                    // it, or the switch that exists to rule the policy out
+                    // breaks more than it rules out.
+                    'csp' => $container->get(CspConfig::class),
                 ],
                 // Not shared data: the admin package's templates stamp it on
                 // every htmx element they render, and a missing nonce has to

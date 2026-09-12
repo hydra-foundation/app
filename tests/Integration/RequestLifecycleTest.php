@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use Hydra\PhpDi\Container;
+use App\Config\CspConfig;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\TestAdminProvider;
@@ -138,6 +139,68 @@ final class RequestLifecycleTest extends TestCase
             preg_match("/script-src 'self' 'nonce-([A-Za-z0-9_-]+)'/", $response->getHeaderLine('Content-Security-Policy'), $header),
         );
         $this->assertStringContainsString(sprintf('<script nonce="%s"', $header[1]), (string) $response->getBody());
+    }
+
+    /**
+     * hx-csp recovers a swapped fragment's nonce from the policy header on the
+     * response that carried it, so whichever header is sent has to name the
+     * nonce the markup was stamped with. Report-only is the mode a policy is
+     * rolled out in: if only the enforcing header ever named the nonce, every
+     * swap during that rollout would arrive unrecognised and be stripped.
+     */
+    public function test_report_only_sends_the_nonce_under_the_report_only_header(): void
+    {
+        $this->container->instance(CspConfig::class, new CspConfig(
+            enabled: true,
+            reportOnly: true,
+            reportUri: '',
+        ));
+
+        $response = $this->handle('GET', '/');
+
+        $this->assertSame('', $response->getHeaderLine('Content-Security-Policy'));
+
+        $this->assertSame(
+            1,
+            preg_match(
+                "/script-src 'self' 'nonce-([A-Za-z0-9_-]+)'/",
+                $response->getHeaderLine('Content-Security-Policy-Report-Only'),
+                $header,
+            ),
+        );
+        $this->assertStringContainsString(sprintf('<script nonce="%s"', $header[1]), (string) $response->getBody());
+    }
+
+    /**
+     * Turning CSP off has to turn the htmx gate off with it. The gate is armed
+     * by naming the extension in htmx-config, and it strips any element whose
+     * nonce it cannot match against the response's policy — so leaving it armed
+     * with no policy to read would break every swap on a page that is meant to
+     * be running without a policy at all.
+     */
+    public function test_disabling_the_policy_disarms_the_htmx_gate(): void
+    {
+        $this->container->instance(CspConfig::class, new CspConfig(
+            enabled: false,
+            reportOnly: false,
+            reportUri: '',
+        ));
+
+        $response = $this->handle('GET', '/');
+
+        $this->assertSame('', $response->getHeaderLine('Content-Security-Policy'));
+        $this->assertSame('', $response->getHeaderLine('Content-Security-Policy-Report-Only'));
+        // The extension's file still loads and is inert; naming it in
+        // htmx-config is what would arm it, so that is what must be absent.
+        $this->assertStringNotContainsString('extensions:"hx-csp"', (string) $response->getBody());
+    }
+
+    public function test_an_enforced_policy_arms_the_htmx_gate(): void
+    {
+        $this->assertStringContainsString(
+            'extensions:"hx-csp"',
+            (string) $this->handle('GET', '/')->getBody(),
+        );
     }
 
     public function test_one_container_holds_one_nonce(): void

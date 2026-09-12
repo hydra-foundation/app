@@ -1,6 +1,7 @@
 <!doctype html>
 <?php /** @var \App\View\ThemeResolver $theme */ ?>
 <?php /** @var \App\View\Themes $themes */ ?>
+<?php /** @var \App\Config\CspConfig $csp */ ?>
 <?php /* The theme is a document-level attribute so one palette file can answer
    for the whole page, and a screen that wants another names it in a section.
    Asked for here rather than at the view's construction: it reads the session,
@@ -41,8 +42,15 @@
        There is deliberately no inlineScriptNonce here: it would stamp this
        nonce on every <script> in a swapped fragment, injected ones included,
        which is the hole the gate exists to close. A script the server means to
-       ship carries the nonce already, and hx-csp rewrites it to match. */ ?>
+       ship carries the nonce already, and hx-csp rewrites it to match.
+
+       Naming the extension is what turns it on, so this line is the whole
+       switch: with CSP_ENABLED off no policy header is sent, the extension
+       would find no nonce on any response, and it would strip every swap on a
+       page that is meant to be running without a policy at all. */ ?>
+    <?php if ($csp->enabled): ?>
     <meta name="htmx-config" content='extensions:"hx-csp",safeEval:true'>
+    <?php endif ?>
     <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/htmx.min.js" defer></script>
     <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/hx-csp.js" defer></script>
     <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/app.js" defer></script>
