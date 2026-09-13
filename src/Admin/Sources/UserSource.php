@@ -14,6 +14,7 @@ use Hydra\Admin\Exceptions\WriteRejected;
 use Hydra\Admin\Criteria;
 use Hydra\Admin\Page;
 use Hydra\Auth\Contracts\GuardInterface;
+use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
@@ -33,6 +34,11 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
     public function __construct(
         private readonly ConnectionInterface $db,
         private readonly GuardInterface $guard,
+        // The hasher rather than password_hash(): AUTH_HASH_COST is the whole
+        // application's work factor, and a screen that hashes for itself is one
+        // the setting does not reach. It happened to agree with bcrypt's own
+        // default, which is exactly how a drift like this stays invisible.
+        private readonly HasherInterface $hasher,
     ) {}
 
     public function page(Criteria $criteria): Page
@@ -74,7 +80,7 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
             [
                 $username,
                 $this->role($data),
-                password_hash((string) ($data['password'] ?? ''), PASSWORD_DEFAULT),
+                $this->hasher->hash((string) ($data['password'] ?? '')),
             ],
         );
 
@@ -94,7 +100,7 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
 
         if (($data['password'] ?? '') !== '') {
             $columns[] = 'password_hash = ?';
-            $params[] = password_hash((string) $data['password'], PASSWORD_DEFAULT);
+            $params[] = $this->hasher->hash((string) $data['password']);
         }
 
         $params[] = (int) $id;

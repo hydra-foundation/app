@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Controllers\Controller;
-use Hydra\View\PhpView;
+use Hydra\Http\CspNonce;
 use Hydra\Http\Exceptions\HttpException;
 use Hydra\Http\Responder;
+use Hydra\View\PhpView;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 
@@ -25,7 +26,7 @@ final class ControllerTest extends TestCase
     private function controller(): AbortingController
     {
         $psr17 = new Psr17Factory;
-        return new AbortingController(new Responder($psr17, $psr17), new PhpView(sys_get_temp_dir()));
+        return new AbortingController(new Responder($psr17, $psr17), new PhpView(sys_get_temp_dir(), new CspNonce));
     }
 
     public function test_abort_throws_http_exception_with_given_status(): void

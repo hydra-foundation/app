@@ -11,20 +11,25 @@
 # directory's name (app), so a copy of this stack in any sibling project is
 # namespaced correctly with nothing to configure.
 #
-#   docker compose up -d            # base only
-#   ./bin/dev up -d --build         # base + dev (Traefik), recommended
+# The base is production-shaped: prod.ini, OPcache on, display_errors off. It is
+# what you get when nothing says otherwise, and "nothing says otherwise" is
+# exactly the case that must not leak a stack trace. Development is the overlay,
+# and ./bin/dev applies it for you.
+#
+#   ./bin/dev up -d --build         # base + dev (xdebug, dev.ini), recommended
+#   docker compose up -d            # base only, production-shaped
 
 services:
   php:
     build:
       context: ./docker/php
       args:
-        # Default to dev; docker-compose.prod.yml overrides to prod.
-        BUILD_MODE: ${BUILD_MODE:-dev}
+        # Default to prod; docker-compose.dev.yml overrides to dev.
+        BUILD_MODE: ${BUILD_MODE:-prod}
     volumes:
       - ../:/var/www/html
-      # Mount dev.ini in development (default); prod.yml swaps in prod.ini.
-      - ./docker/php/dev.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
+      # prod.ini by default; dev.yml swaps in dev.ini at the same target.
+      - ./docker/php/prod.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
     networks:
       - net
 

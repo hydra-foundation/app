@@ -1,7 +1,9 @@
 FROM php:8.4-fpm
 
-# Build argument to determine dev or prod mode
-ARG BUILD_MODE=dev
+# Build argument to determine dev or prod mode. It defaults to prod for the same
+# reason the compose base does: a build that says nothing about which it wants
+# must not be the one that ships a debugger.
+ARG BUILD_MODE=prod
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \

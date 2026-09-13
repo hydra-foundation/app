@@ -2,17 +2,13 @@
 # Use with: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 # A host-level reverse proxy (e.g. Caddy/Traefik) handles TLS on 80/443.
 
+# BUILD_MODE and prod.ini are not repeated here: they are what the base already
+# does. What is left is what only production wants — restart policies, memory
+# limits, the real-ip config and Redis's eviction policy.
+
 services:
   php:
-    build:
-      context: ./docker/php
-      args:
-        BUILD_MODE: prod
     restart: unless-stopped
-    volumes:
-      - ../:/var/www/html
-      # Override: mount prod.ini instead of dev.ini.
-      - ./docker/php/prod.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
     deploy:
       resources:
         limits:

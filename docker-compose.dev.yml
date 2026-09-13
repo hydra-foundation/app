@@ -8,6 +8,18 @@
 # docker-compose.local.yml, which is gitignored and auto-loaded by ./bin/dev.
 
 services:
+  php:
+    build:
+      context: ./docker/php
+      args:
+        BUILD_MODE: dev
+    volumes:
+      - ../:/var/www/html
+      # Override: dev.ini instead of the base's prod.ini. This is what turns on
+      # display_errors and xdebug and turns OPcache off, and it is deliberately
+      # something you opt into rather than something you remember to remove.
+      - ./docker/php/dev.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
+
   nginx:
     ports:
       - "${APP_PORT:-8080}:80"

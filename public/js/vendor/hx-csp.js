@@ -6,10 +6,13 @@
 // Provides three layers of Content Security Policy integration:
 //
 // 1. Nonce gating: gates htmx attribute processing behind CSP
-//    nonces to prevent HTML injection attacks. Every htmx element
-//    must carry an hx-nonce attribute matching the page nonce or
-//    its htmx attributes are stripped. Fail closed if no page
-//    nonce is found. Also re-checks nonce presence before internal eval
+//    nonces to prevent HTML injection attacks. Every element htmx
+//    would initialise must carry an hx-nonce matching the page
+//    nonce, or it is refused and its htmx attributes stripped.
+//    The nonce is read with htmx's own attribute lookup, so an
+//    element boosted from an ancestor is nonced from that ancestor
+//    (hx-nonce:inherited). Fail closed if no page nonce is found.
+//    Also re-checks nonce presence before internal eval
 //    to also cover extension eval use like hx-live.
 //    Nonce source: script[nonce].nonce property on page load; a
 //    swapped fragment's own nonce comes from either policy header
@@ -43,10 +46,26 @@
         return internalApi?.attributeValue(elt, 'hx-nonce');
     }
 
+    // The gate. Returning false is what stops htmx initialising the element;
+    // the strip is cleanup after the fact, so the decision must not be made out
+    // of whether there was anything to clean up. It used to be: an element that
+    // is boosted by an ancestor carries no hx- attributes of its own, so there
+    // was nothing to strip, so nothing was refused, and it initialised ungated.
+    // Anything arriving here without the page nonce is blocked now, attributes
+    // of its own or not.
+    //
+    // getNonce() reads the nonce the way htmx reads every other attribute,
+    // inheritance included, so an element boosted from an ancestor is nonced
+    // from that same ancestor: hx-nonce:inherited beside the hx-boost:inherited
+    // that boosted it. What made the element htmx's is what has to vouch for it.
     function checkNonce(elt) {
         if (!pageNonce) return false;
+
         let eltNonce = getNonce(elt);
-        if (eltNonce !== pageNonce && stripHxAttributes(elt, eltNonce)) return false;
+        if (eltNonce === pageNonce) return;
+
+        block(elt, eltNonce);
+        return false;
     }
 
     // Anchors to script-src/default-src to avoid matching nonces in other CSP directives
@@ -112,8 +131,10 @@
         });
     }
 
-    // Strips all hx- attributes, fires htmx:security:strip, returns true if anything stripped.
-    function stripHxAttributes(elt, eltNonce) {
+    // Strips whatever hx- attributes the element has and reports the block.
+    // `stripped` is allowed to come back empty: an element can be blocked for
+    // what it inherits, and the report is about the block, not the cleanup.
+    function block(elt, eltNonce) {
         let stripped = [];
         for (let attr of [...elt.attributes]) {
             if (attr.name.startsWith('hx-') || (htmx.config.prefix && attr.name.startsWith(htmx.config.prefix))) {
@@ -121,13 +142,11 @@
                 elt.removeAttribute(attr.name);
             }
         }
-        if (!stripped.length) return false;
         let tag = elt.tagName?.toLowerCase();
         let id = elt.id ? `#${elt.id}` : '';
         let reason = eltNonce == null ? 'missing-nonce' : 'nonce-mismatch';
-        console.error(`htmx: [hx-csp] blocked <${tag}${id}>: ${eltNonce == null ? 'no hx-nonce attribute' : 'nonce mismatch (possible injection)'}`, { elt, reason });
+        console.error(`htmx: [hx-csp] blocked <${tag}${id}>: ${eltNonce == null ? 'no hx-nonce attribute' : 'nonce mismatch (possible injection)'}`, { elt, reason, stripped });
         htmx.trigger(elt, 'htmx:security:strip', { reason, stripped });
-        return true;
     }
 
     htmx.registerExtension('hx-csp', {

@@ -128,6 +128,74 @@ describe('promoting a response nonce', () => {
     });
 });
 
+/**
+ * An element as the gate sees it. `own` is what the element carries itself;
+ * `inherited` is what htmx's attribute lookup would find on an ancestor, which
+ * is how hx-boost reaches an anchor that says nothing about htmx at all.
+ */
+function element({ tag = 'button', id = '', own = {}, inherited = {} } = {}) {
+    const attributes = { ...own };
+
+    return {
+        tagName: tag.toUpperCase(),
+        id,
+        get attributes() {
+            return Object.entries(attributes).map(([name, value]) => ({ name, value }));
+        },
+        getAttribute: (name) => attributes[name] ?? inherited[name] ?? null,
+        removeAttribute: (name) => { delete attributes[name]; },
+        remaining: () => Object.keys(attributes),
+    };
+}
+
+describe('the initialisation gate', () => {
+    it('lets an element with the page nonce through', () => {
+        const elt = element({ own: { 'hx-post': '/save', 'hx-nonce': PAGE_NONCE } });
+
+        assert.notEqual(extension.htmx_before_init(elt), false, 'a nonced element was refused');
+        assert.deepEqual(elt.remaining(), ['hx-post', 'hx-nonce'], 'a nonced element was stripped');
+    });
+
+    it('refuses an element with no nonce and strips what it came with', () => {
+        const elt = element({ own: { 'hx-post': '/save' } });
+
+        assert.equal(extension.htmx_before_init(elt), false, 'an unnonced element was not refused');
+        assert.deepEqual(elt.remaining(), [], 'the htmx attributes survived');
+    });
+
+    it('refuses an element whose nonce is not this page\'s', () => {
+        const elt = element({ own: { 'hx-post': '/save', 'hx-nonce': RESPONSE_NONCE } });
+
+        assert.equal(extension.htmx_before_init(elt), false, 'a mismatched nonce was not refused');
+    });
+
+    // The hole this covers: hx-boost lives on an ancestor, so the element htmx
+    // is about to initialise has no hx- attribute of its own. A gate that only
+    // refused what it had stripped found nothing to strip and let it through.
+    it('refuses an element boosted by an ancestor that carries no nonce', () => {
+        const elt = element({ tag: 'a', inherited: { 'hx-boost': 'true' } });
+
+        assert.equal(extension.htmx_before_init(elt), false, 'a boosted element was initialised ungated');
+    });
+
+    it('lets a boosted element through when the nonce is inherited too', () => {
+        const elt = element({
+            tag: 'a',
+            inherited: { 'hx-boost': 'true', 'hx-nonce': PAGE_NONCE },
+        });
+
+        assert.notEqual(extension.htmx_before_init(elt), false, 'an inherited nonce was not honoured');
+    });
+
+    it('gates hx-on the same way', () => {
+        const nonced = element({ own: { 'hx-on:click': 'x()', 'hx-nonce': PAGE_NONCE } });
+        const bare = element({ own: { 'hx-on:click': 'x()' } });
+
+        assert.notEqual(extension.htmx_before_on_init(nonced), false);
+        assert.equal(extension.htmx_before_on_init(bare), false);
+    });
+});
+
 describe('content the scrub has no business touching', () => {
     for (const html of [
         '<a href="/nonce-policy?x=1&y=2">read</a>',

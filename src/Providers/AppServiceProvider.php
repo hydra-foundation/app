@@ -156,6 +156,10 @@ final class AppServiceProvider extends ServiceProvider
 
             return new PhpView(
                 dirname(__DIR__, 2) . '/views',
+                // Not shared data: the admin package's templates stamp it on
+                // every htmx element they render, and a view that cannot supply
+                // one has to fail here rather than on the first screen opened.
+                $container->get(CspNonce::class),
                 $container->get(CsrfGuard::class),
                 fallbacks: [AdminServiceProvider::views()],
                 // Shared rather than passed through every render: the layout
@@ -175,10 +179,18 @@ final class AppServiceProvider extends ServiceProvider
                     // breaks more than it rules out.
                     'csp' => $container->get(CspConfig::class),
                 ],
-                // Not shared data: the admin package's templates stamp it on
-                // every htmx element they render, and a missing nonce has to
-                // fail as a named error rather than as an undefined variable.
-                cspNonce: $container->get(CspNonce::class),
+            );
+        });
+
+        // X-Frame-Options is the superseded spelling of frame-ancestors, so the
+        // policy answers for it whenever one is sent. With CSP switched off
+        // nothing else says it, and the header goes back to carrying the rule
+        // on its own.
+        $container->singleton(SecurityHeadersMiddleware::class, function () use ($container) {
+            return new SecurityHeadersMiddleware(
+                $container->get(CspConfig::class)->enabled
+                    ? SecurityHeadersMiddleware::WITH_CSP
+                    : SecurityHeadersMiddleware::DEFAULTS,
             );
         });
 
