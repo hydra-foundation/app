@@ -59,7 +59,7 @@ final class ActivitySource implements SourceInterface, RowSourceInterface
 
         if ($criteria->search !== null) {
             $clauses[] = '(' . implode(' OR ', array_map(
-                static fn (string $column): string => "{$column} LIKE ? ESCAPE '\\'",
+                static fn (string $column): string => Criteria::like($column),
                 self::SEARCHABLE,
             )) . ')';
 
