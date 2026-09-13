@@ -74,9 +74,11 @@ jobs:
 
       # No package.json and no dependencies: node runs these itself. hx-csp is
       # the CSP gate every htmx element passes through, so its scrub is worth
-      # the one job it costs.
+      # the one job it costs. The pattern is spelled out rather than passed as
+      # a directory: node 22 runs a positional directory as a module instead of
+      # searching it, and dies on MODULE_NOT_FOUND. Quoted so node expands it.
       - name: Node test runner
-        run: node --test tests/js/
+        run: node --test "tests/js/**/*.test.mjs"
 
   framework:
     name: Against framework main
