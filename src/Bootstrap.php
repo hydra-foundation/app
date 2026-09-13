@@ -16,6 +16,7 @@ use Hydra\Kernel\HttpServiceProvider;
 use Hydra\Kernel\Kernel;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
+use Hydra\Throttle\ThrottleServiceProvider;
 
 /**
  * Configures application DI container and environment
@@ -32,6 +33,8 @@ final class Bootstrap
             ->register(new NyholmServiceProvider)
             ->register(new SignerServiceProvider)
             ->register(new CacheServiceProvider)
+            // After the cache: the limiter counts into that store.
+            ->register(new ThrottleServiceProvider)
             ->register(new HttpServiceProvider(
                 controllers: AppServiceProvider::CONTROLLERS,
                 middleware: AppServiceProvider::MIDDLEWARE,

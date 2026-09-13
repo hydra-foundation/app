@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use Hydra\PhpDi\Container;
 use App\Config\CspConfig;
 use App\Providers\AppServiceProvider;
+use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
@@ -23,6 +24,7 @@ use Hydra\Database\PdoConnection;
 use Hydra\Http\HttpKernel;
 use Hydra\Event\EventServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
+use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -53,6 +55,8 @@ final class RequestLifecycleTest extends TestCase
             // Environment has no APP_KEY for the real provider to read).
             ->register(new FixedSignerServiceProvider)
             ->register(new EventServiceProvider)
+            ->register(new ArrayCacheServiceProvider)
+            ->register(new ThrottleServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)

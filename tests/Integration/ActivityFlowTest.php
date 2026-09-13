@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Entities\Activity;
 use App\Providers\AppServiceProvider;
 use App\Repositories\ActivityRepository;
+use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\FixedSignerServiceProvider;
 use App\Tests\Support\TestAdminProvider;
@@ -25,6 +26,7 @@ use Hydra\Database\PdoConnection;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
+use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -51,6 +53,8 @@ final class ActivityFlowTest extends TestCase
             ->register(new ArraySessionServiceProvider)
             ->register(new NyholmServiceProvider)
             ->register(new FixedSignerServiceProvider)
+            ->register(new ArrayCacheServiceProvider)
+            ->register(new ThrottleServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)

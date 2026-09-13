@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use Hydra\Http\ParsedBody;
+use App\Http\Middleware\LoginThrottleMiddleware;
 use App\Http\Middleware\RedirectAuthenticatedMiddleware;
 use Hydra\View\Contracts\ViewInterface;
 use App\ViewModels\LoginViewModel;
@@ -50,7 +51,7 @@ final class AuthController extends Controller
         return $this->render('auth/login/index', ['vm' => new LoginViewModel]);
     }
 
-    #[Route('/login', methods: ['POST'], middleware: [RedirectAuthenticatedMiddleware::class])]
+    #[Route('/login', methods: ['POST'], middleware: [LoginThrottleMiddleware::class, RedirectAuthenticatedMiddleware::class])]
     public function login(Request $request): Response
     {
         $input = ParsedBody::fromRequest($request);

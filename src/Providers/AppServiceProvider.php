@@ -40,6 +40,7 @@ use Hydra\Http\{
 };
 use Hydra\Log\StreamLogger;
 use Hydra\Session\StartSessionMiddleware;
+use Hydra\Throttle\RateLimitMiddleware;
 use Hydra\View\Contracts\ViewInterface;
 use Hydra\View\PhpView;
 use PDO;
@@ -80,6 +81,11 @@ final class AppServiceProvider extends ServiceProvider
         CspMiddleware::class,
         ForceHttpsMiddleware::class,
         ErrorHandlerMiddleware::class,
+        // Inside the error handler, not above it: an unreachable counter store
+        // raises, and above the handler that raise has no response to render.
+        // Ahead of everything that costs anything, so a refused request never
+        // reaches the session, the body parser or the database.
+        RateLimitMiddleware::class,
         HtmxRedirectMiddleware::class,
         ParseBodyMiddleware::class,
         StartSessionMiddleware::class,

@@ -26,6 +26,7 @@
         "hydrakit/http": "^0.4",
         "hydrakit/validation": "^0.4",
         "hydrakit/session": "^0.4",
+        "hydrakit/throttle": "^0.4",
         "hydrakit/csrf": "^0.4",
         "hydrakit/admin": "^0.4",
         "hydrakit/auth": "^0.4",

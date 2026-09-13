@@ -6,6 +6,7 @@ namespace App\Tests\Integration;
 
 use Hydra\PhpDi\Container;
 use App\Providers\AppServiceProvider;
+use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
@@ -23,6 +24,7 @@ use Hydra\Database\PdoConnection;
 use Hydra\Event\EventServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
+use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -58,6 +60,8 @@ final class AuthEventsFlowTest extends TestCase
             ->register(new ArraySessionServiceProvider)
             ->register(new NyholmServiceProvider)
             ->register(new FixedSignerServiceProvider)
+            ->register(new ArrayCacheServiceProvider)
+            ->register(new ThrottleServiceProvider)
             ->register(TestHttpProvider::make())
             ->register(new EventServiceProvider)
             ->register(new AuthServiceProvider)

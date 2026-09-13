@@ -32,10 +32,11 @@
     "require": {
         "php": ">=8.2",
         "hydrakit/core": "*",
-        "hydrakit/cache": "^0.3",
+        "hydrakit/cache": "*",
         "hydrakit/http": "*",
         "hydrakit/validation": "*",
         "hydrakit/session": "*",
+        "hydrakit/throttle": "*",
         "hydrakit/csrf": "*",
         "hydrakit/admin": "*",
         "hydrakit/auth": "*",

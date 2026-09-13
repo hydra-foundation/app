@@ -45,10 +45,14 @@ services:
 
   redis:
     restart: unless-stopped
+    # noeviction, not allkeys-lru. These keys are rate-limit counters, and an
+    # evictable counter is a budget anyone can clear: fill the instance and
+    # every limit in the application resets. Under pressure Redis instead
+    # refuses the write, the store raises, and the limiter fails closed.
     command: >
       redis-server
       --maxmemory 128mb
-      --maxmemory-policy allkeys-lru
+      --maxmemory-policy noeviction
       --save 900 1
       --save 300 10
     deploy:
