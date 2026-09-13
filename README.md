@@ -21,10 +21,15 @@ the one it happened to be generated with.
 ## Setup
 
 ```bash
-cp .env.example .env             # defaults run as-is for local dev
+cp .env.example .env             # runs as-is; set APP_DEBUG=true for local dev
 composer install                 # resolves the framework packages
 php bin/console key:generate     # writes a fresh APP_KEY into .env
 ```
+
+The defaults are the safe ones, not the convenient ones: `APP_DEBUG=false`, and
+the Docker base stack builds with `prod.ini`. `./bin/dev` layers the development
+overrides on top, so debugging is something you ask for rather than something
+you remember to turn off.
 
 ## Run
 
