@@ -15,6 +15,12 @@ final class Themes
     /** The palette a visitor gets before anyone has chosen one. */
     public const FALLBACK = 'paper';
 
+    /**
+     * The name the choice is stored under, shared by the screen that writes it
+     * and the resolver that reads it back.
+     */
+    public const PREFERENCE = 'theme';
+
     /** @var list<string>|null */
     private ?array $names = null;
 

@@ -6,7 +6,6 @@ namespace App\Controllers;
 
 use App\Admin\Presenters\AppearancePresenter;
 use App\Repositories\PreferenceRepository;
-use App\View\ThemeResolver;
 use App\View\Themes;
 use Hydra\Admin\Chrome;
 use Hydra\Admin\ModuleRegistry;
@@ -39,7 +38,7 @@ final class SettingsController
     public function saveAppearance(Request $request): Response
     {
         $user = $this->guard->user() ?? throw new NotFoundException;
-        $chosen = ParsedBody::fromRequest($request)->string(ThemeResolver::PREFERENCE);
+        $chosen = ParsedBody::fromRequest($request)->string(Themes::PREFERENCE);
 
         // Validated against the directory rather than a list: a theme that is
         // not on disk cannot be applied, so accepting its name would leave the
@@ -52,7 +51,7 @@ final class SettingsController
             );
         }
 
-        $this->preferences->set($user->getAuthIdentifier(), ThemeResolver::PREFERENCE, $chosen);
+        $this->preferences->set($user->getAuthIdentifier(), Themes::PREFERENCE, $chosen);
 
         return $this->screen($request, Notice::saved());
     }
