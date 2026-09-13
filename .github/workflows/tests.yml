@@ -61,6 +61,23 @@ jobs:
       - name: php-cs-fixer
         run: vendor/bin/php-cs-fixer check --diff
 
+  javascript:
+    name: Browser extension tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # No package.json and no dependencies: node runs these itself. hx-csp is
+      # the CSP gate every htmx element passes through, so its scrub is worth
+      # the one job it costs.
+      - name: Node test runner
+        run: node --test tests/js/
+
   framework:
     name: Against framework main
     runs-on: ubuntu-latest

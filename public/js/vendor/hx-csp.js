@@ -71,19 +71,45 @@
         return extractNonceFromCSP(meta?.content);
     }
 
-    function escapeRegex(str) {
-        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Matches a nonce attribute by NAME, not by the value we happen to be
+    // looking for. Anchoring on `nonce=<value>` only ever caught one spelling:
+    // HTML allows whitespace either side of the '=' and three ways to quote the
+    // value, so `hx-nonce = "..."` walked straight past the scrub below, and
+    // whoever holds a stolen nonce is the one choosing how to spell it.
+    // The unquoted alternative keeps '=', which the parser appends to the value
+    // even though the spec calls it an error. Excluding it truncated a base64
+    // nonce at its own padding, which is a bypass wearing the fix's clothes.
+    // The characters it does exclude cannot appear in base64, so no nonce can
+    // hide behind one.
+    const NONCE_ATTRIBUTE = /(\s(?:[a-z0-9-]*-)?nonce)(\s*=\s*)("[^"]*"|'[^']*'|[^\s"'<>`]*)/gi;
+
+    // A nonce the server wrote is base64. Anything else cannot be one this page
+    // will honour, and that is the point: `&#114;4nd0m...` is how a stolen
+    // nonce is spelled to survive a scrub that compares raw bytes, and the
+    // parser decodes it back into the real thing on the way into the DOM.
+    const NONCE_SHAPED = /^[A-Za-z0-9+/=_-]*$/;
+
+    // The value as the parser will read it. An unquoted one is already bare.
+    function attributeValue(raw) {
+        return /^["']/.test(raw) ? raw.slice(1, -1) : raw;
     }
 
     // Rewrites responseNonce -> replacement in raw HTML before DOM parsing,
     // covering hx-nonce and script nonce attributes in one pass.
     // Pass replacement='' to strip nonce attributes entirely (stolen-nonce scrub).
+    // A nonce-shaped value that is not the one asked about is left alone; one
+    // that is not nonce-shaped is dropped, since nothing legitimate writes a
+    // nonce the parser has to decode first.
     function rewriteNoncesInText(text, responseNonce, replacement = pageNonce) {
-        let escaped = escapeRegex(responseNonce);
-        return text.replace(
-            new RegExp(`(nonce=)(["']?)${escaped}\\2`, 'gi'),
-            (_, attr, quote) => replacement ? `${attr}${quote}${replacement}${quote}` : ''
-        );
+        return text.replace(NONCE_ATTRIBUTE, (attribute, name, _equals, raw) => {
+            let value = attributeValue(raw);
+
+            if (value === responseNonce) {
+                return replacement ? `${name}="${replacement}"` : '';
+            }
+
+            return NONCE_SHAPED.test(value) ? attribute : '';
+        });
     }
 
     // Strips all hx- attributes, fires htmx:security:strip, returns true if anything stripped.
