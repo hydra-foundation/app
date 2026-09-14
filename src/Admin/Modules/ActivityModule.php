@@ -41,7 +41,7 @@ final class ActivityModule implements ModuleInterface
     {
         return Definition::make('activity')
             ->title('Activity')
-            ->group('Administration')
+            ->group('Monitoring')
             ->icon('activity')
             ->ability(AccessAdmin::class)
             ->source(ActivitySource::class)
