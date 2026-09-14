@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Http\NegotiatingErrorRenderer;
+use Hydra\Http\Contracts\ErrorRendererInterface;
 use Hydra\Http\ErrorContext;
 use Hydra\Http\Exceptions\HttpException;
 use Hydra\Http\PlainTextErrorRenderer;
 use Hydra\Http\Responder;
+use Hydra\Http\Testing\ErrorRendererContractTestCase;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
 /**
@@ -19,11 +21,15 @@ use RuntimeException;
  * never say: a generic throwable's message is the one place an internal detail
  * can reach the browser, so production gets a fixed string and only debug mode
  * gets the exception.
+ *
+ * The framework's own contract case runs here too, over the HTML branch — the
+ * one with a reflection point in it — which is the whole reason hydra ships the
+ * case rather than keeping it to itself.
  */
 #[CoversClass(NegotiatingErrorRenderer::class)]
-final class NegotiatingErrorRendererTest extends TestCase
+final class NegotiatingErrorRendererTest extends ErrorRendererContractTestCase
 {
-    private function renderer(): NegotiatingErrorRenderer
+    protected function renderer(): ErrorRendererInterface
     {
         $psr17 = new Psr17Factory;
         $responder = new Responder($psr17, $psr17);
@@ -31,8 +37,13 @@ final class NegotiatingErrorRendererTest extends TestCase
         return new NegotiatingErrorRenderer($responder, new PlainTextErrorRenderer($responder));
     }
 
+    protected function request(): ServerRequestInterface
+    {
+        return (new Psr17Factory)->createServerRequest('GET', '/x')->withHeader('Accept', 'text/html');
+    }
+
     /** @param array<string, string> $headers */
-    private function context(\Throwable $error, int $status, array $headers = [], bool $debug = false): ErrorContext
+    private function accepting(\Throwable $error, int $status, array $headers = [], bool $debug = false): ErrorContext
     {
         $request = (new Psr17Factory)->createServerRequest('GET', '/x');
         foreach ($headers as $name => $value) {
@@ -47,7 +58,7 @@ final class NegotiatingErrorRendererTest extends TestCase
         // htmx sends Accept: text/html too, so the htmx branch must win over the
         // full-page HTML branch, and land out-of-band so the failed element
         // isn't wiped.
-        $response = $this->renderer()->render($this->context(
+        $response = $this->renderer()->render($this->accepting(
             new HttpException(422, 'invalid'),
             422,
             ['HX-Request' => 'true', 'Accept' => 'text/html'],
@@ -68,7 +79,7 @@ final class NegotiatingErrorRendererTest extends TestCase
 
     public function test_json_accept_gets_a_json_body(): void
     {
-        $response = $this->renderer()->render($this->context(
+        $response = $this->renderer()->render($this->accepting(
             new HttpException(404),
             404,
             ['Accept' => 'application/json'],
@@ -84,7 +95,7 @@ final class NegotiatingErrorRendererTest extends TestCase
 
     public function test_html_accept_gets_a_full_page(): void
     {
-        $response = $this->renderer()->render($this->context(
+        $response = $this->renderer()->render($this->accepting(
             new HttpException(403, 'not yours'),
             403,
             ['Accept' => 'text/html'],
@@ -99,7 +110,7 @@ final class NegotiatingErrorRendererTest extends TestCase
     public function test_no_recognised_accept_falls_back_to_plain_text(): void
     {
         // curl / health checks: no Accept negotiation, the plain-text default.
-        $response = $this->renderer()->render($this->context(new HttpException(500), 500));
+        $response = $this->renderer()->render($this->accepting(new HttpException(500), 500));
 
         $this->assertSame(500, $response->getStatusCode());
         $this->assertStringContainsString('text/plain', $response->getHeaderLine('Content-Type'));
@@ -107,7 +118,7 @@ final class NegotiatingErrorRendererTest extends TestCase
 
     public function test_production_never_leaks_a_generic_throwable_message(): void
     {
-        $response = $this->renderer()->render($this->context(
+        $response = $this->renderer()->render($this->accepting(
             new RuntimeException('secret dsn here'),
             500,
             ['Accept' => 'application/json'],
@@ -121,7 +132,7 @@ final class NegotiatingErrorRendererTest extends TestCase
 
     public function test_debug_mode_adds_exception_detail_to_json(): void
     {
-        $response = $this->renderer()->render($this->context(
+        $response = $this->renderer()->render($this->accepting(
             new RuntimeException('boom'),
             500,
             ['Accept' => 'application/json'],
@@ -137,7 +148,7 @@ final class NegotiatingErrorRendererTest extends TestCase
     {
         // A developer-authored HttpException message still gets HTML-escaped so a
         // reflected value can't break out of the markup.
-        $response = $this->renderer()->render($this->context(
+        $response = $this->renderer()->render($this->accepting(
             new HttpException(400, '<script>alert(1)</script>'),
             400,
             ['HX-Request' => 'true'],

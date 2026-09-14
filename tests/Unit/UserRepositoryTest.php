@@ -4,27 +4,29 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
-use Hydra\Database\PdoConnection;
 use App\Entities\Role;
 use App\Entities\User;
 use App\Repositories\UserRepository;
-use PDO;
 use App\Tests\Support\TestSchema;
+use Hydra\Auth\Contracts\UserProviderInterface;
+use Hydra\Auth\Testing\UserProviderContractTestCase;
+use Hydra\Database\PdoConnection;
+use PDO;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
 
 /**
  * UserRepository over an in-memory sqlite connection: the lookups (by id, by
  * username) and the admin listing (all()) hydrate a User and return null on a
  * miss, hermetically and without Docker. This is the app's fulfilment of auth's
- * UserProviderInterface, so the two lookup methods do lookups only and no
- * password handling. The write methods (create/update/delete) belong to the
+ * UserProviderInterface, so it runs the framework's published contract case for
+ * that seam as well as its own, and the two lookup methods do lookups only and
+ * no password handling. The write methods (create/update/delete) belong to the
  * admin user-management slice rather than to the auth contract, and create()
  * still never HASHES a password: it stores the digest it is handed, so all
  * credential production stays in NativeHasher.
  */
 #[CoversClass(UserRepository::class)]
-final class UserRepositoryTest extends TestCase
+final class UserRepositoryTest extends UserProviderContractTestCase
 {
     private PDO $pdo;
     private UserRepository $repo;
@@ -35,6 +37,16 @@ final class UserRepositoryTest extends TestCase
         $this->pdo->exec("INSERT INTO users (username, password_hash) VALUES ('will', 'hashed-secret')");
 
         $this->repo = new UserRepository(new PdoConnection($this->pdo));
+    }
+
+    protected function provider(): UserProviderInterface
+    {
+        return $this->repo;
+    }
+
+    protected function knownUsername(): string
+    {
+        return 'will';
     }
 
     public function test_by_username_returns_the_hydrated_user(): void
