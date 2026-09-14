@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -18,6 +19,7 @@ use SplFileInfo;
  * check, which is the worst place for it to be: under the policy a forgotten
  * nonce does not raise, it just quietly stops working.
  */
+#[CoversNothing]
 final class AppViewsTest extends TestCase
 {
     private const VIEWS = __DIR__ . '/../../views';

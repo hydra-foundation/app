@@ -17,6 +17,7 @@ use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\Http\Exceptions\HttpException;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -29,6 +30,7 @@ use Throwable;
  * The parts of the activity recorder that the end-to-end flow can't reach: whose
  * address gets written down, and what happens when the log itself fails.
  */
+#[CoversClass(RecordActivityMiddleware::class)]
 final class RecordActivityMiddlewareTest extends TestCase
 {
     private ConnectionInterface $db;

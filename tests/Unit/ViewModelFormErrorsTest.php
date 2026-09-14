@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\ViewModels\FormErrors;
 use App\ViewModels\LoginViewModel;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -14,6 +16,7 @@ use PHPUnit\Framework\TestCase;
  * that: a key the form does not own is form-level, and the shared
  * partials/form_errors partial draws it.
  */
+#[CoversClass(FormErrors::class)]
 final class ViewModelFormErrorsTest extends TestCase
 {
     public function test_login_keeps_field_errors_off_the_form_level_list(): void

@@ -10,6 +10,7 @@ use Hydra\Http\Exceptions\HttpException;
 use Hydra\Http\Responder;
 use Hydra\View\PhpView;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /** Exposes the protected abort() helper so it can be exercised directly. */
@@ -21,6 +22,7 @@ final class AbortingController extends Controller
     }
 }
 
+#[CoversClass(Controller::class)]
 final class ControllerTest extends TestCase
 {
     private function controller(): AbortingController

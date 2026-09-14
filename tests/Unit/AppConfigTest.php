@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Config\AppConfig;
 use Hydra\Core\Environment;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,6 +14,7 @@ use PHPUnit\Framework\TestCase;
  * because a renamed key fails silently: the config still builds, just with the
  * default, and the wrong setting only surfaces in production.
  */
+#[CoversClass(AppConfig::class)]
 final class AppConfigTest extends TestCase
 {
     private string $dir;

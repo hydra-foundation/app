@@ -8,6 +8,7 @@ use Hydra\PhpDi\Container;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\QuietLogServiceProvider;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
 use App\Tests\Support\TestSchema;
@@ -26,6 +27,7 @@ use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -39,6 +41,7 @@ use Stringable;
  * Nothing here mocks the event path; it drives real HTTP requests and reads the
  * log.
  */
+#[CoversNothing]
 final class AuthEventsFlowTest extends TestCase
 {
     private const USERNAME = 'will';
@@ -66,6 +69,7 @@ final class AuthEventsFlowTest extends TestCase
             ->register(new EventServiceProvider)
             ->register(new AuthServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(new QuietLogServiceProvider)
             ->register(TestAdminProvider::make());
 
         // Swap the logger for a capturing one BEFORE boot(): boot() builds the

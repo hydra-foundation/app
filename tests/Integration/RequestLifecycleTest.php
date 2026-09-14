@@ -9,6 +9,7 @@ use App\Config\CspConfig;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\QuietLogServiceProvider;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
 use App\Tests\Support\TestSchema;
@@ -26,6 +27,7 @@ use Hydra\Event\EventServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -36,6 +38,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * requests. Unit tests mock the seams; this one proves they actually connect, so
  * a wrong binding id or a circular get() shows up here, not at curl-time.
  */
+#[CoversNothing]
 final class RequestLifecycleTest extends TestCase
 {
     private ContainerInterface $container;
@@ -61,6 +64,7 @@ final class RequestLifecycleTest extends TestCase
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(new QuietLogServiceProvider)
             ->register(TestAdminProvider::make())
             ->boot();
 

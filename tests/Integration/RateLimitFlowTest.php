@@ -8,6 +8,7 @@ use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\FixedSignerServiceProvider;
+use App\Tests\Support\QuietLogServiceProvider;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
 use App\Tests\Support\TestSchema;
@@ -26,6 +27,7 @@ use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Hydra\Throttle\ThrottleConfig;
 use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -36,6 +38,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * is shaped for whoever asked, and that the login route carries a budget of its
  * own rather than the one every page view spends.
  */
+#[CoversNothing]
 final class RateLimitFlowTest extends TestCase
 {
     /** Small enough to reach in a test, large enough that the page under it loads first. */
@@ -70,6 +73,7 @@ final class RateLimitFlowTest extends TestCase
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(new QuietLogServiceProvider)
             ->register(TestAdminProvider::make())
             ->boot();
 

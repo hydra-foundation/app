@@ -34,8 +34,11 @@ jobs:
 
       - uses: ramsey/composer-install@v3
 
+      # Randomised order so leakage through the shared bootstrap, container and
+      # $_ENV fails the build instead of depending on declaration order. The app
+      # suite has more to leak than the framework's, not less.
       - name: PHPUnit
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --order-by=random
 
   quality:
     name: Static analysis and style
@@ -114,7 +117,7 @@ jobs:
 
       - name: PHPUnit
         working-directory: app
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --order-by=random
 
       - name: PHPStan
         working-directory: app

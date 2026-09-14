@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Config\LogConfig;
 use Hydra\Core\Environment;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,6 +14,7 @@ use PHPUnit\Framework\TestCase;
  * somewhere nobody is watching rather than failing, so the default matters as
  * much as the mapping.
  */
+#[CoversClass(LogConfig::class)]
 final class LogConfigTest extends TestCase
 {
     private string $dir;

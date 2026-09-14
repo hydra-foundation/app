@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Config\DbConfig;
 use Hydra\Core\Environment;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,6 +14,7 @@ use PHPUnit\Framework\TestCase;
  * the DSN especially: it is assembled from several settings, and a wrong one
  * fails as a connection error that says nothing about which setting was wrong.
  */
+#[CoversClass(DbConfig::class)]
 final class DbConfigTest extends TestCase
 {
     private string $dir;

@@ -7,6 +7,7 @@ namespace App\Tests\Unit;
 use App\Bootstrap;
 use Hydra\Auth\Events\Attempting;
 use Hydra\Event\ListenerProvider;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +19,7 @@ use PHPUnit\Framework\TestCase;
  * for commands. The HTTP path never had the bug, because Application::run()
  * boots.
  */
+#[CoversClass(Bootstrap::class)]
 final class ConsoleBootTest extends TestCase
 {
     /**

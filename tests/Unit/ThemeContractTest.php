@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -14,6 +15,7 @@ use PHPUnit\Framework\TestCase;
  * unthemed literal or as an empty value the browser silently decides for itself,
  * which is precisely why it is worth a test.
  */
+#[CoversNothing]
 final class ThemeContractTest extends TestCase
 {
     private const CSS = __DIR__ . '/../../public/css';

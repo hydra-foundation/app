@@ -10,6 +10,7 @@ use App\Repositories\ActivityRepository;
 use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\FixedSignerServiceProvider;
+use App\Tests\Support\QuietLogServiceProvider;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
 use App\Tests\Support\TestSchema;
@@ -28,6 +29,7 @@ use Hydra\PhpDi\Container;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -36,6 +38,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * The activity slice end-to-end: the middleware recording one row per request
  * through the real pipeline, and the Activity module reading those rows back.
  */
+#[CoversNothing]
 final class ActivityFlowTest extends TestCase
 {
     private const PASSWORD = 'correct-horse-battery-staple';
@@ -59,6 +62,7 @@ final class ActivityFlowTest extends TestCase
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(new QuietLogServiceProvider)
             ->register(TestAdminProvider::make())
             ->boot();
 

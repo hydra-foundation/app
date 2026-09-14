@@ -9,6 +9,7 @@ use App\Repositories\PreferenceRepository;
 use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
 use App\Tests\Support\FixedSignerServiceProvider;
+use App\Tests\Support\QuietLogServiceProvider;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
 use App\Tests\Support\TestSchema;
@@ -27,6 +28,7 @@ use Hydra\PhpDi\Container;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -36,6 +38,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * panes, a preference that belongs to one person, and a theme that has to reach
  * the <html> element a frame swap cannot touch.
  */
+#[CoversNothing]
 final class SettingsFlowTest extends TestCase
 {
     private const PASSWORD = 'correct-horse-battery-staple';
@@ -58,6 +61,7 @@ final class SettingsFlowTest extends TestCase
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(new QuietLogServiceProvider)
             ->register(TestAdminProvider::make())
             ->boot();
 

@@ -8,6 +8,7 @@ use Hydra\PhpDi\Container;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\ArrayCacheServiceProvider;
 use App\Tests\Support\ArraySessionServiceProvider;
+use App\Tests\Support\QuietLogServiceProvider;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
 use App\Tests\Support\TestSchema;
@@ -26,6 +27,7 @@ use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Hydra\Throttle\ThrottleServiceProvider;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -38,6 +40,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * Two seeded users over the same in-memory sqlite swap as AuthFlowTest cover
  * both roles.
  */
+#[CoversNothing]
 final class AdminAuthorizationFlowTest extends TestCase
 {
     private const PASSWORD = 'correct-horse-battery-staple';
@@ -60,6 +63,7 @@ final class AdminAuthorizationFlowTest extends TestCase
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
+            ->register(new QuietLogServiceProvider)
             ->register(TestAdminProvider::make())
             ->boot();
 

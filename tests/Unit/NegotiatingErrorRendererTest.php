@@ -10,6 +10,7 @@ use Hydra\Http\Exceptions\HttpException;
 use Hydra\Http\PlainTextErrorRenderer;
 use Hydra\Http\Responder;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -19,6 +20,7 @@ use RuntimeException;
  * can reach the browser, so production gets a fixed string and only debug mode
  * gets the exception.
  */
+#[CoversClass(NegotiatingErrorRenderer::class)]
 final class NegotiatingErrorRendererTest extends TestCase
 {
     private function renderer(): NegotiatingErrorRenderer

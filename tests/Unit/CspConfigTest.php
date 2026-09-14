@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Config\CspConfig;
 use Hydra\Core\Environment;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,6 +14,7 @@ use PHPUnit\Framework\TestCase;
  * nothing is configured. The two ways of weakening the policy have to be asked
  * for, so a missing or misspelt key cannot quietly stop enforcing it.
  */
+#[CoversClass(CspConfig::class)]
 final class CspConfigTest extends TestCase
 {
     private const KEYS = ['CSP_ENABLED', 'CSP_REPORT_ONLY', 'CSP_REPORT_URI'];

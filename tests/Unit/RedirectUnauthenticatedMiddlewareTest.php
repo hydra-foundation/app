@@ -12,6 +12,7 @@ use Hydra\Csrf\Exceptions\TokenMismatchException;
 use Hydra\Http\Responder;
 use Hydra\Session\Stores\ArraySessionStore;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -24,6 +25,7 @@ use Throwable;
  * expired-session POST); a mismatch against an issued token is a real CSRF
  * failure and stays a 403.
  */
+#[CoversClass(RedirectUnauthenticatedMiddleware::class)]
 final class RedirectUnauthenticatedMiddlewareTest extends TestCase
 {
     private ArraySessionStore $session;

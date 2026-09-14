@@ -10,6 +10,7 @@ use App\Entities\User;
 use App\Repositories\UserRepository;
 use PDO;
 use App\Tests\Support\TestSchema;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -22,6 +23,7 @@ use PHPUnit\Framework\TestCase;
  * still never HASHES a password: it stores the digest it is handed, so all
  * credential production stays in NativeHasher.
  */
+#[CoversClass(UserRepository::class)]
 final class UserRepositoryTest extends TestCase
 {
     private PDO $pdo;

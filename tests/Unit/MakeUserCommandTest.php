@@ -11,6 +11,7 @@ use Hydra\Auth\AuthConfig;
 use Hydra\Auth\NativeHasher;
 use PDO;
 use App\Tests\Support\TestSchema;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -21,6 +22,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * the hidden-password confirm/mismatch/length checks, the role guard, and the
  * uniqueness + format rules it shares with the admin form.
  */
+#[CoversClass(MakeUserCommand::class)]
 final class MakeUserCommandTest extends TestCase
 {
     private PDO $pdo;

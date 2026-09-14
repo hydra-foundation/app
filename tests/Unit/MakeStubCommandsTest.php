@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Console\Commands\MakeAbilityCommand;
 use App\Console\Commands\MakeControllerCommand;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -16,6 +17,8 @@ use Symfony\Component\Console\Tester\CommandTester;
  * overwrite guard, and the per-generator policy (controller prints a register
  * reminder; ability denies by default and forces no suffix).
  */
+#[CoversClass(MakeAbilityCommand::class)]
+#[CoversClass(MakeControllerCommand::class)]
 final class MakeStubCommandsTest extends TestCase
 {
     private string $dir;

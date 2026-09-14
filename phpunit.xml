@@ -5,6 +5,12 @@
          colors="true"
          failOnWarning="true"
          failOnDeprecation="true"
+         requireCoverageMetadata="true"
+         failOnRisky="true"
+         failOnNotice="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutChangesToGlobalState="true"
+         displayDetailsOnSkippedTests="true"
          cacheDirectory=".phpunit.cache">
     <testsuites>
         <testsuite name="Hydra App">

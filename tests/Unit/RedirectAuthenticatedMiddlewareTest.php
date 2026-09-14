@@ -9,6 +9,7 @@ use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\Responder;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,6 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * htmx case is the one worth pinning: the redirect has to stay an ordinary
  * one, since htmx 4 reads no response header to follow.
  */
+#[CoversClass(RedirectAuthenticatedMiddleware::class)]
 final class RedirectAuthenticatedMiddlewareTest extends TestCase
 {
     public function test_guest_reaches_the_handler(): void
