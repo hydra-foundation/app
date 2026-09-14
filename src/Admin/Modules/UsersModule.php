@@ -12,6 +12,7 @@ use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Input;
 use Hydra\Admin\Screens\DeleteScreen;
+use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\FormScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Validation\Rules\MaxLength;
@@ -56,6 +57,7 @@ final class UsersModule implements ModuleInterface
                         ->help('Leave blank to keep the current password.'),
                 ),
                 DeleteScreen::make()->confirm('Delete this user? This cannot be undone.'),
+                ExportScreen::make(),
             );
     }
 }

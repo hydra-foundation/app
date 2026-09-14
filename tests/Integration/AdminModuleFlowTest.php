@@ -500,7 +500,11 @@ final class AdminModuleFlowTest extends TestCase
         $this->login('boss');
         $body = $this->body('GET', '/admin/users?page=2', ['HX-Request' => 'true', 'HX-Target' => 'div#admin-body']);
 
-        $this->assertStringNotContainsString('hx-swap-oob', $body);
+        // The export link rides out of band on purpose: it lives in the toolbar
+        // outside the body, and its href carries the criteria. Nothing else may.
+        $this->assertStringNotContainsString('id="admin-nav" hx-swap-oob', $body);
+        $this->assertSame(1, substr_count($body, 'hx-swap-oob'));
+        $this->assertStringContainsString('id="admin-export" hx-swap-oob', $body);
         $this->assertStringNotContainsString('<head>', $body);
     }
 

@@ -9,6 +9,7 @@ use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
+use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
 
@@ -63,6 +64,9 @@ final class ActivityModule implements ModuleInterface
                 Field::text('user_agent')->labelled('Agent')->hiddenOn(Surface::List),
                 Field::text('referer')->hiddenOn(Surface::List),
             )
-            ->screens(ShowScreen::make()->title('Request'));
+            ->screens(
+                ShowScreen::make()->title('Request'),
+                ExportScreen::make(),
+            );
     }
 }

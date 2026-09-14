@@ -12,6 +12,8 @@ use App\Http\NegotiatingErrorRenderer;
 use App\Repositories\{ActivityRepository, UserRepository};
 use App\View\{ThemeResolver, Themes};
 use Hydra\Admin\AdminServiceProvider;
+use Hydra\Admin\Events\AdminEvent;
+use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Auth\Contracts\{GuardInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, LoggedIn, LoggedOut, LoginFailed};
 use Hydra\Auth\LogAuthEventsListener;
@@ -276,5 +278,12 @@ final class AppServiceProvider extends ServiceProvider
         $listeners->listen(LoginFailed::class, [$audit, 'onFailed']);
         $listeners->listen(LoggedIn::class, [$audit, 'onLoggedIn']);
         $listeners->listen(LoggedOut::class, [$audit, 'onLoggedOut']);
+
+        // One registration against the base class, because the provider matches
+        // an event's subtypes: this hears every admin write and every export,
+        // including the events the admin grows later. The activity table already
+        // records that the request happened; this is what it was for and, for an
+        // export, how much of the table left with it.
+        $listeners->listen(AdminEvent::class, new LogAdminEventsListener($container->get(LoggerInterface::class)));
     }
 }
