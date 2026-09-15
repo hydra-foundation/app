@@ -13,6 +13,7 @@ use Hydra\Admin\Contracts\UpdateSourceInterface;
 use Hydra\Admin\Exceptions\WriteRejected;
 use Hydra\Admin\Criteria;
 use Hydra\Admin\Page;
+use Hydra\Admin\RowId;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
@@ -61,9 +62,11 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
 
     public function find(string $id): ?array
     {
-        return $this->db->selectOne(
+        $key = RowId::int($id);
+
+        return $key === null ? null : $this->db->selectOne(
             'SELECT ' . self::COLUMNS . ' FROM users WHERE id = ?',
-            [(int) $id],
+            [$key],
         );
     }
 
@@ -89,9 +92,10 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
 
     public function update(string $id, array $data): void
     {
+        $key = RowId::int($id) ?? throw WriteRejected::on('id', 'No user has that id.');
         $username = trim((string) ($data['username'] ?? ''));
 
-        if ($this->isTaken($username, $id)) {
+        if ($this->isTaken($username, $key)) {
             throw WriteRejected::on('username', 'That username is already taken.');
         }
 
@@ -103,7 +107,7 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
             $params[] = $this->hasher->hash((string) $data['password']);
         }
 
-        $params[] = (int) $id;
+        $params[] = $key;
 
         $this->db->execute(
             'UPDATE users SET ' . implode(', ', $columns) . ' WHERE id = ?',
@@ -113,11 +117,17 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
 
     public function delete(string $id): void
     {
+        // Before anything else, because the controller does not look a row up
+        // ahead of a delete the way it does ahead of an update: an id that is
+        // not one has to stop here or (int) hands the statement the row beside
+        // the one nobody named.
+        $key = RowId::int($id) ?? throw WriteRejected::on('id', 'No user has that id.');
+
         if ((string) $this->guard->id() === $id) {
             throw WriteRejected::on('id', 'You cannot delete the account you are signed in as.');
         }
 
-        $this->db->execute('DELETE FROM users WHERE id = ?', [(int) $id]);
+        $this->db->execute('DELETE FROM users WHERE id = ?', [$key]);
     }
 
     /**
@@ -139,11 +149,11 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
     }
 
     /** Whether the name is in use, ignoring the row that already holds it. */
-    private function isTaken(string $username, ?string $except = null): bool
+    private function isTaken(string $username, ?int $except = null): bool
     {
         $row = $except === null
             ? $this->db->selectOne('SELECT id FROM users WHERE username = ?', [$username])
-            : $this->db->selectOne('SELECT id FROM users WHERE username = ? AND id <> ?', [$username, (int) $except]);
+            : $this->db->selectOne('SELECT id FROM users WHERE username = ? AND id <> ?', [$username, $except]);
 
         return $row !== null;
     }

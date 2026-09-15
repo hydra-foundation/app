@@ -8,6 +8,7 @@ use Hydra\Admin\Contracts\RowSourceInterface;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Criteria;
 use Hydra\Admin\Page;
+use Hydra\Admin\RowId;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
@@ -27,9 +28,11 @@ final class ActivitySource implements SourceInterface, RowSourceInterface
 
     public function find(string $id): ?array
     {
-        return $this->db->selectOne(
+        $key = RowId::int($id);
+
+        return $key === null ? null : $this->db->selectOne(
             'SELECT ' . self::COLUMNS . ' FROM activity WHERE id = ?',
-            [(int) $id],
+            [$key],
         );
     }
 
