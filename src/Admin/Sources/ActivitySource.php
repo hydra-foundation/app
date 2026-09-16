@@ -4,87 +4,26 @@ declare(strict_types=1);
 
 namespace App\Admin\Sources;
 
-use Hydra\Admin\Contracts\RowSourceInterface;
-use Hydra\Admin\Contracts\SourceInterface;
-use Hydra\Admin\Criteria;
-use Hydra\Admin\Page;
-use Hydra\Admin\RowId;
+use Hydra\Admin\Sources\TableSource;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
 * Activity module data contract
 */
-final class ActivitySource implements SourceInterface, RowSourceInterface
+final class ActivitySource extends TableSource
 {
-    private const TABLE = 'activity';
-    private const COLUMNS = 'id, user_id, username, method, path, query, status, duration_ms, ip, user_agent, referer, created_at';
-    private const SORTABLE = ['id', 'username', 'method', 'path', 'status', 'duration_ms', 'ip', 'created_at'];
-    private const SEARCHABLE = ['username', 'path', 'ip'];
-
-    public function __construct(private readonly ConnectionInterface $db) {}
-
-    public function find(string $id): ?array
+    public function __construct(ConnectionInterface $db)
     {
-        $key = RowId::int($id);
-        $sql = sprintf('SELECT %s 
-            FROM %s 
-            WHERE id=?', self::COLUMNS, self::TABLE);
-        return $key === null ? null : $this->db->selectOne($sql, [$key]);
-    }
-
-    public function page(Criteria $criteria): Page
-    {
-        [$where, $params] = $this->conditions($criteria);
-        $order = in_array($criteria->sort, self::SORTABLE, true) ? $criteria->sort : 'id';
-        $sql = sprintf("SELECT COUNT(*) as total
-            FROM %s
-            WHERE %s", self::TABLE, $where);
-        $total = $this->db->selectOne($sql, $params);
-        $sql = sprintf(
-            "SELECT %s 
-            FROM %s 
-            WHERE %s 
-            ORDER BY %s %s 
-            LIMIT %s OFFSET %s",
-            self::COLUMNS,
-            self::TABLE,
-            $where,
-            $order,
-            $criteria->direction,
-            $criteria->perPage,
-            $criteria->offset()
+        parent::__construct(
+            $db,
+            table: 'activity',
+            columns: [
+                'id', 'user_id', 'username', 'method', 'path', 'query',
+                'status', 'duration_ms', 'ip', 'user_agent', 'referer', 'created_at',
+            ],
+            sortable: ['id', 'username', 'method', 'path', 'status', 'duration_ms', 'ip', 'created_at'],
+            searchable: ['username', 'path', 'ip'],
+            filterable: ['method', 'status'],
         );
-        return new Page(
-            $this->db->select($sql, $params),
-            (int) ($total['total'] ?? 0),
-            $criteria,
-        );
-    }
-
-    /** @return array{0: string, 1: list<string>} */
-    private function conditions(Criteria $criteria): array
-    {
-        $clauses = [];
-        $params = [];
-
-        if ($criteria->search !== null) {
-            $clauses[] = '(' . implode(' OR ', array_map(
-                static fn (string $column): string => Criteria::like($column),
-                self::SEARCHABLE,
-            )) . ')';
-
-            foreach (self::SEARCHABLE as $_) {
-                $params[] = $criteria->searchPattern();
-            }
-        }
-
-        foreach (['method', 'status'] as $column) {
-            if (isset($criteria->filters[$column])) {
-                $clauses[] = "{$column} = ?";
-                $params[] = $criteria->filters[$column];
-            }
-        }
-
-        return [$clauses === [] ? '1=1' : implode(' AND ', $clauses), $params];
     }
 }

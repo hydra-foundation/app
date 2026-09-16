@@ -7,67 +7,36 @@ namespace App\Admin\Sources;
 use App\Entities\Role;
 use Hydra\Admin\Contracts\CreateSourceInterface;
 use Hydra\Admin\Contracts\DeleteSourceInterface;
-use Hydra\Admin\Contracts\RowSourceInterface;
-use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Contracts\UpdateSourceInterface;
 use Hydra\Admin\Exceptions\WriteRejected;
-use Hydra\Admin\Criteria;
-use Hydra\Admin\Page;
 use Hydra\Admin\RowId;
+use Hydra\Admin\Sources\TableSource;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
-* Users module data contract
+* Users module data contract. The read side is the declaration below; the write
+* side is written out, because what a blank password means, which names collide
+* and who may not be deleted are facts about this table rather than boilerplate.
+*
+* password_hash is deliberately absent from the columns: it is written here and
+* never read back into a screen.
 */
-final class UserSource implements SourceInterface, RowSourceInterface, UpdateSourceInterface, CreateSourceInterface, DeleteSourceInterface
+final class UserSource extends TableSource implements UpdateSourceInterface, CreateSourceInterface, DeleteSourceInterface
 {
-    private const TABLE = 'users';
-    private const COLUMNS = 'id, username, role, created_at';
-    private const SORTABLE = ['id', 'username', 'role', 'created_at'];
-
     public function __construct(
-        private readonly ConnectionInterface $db,
+        ConnectionInterface $db,
         private readonly GuardInterface $guard,
         private readonly HasherInterface $hasher,
-    ) {}
-
-    public function find(string $id): ?array
-    {
-        $key = RowId::int($id);
-        $sql = sprintf("SELECT %s 
-            FROM %s 
-            WHERE id=?", self::COLUMNS, self::TABLE);
-        return $key === null ? null : $this->db->selectOne($sql, [$key]);
-    }
-
-    public function page(Criteria $criteria): Page
-    {
-        [$where, $params] = $this->conditions($criteria);
-        $order = in_array($criteria->sort, self::SORTABLE, true) ? $criteria->sort : 'id';
-        $sql = sprintf("SELECT COUNT(*) as total
-            FROM %s
-            WHERE %s", self::TABLE, $where);
-        $total = $this->db->selectOne($sql, $params);
-        $sql = sprintf(
-            "SELECT %s
-            FROM %s
-            WHERE %s
-            ORDER BY %s %s
-            LIMIT %s OFFSET %s",
-            self::COLUMNS,
-            self::TABLE,
-            $where,
-            $order,
-            $criteria->direction,
-            $criteria->perPage,
-            $criteria->offset()
-        );
-        return new Page(
-            $this->db->select($sql, $params),
-            (int) ($total['total'] ?? 0),
-            $criteria,
+    ) {
+        parent::__construct(
+            $db,
+            table: 'users',
+            columns: ['id', 'username', 'role', 'created_at'],
+            sortable: ['id', 'username', 'role', 'created_at'],
+            searchable: ['username'],
+            filterable: ['role'],
         );
     }
 
@@ -79,8 +48,8 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
             throw WriteRejected::on('username', 'That username is already taken.');
         }
 
-        $sql = sprintf('INSERT INTO %s (username, role, password_hash) 
-            VALUES (?, ?, ?)', self::TABLE);
+        $sql = sprintf('INSERT INTO %s (username, role, password_hash)
+            VALUES (?, ?, ?)', $this->table);
         $this->db->execute(
             $sql,
             [
@@ -112,9 +81,9 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
 
         $params[] = $key;
 
-        $sql = sprintf('UPDATE %s 
-            SET %s 
-            WHERE id=?', self::TABLE, implode(', ', $columns));
+        $sql = sprintf('UPDATE %s
+            SET %s
+            WHERE id=?', $this->table, implode(', ', $columns));
         $this->db->execute($sql, $params);
     }
 
@@ -126,9 +95,9 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
             throw WriteRejected::on('id', 'You cannot delete the account you are signed in as.');
         }
 
-        $sql = sprintf('DELETE 
-            FROM %s 
-            WHERE id=?', self::TABLE);
+        $sql = sprintf('DELETE
+            FROM %s
+            WHERE id=?', $this->table);
         $this->db->execute($sql, [$key]);
     }
 
@@ -154,34 +123,15 @@ final class UserSource implements SourceInterface, RowSourceInterface, UpdateSou
     private function isTaken(string $username, ?int $except = null): bool
     {
         $sql = $except === null
-            ? sprintf('SELECT id 
-                FROM %s 
-                WHERE username=?', self::TABLE)
-            : sprintf('SELECT id 
-                FROM %s 
-                WHERE username=? 
-                AND id<>?', self::TABLE);
+            ? sprintf('SELECT id
+                FROM %s
+                WHERE username=?', $this->table)
+            : sprintf('SELECT id
+                FROM %s
+                WHERE username=?
+                AND id<>?', $this->table);
         $params = $except === null ? [$username] : [$username, $except];
 
         return $this->db->selectOne($sql, $params) !== null;
-    }
-
-    /** @return array{0: string, 1: list<string>} */
-    private function conditions(Criteria $criteria): array
-    {
-        $clauses = [];
-        $params = [];
-
-        if ($criteria->search !== null) {
-            $clauses[] = Criteria::like('username');
-            $params[] = $criteria->searchPattern();
-        }
-
-        if (isset($criteria->filters['role'])) {
-            $clauses[] = 'role = ?';
-            $params[] = $criteria->filters['role'];
-        }
-
-        return [$clauses === [] ? '1=1' : implode(' AND ', $clauses), $params];
     }
 }
