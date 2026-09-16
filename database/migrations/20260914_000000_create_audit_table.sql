@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS audit (
     old_value  TEXT            NULL,
     new_value  TEXT            NULL,
     user_id    BIGINT UNSIGNED NULL,
+    username   VARCHAR(64)     NULL,
     message    VARCHAR(255)    NULL,
     created_at TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),

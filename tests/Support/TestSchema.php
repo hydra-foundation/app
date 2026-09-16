@@ -73,6 +73,7 @@ final class TestSchema
                 old_value TEXT NULL,
                 new_value TEXT NULL,
                 user_id INTEGER NULL,
+                username TEXT NULL,
                 message TEXT NULL,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )'
