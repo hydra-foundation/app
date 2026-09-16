@@ -36,7 +36,7 @@ final class AuditSourceTest extends RowSourceContractTestCase
         // No searchable value carries a %, a _ or a !, which is what lets the
         // wildcard cases read a match for one of those as the term reaching the
         // LIKE unescaped rather than as the data really holding it. That rules
-        // out a real table name like user_preferences, hence the invented ones.
+        // out a real slug like user_preferences, hence the invented ones.
         $rows = [
             ['users', '1', 'ada', 'created account'],
             ['users', '2', 'grace', 'changed role to admin'],
@@ -47,7 +47,7 @@ final class AuditSourceTest extends RowSourceContractTestCase
 
         foreach ($rows as [$table, $id, $username, $message]) {
             $this->pdo->prepare(
-                'INSERT INTO audit (table_name, table_id, old_value, new_value, user_id, username, message)
+                'INSERT INTO audit (module, table_id, old_value, new_value, user_id, username, message)
                  VALUES (?, ?, ?, ?, ?, ?, ?)',
             )->execute([$table, $id, '{"role":"user"}', '{"role":"admin"}', 1, $username, $message]);
         }
@@ -77,20 +77,20 @@ final class AuditSourceTest extends RowSourceContractTestCase
         return 'grace';
     }
 
-    public function test_the_table_filter_narrows_the_list(): void
+    public function test_the_module_filter_narrows_the_list(): void
     {
-        $page = $this->source->page(new Criteria(filters: ['table_name' => 'posts']));
+        $page = $this->source->page(new Criteria(filters: ['module' => 'posts']));
 
         $this->assertSame(1, $page->total);
-        $this->assertSame('posts', $page->rows[0]['table_name']);
+        $this->assertSame('posts', $page->rows[0]['module']);
     }
 
-    public function test_the_table_filter_is_the_column_the_module_offers(): void
+    public function test_the_module_filter_is_the_column_the_module_offers(): void
     {
         // The pairing the framework cannot check: AuditModule renders a select
-        // named table_name, and this is the assertion that the source answers to
+        // named module, and this is the assertion that the source answers to
         // that name rather than to one that only resembles it.
-        $this->assertSame(3, $this->source->page(new Criteria(filters: ['table_name' => 'users']))->total);
+        $this->assertSame(3, $this->source->page(new Criteria(filters: ['module' => 'users']))->total);
     }
 
     public function test_a_filter_the_source_does_not_declare_is_ignored(): void

@@ -9,6 +9,7 @@ use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\{AdminController, AuthController, HomeController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Http\NegotiatingErrorRenderer;
+use App\Listeners\AuditAdminEventsListener;
 use App\Repositories\{ActivityRepository, UserRepository};
 use App\View\{ThemeResolver, Themes};
 use Hydra\Admin\AdminServiceProvider;
@@ -286,5 +287,13 @@ final class AppServiceProvider extends ServiceProvider
         // records that the request happened; this is what it was for and, for an
         // export, how much of the table left with it.
         $listeners->listen(AdminEvent::class, new LogAdminEventsListener($container->get(LoggerInterface::class)));
+
+        // Resolved at dispatch rather than here: the listener holds a repository
+        // holding the connection, and boot() runs before anything that rebinds
+        // one. An instance built now would go on writing to whichever database
+        // was bound at boot.
+        $listeners->listen(AdminEvent::class, static function (AdminEvent $event) use ($container): void {
+            ($container->get(AuditAdminEventsListener::class))($event);
+        });
     }
 }

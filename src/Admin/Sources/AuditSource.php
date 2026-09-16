@@ -23,10 +23,10 @@ final class AuditSource extends TableSource
         parent::__construct(
             $db,
             table: 'audit',
-            columns: ['id', 'table_name', 'table_id', 'old_value', 'new_value', 'user_id', 'username', 'message', 'created_at'],
-            sortable: ['id', 'table_name', 'table_id', 'old_value', 'new_value', 'username', 'created_at'],
-            searchable: ['table_name', 'table_id', 'username', 'message'],
-            filterable: ['table_name'],
+            columns: ['id', 'module', 'table_id', 'old_value', 'new_value', 'user_id', 'username', 'message', 'created_at'],
+            sortable: ['id', 'module', 'table_id', 'old_value', 'new_value', 'username', 'created_at'],
+            searchable: ['module', 'table_id', 'username', 'message'],
+            filterable: ['module'],
         );
     }
 }

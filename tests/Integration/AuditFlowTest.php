@@ -24,6 +24,7 @@ use Hydra\Core\Environment;
 use Hydra\Csrf\CsrfGuard;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
+use Hydra\Event\EventServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
 use Hydra\Session\Contracts\SessionLifecycleInterface;
@@ -63,6 +64,10 @@ final class AuditFlowTest extends TestCase
             ->register(new ArrayCacheServiceProvider)
             ->register(new ThrottleServiceProvider)
             ->register(TestHttpProvider::make())
+            // What makes the admin emit its events at all: without this binding
+            // AdminController holds a null dispatcher and every write here would
+            // pass while recording nothing. Kernel registers it in the real app.
+            ->register(new EventServiceProvider)
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
@@ -95,7 +100,7 @@ final class AuditFlowTest extends TestCase
         $this->assertStringContainsString('>promoted clerk</td>', $body);
     }
 
-    public function test_the_table_labels_a_table_it_knows_and_prints_one_it_does_not(): void
+    public function test_the_table_labels_a_module_it_knows_and_prints_one_it_does_not(): void
     {
         $this->seed(new Audit('users', '2', null, null, 1, 'boss', 'renamed'));
         $this->seed(new Audit('invoices', '9', null, null, 1, 'boss', 'voided'));
@@ -146,12 +151,12 @@ final class AuditFlowTest extends TestCase
         $this->assertSame(403, $this->handle('GET', '/admin/audit')->getStatusCode());
     }
 
-    public function test_the_table_filter_narrows_the_table(): void
+    public function test_the_module_filter_narrows_the_table(): void
     {
         $this->seed(new Audit('users', '2', null, null, 1, 'boss', 'renamed'));
         $this->seed(new Audit('invoices', '9', null, null, 1, 'boss', 'voided'));
         $this->login('boss');
-        $body = $this->body('GET', '/admin/audit?table_name=users');
+        $body = $this->body('GET', '/admin/audit?module=users');
 
         // The assertion the source's own case cannot make: this is the whole
         // round trip, from the select's name in the query string to the clause.
@@ -169,7 +174,7 @@ final class AuditFlowTest extends TestCase
         // so the table is unfiltered rather than empty.
         $this->assertStringContainsString(
             '>voided</td>',
-            $this->body('GET', '/admin/audit?table_name=DROP+TABLE'),
+            $this->body('GET', '/admin/audit?module=DROP+TABLE'),
         );
     }
 
@@ -195,6 +200,174 @@ final class AuditFlowTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertStringContainsString('promoted clerk', (string) $response->getBody());
+    }
+
+    public function test_a_created_row_is_recorded_with_who_made_it(): void
+    {
+        $this->login('boss');
+        $this->handle('POST', '/admin/users/new', [], [
+            'username' => 'newcomer',
+            'role' => 'user',
+            'password' => 'correct-horse',
+        ]);
+
+        $row = $this->audited()[0];
+        $this->assertSame('users', $row['module']);
+        $this->assertSame('3', $row['table_id']);
+        $this->assertNull($row['old_value']);
+        $this->assertSame('{"username":"newcomer","role":"user"}', $row['new_value']);
+        $this->assertSame(1, (int) $row['user_id']);
+        $this->assertSame('boss', $row['username']);
+        $this->assertSame('admin.row_created', $row['message']);
+    }
+
+    public function test_a_submitted_password_never_reaches_the_audit_table(): void
+    {
+        // The reason the listener works from an allowlist. UsersModule declares
+        // a password input, so the values on the event carry one, and a listener
+        // that recorded them wholesale would write it down here in plain text.
+        $this->login('boss');
+        $this->handle('POST', '/admin/users/new', [], [
+            'username' => 'newcomer',
+            'role' => 'user',
+            'password' => 'correct-horse',
+        ]);
+        $this->handle('POST', '/admin/users/3/edit', [], [
+            'username' => 'newcomer',
+            'role' => 'user',
+            'password' => 'a-brand-new-secret',
+        ]);
+
+        $written = json_encode($this->audited(), JSON_THROW_ON_ERROR);
+        $this->assertStringNotContainsString('correct-horse', $written);
+        $this->assertStringNotContainsString('a-brand-new-secret', $written);
+        $this->assertStringNotContainsString('$2y$', $written);
+    }
+
+    public function test_a_rewrite_records_the_before_and_after_of_what_moved(): void
+    {
+        $this->login('boss');
+        $this->handle('POST', '/admin/users/2/edit', [], [
+            'username' => 'clerk',
+            'role' => 'admin',
+            'password' => '',
+        ]);
+
+        $row = $this->audited()[0];
+        $this->assertSame('users', $row['module']);
+        $this->assertSame('2', $row['table_id']);
+        $this->assertSame('{"role":"user"}', $row['old_value']);
+        $this->assertSame('{"role":"admin"}', $row['new_value']);
+        // Not "username": it was resubmitted unchanged, and a log that records
+        // every field of every form records nothing about any of them.
+        $this->assertSame('admin.row_updated: role', $row['message']);
+    }
+
+    public function test_an_untouched_password_is_not_recorded_as_a_change(): void
+    {
+        // The edit form always posts a password field and the source never reads
+        // one back, so the event cannot tell a blank one from a new one on its
+        // own. Every edit would otherwise claim the password changed.
+        $this->login('boss');
+        $this->handle('POST', '/admin/users/2/edit', [], [
+            'username' => 'clerical',
+            'role' => 'user',
+            'password' => '',
+        ]);
+
+        $this->assertSame('admin.row_updated: username', $this->audited()[0]['message']);
+    }
+
+    public function test_a_changed_password_is_recorded_by_name_and_not_by_value(): void
+    {
+        $this->login('boss');
+        $this->handle('POST', '/admin/users/2/edit', [], [
+            'username' => 'clerk',
+            'role' => 'user',
+            'password' => 'a-brand-new-secret',
+        ]);
+
+        $row = $this->audited()[0];
+        $this->assertSame('admin.row_updated: password', $row['message']);
+        // Named in the message, absent from the values: this is the line that
+        // says a password was set without being where it was written down.
+        $this->assertNull($row['old_value']);
+        $this->assertNull($row['new_value']);
+    }
+
+    public function test_a_deleted_row_is_recorded_by_the_id_it_removed(): void
+    {
+        $this->login('boss');
+        $this->handle('POST', '/admin/users/2/delete');
+
+        $row = $this->audited()[0];
+        $this->assertSame('users', $row['module']);
+        $this->assertSame('2', $row['table_id']);
+        $this->assertSame('admin.row_deleted', $row['message']);
+        // Everything the row held, not just what a rewrite would have moved:
+        // after a delete there is nowhere else left to read it from.
+        $this->assertSame('{"username":"clerk","role":"user"}', $row['old_value']);
+        $this->assertNull($row['new_value']);
+    }
+
+    public function test_a_refused_write_records_nothing(): void
+    {
+        $this->login('boss');
+        $response = $this->handle('POST', '/admin/users/new', [], [
+            'username' => 'clerk',
+            'role' => 'user',
+            'password' => 'correct-horse',
+        ]);
+
+        // The event is announced only once the source has taken the row, so an
+        // attempt the source refused must not be recorded as the deed.
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertSame([], $this->audited());
+    }
+
+    public function test_an_export_is_recorded_under_a_row_id_of_its_own(): void
+    {
+        $this->login('boss');
+        $this->handle('GET', '/admin/users/export?role=admin');
+
+        $row = $this->audited()[0];
+        $this->assertSame('users', $row['module']);
+        // An export names no row, so it is filed under one reserved for it
+        // rather than under an id borrowed from a row it did not touch.
+        $this->assertSame('export', $row['table_id']);
+        $this->assertSame('admin.exported: 1 rows', $row['message']);
+        $this->assertSame('boss', $row['username']);
+        // The view it left as, pasteable back into the admin to see what went.
+        $this->assertSame('{"rows":1,"view":"sort=id&dir=desc&role=admin"}', $row['new_value']);
+    }
+
+    public function test_a_module_that_only_exports_is_recorded_too(): void
+    {
+        $this->login('boss');
+        $this->handle('GET', '/admin/audit/export');
+
+        $this->assertSame('audit', $this->audited()[0]['module']);
+    }
+
+    public function test_the_change_arrives_on_the_audit_screen(): void
+    {
+        $this->login('boss');
+        $this->handle('POST', '/admin/users/2/edit', [], [
+            'username' => 'clerical',
+            'role' => 'user',
+            'password' => '',
+        ]);
+        $body = $this->body('GET', '/admin/audit');
+
+        $this->assertStringContainsString('>Users</td>', $body);
+        $this->assertStringContainsString('>boss</td>', $body);
+        $this->assertStringContainsString('>admin.row_updated: username</td>', $body);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function audited(): array
+    {
+        return $this->db->select('SELECT * FROM audit ORDER BY id');
     }
 
     private function lastId(): string

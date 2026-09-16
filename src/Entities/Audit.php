@@ -13,7 +13,7 @@ namespace App\Entities;
 final readonly class Audit
 {
     public function __construct(
-        public string $tableName,
+        public string $module,
         public string $tableId,
         public ?string $oldValue,
         public ?string $newValue,

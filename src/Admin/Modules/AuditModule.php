@@ -21,15 +21,17 @@ use Hydra\Admin\Surface;
  * activity keeps agent and referer off it: they are the reason to open a row,
  * not something a row has to stay readable while carrying.
  *
- * TABLES is a written list rather than the distinct table_name values, because a
+ * MODULES is a written list rather than the distinct module values, because a
  * filter has to offer its options before the first row exists. It names the
- * tables the admin can write, so it grows when a writable module does.
+ * modules that can announce anything — a write or an export — so it grows when
+ * one of those does. A module missing from it still lists its rows, under its
+ * own slug; it is only the filter that cannot offer it.
  */
 final class AuditModule implements ModuleInterface
 {
-    private const TABLES = [
+    private const MODULES = [
         'activity' => 'Activity',
-        'user_preferences' => 'User Preferences',
+        'audit' => 'Audit',
         'users' => 'Users',
     ];
 
@@ -47,7 +49,7 @@ final class AuditModule implements ModuleInterface
                 Field::id()->labelled('ID')->sortable(),
                 Field::datetime('created_at')->labelled('Changed at')->sortable(),
                 Field::text('username')->labelled('User')->sortable()->searchable()->emptyAs('system'),
-                Field::select('table_name', self::TABLES)->labelled('Table')->sortable()->filterable(),
+                Field::select('module', self::MODULES)->labelled('Module')->sortable()->filterable(),
                 Field::text('table_id')->labelled('Row')->sortable()->searchable(),
                 Field::text('message')->searchable(),
                 Field::text('old_value')->labelled('Before')->hiddenOn(Surface::List),

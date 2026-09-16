@@ -18,7 +18,7 @@ use Hydra\Database\Contracts\ConnectionInterface;
 final class AuditRepository
 {
     private const COLUMNS = [
-        'table_name',
+        'module',
         'table_id',
         'old_value',
         'new_value',
@@ -28,7 +28,7 @@ final class AuditRepository
     ];
 
     private const LIMITS = [
-        'table_name' => 255,
+        'module' => 255,
         'table_id' => 255,
         'username' => 64,
         'message' => 255,
@@ -42,7 +42,7 @@ final class AuditRepository
         $values = implode(',', array_fill(0, count(self::COLUMNS), '?'));
         $sql = sprintf("INSERT INTO audit (%s) VALUES (%s)", $columns, $values);
         $this->db->execute($sql, [
-            $this->clip('table_name', $audit->tableName),
+            $this->clip('module', $audit->module),
             $this->clip('table_id', $audit->tableId),
             $audit->oldValue,
             $audit->newValue,

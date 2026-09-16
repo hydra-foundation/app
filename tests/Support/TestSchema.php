@@ -68,7 +68,7 @@ final class TestSchema
         $pdo->exec(
             'CREATE TABLE audit (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                table_name TEXT NOT NULL,
+                module TEXT NOT NULL,
                 table_id TEXT NOT NULL,
                 old_value TEXT NULL,
                 new_value TEXT NULL,

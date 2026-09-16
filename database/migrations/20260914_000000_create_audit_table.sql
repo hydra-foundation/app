@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS audit (
     id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    table_name VARCHAR(255)    NOT NULL,
+    module     VARCHAR(255)    NOT NULL,
     table_id   VARCHAR(255)    NOT NULL,
     old_value  TEXT            NULL,
     new_value  TEXT            NULL,
@@ -11,6 +11,6 @@ CREATE TABLE IF NOT EXISTS audit (
     PRIMARY KEY (id),
     KEY idx_audit_created_at (created_at),
     KEY idx_audit_user_id (user_id),
-    KEY idx_audit_row (table_name, table_id),
+    KEY idx_audit_row (module, table_id),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;

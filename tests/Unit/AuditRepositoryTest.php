@@ -46,7 +46,7 @@ final class AuditRepositoryTest extends TestCase
         ));
 
         $row = $this->row();
-        $this->assertSame('users', $row['table_name']);
+        $this->assertSame('users', $row['module']);
         $this->assertSame('7', $row['table_id']);
         $this->assertSame('{"role":"user"}', $row['old_value']);
         $this->assertSame('{"role":"admin"}', $row['new_value']);
@@ -87,7 +87,7 @@ final class AuditRepositoryTest extends TestCase
         ));
 
         $row = $this->row();
-        $this->assertSame(255, mb_strlen((string) $row['table_name']));
+        $this->assertSame(255, mb_strlen((string) $row['module']));
         $this->assertSame(255, mb_strlen((string) $row['table_id']));
         $this->assertSame(255, mb_strlen((string) $row['message']));
     }
