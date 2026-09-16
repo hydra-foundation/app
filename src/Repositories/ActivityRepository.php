@@ -24,13 +24,26 @@ final class ActivityRepository
         'referer' => 512,
     ];
 
+    private const COLUMNS = [
+        'user_id',
+        'username',
+        'method',
+        'path',
+        'query',
+        'status',
+        'duration_ms',
+        'ip',
+        'user_agent',
+        'referer'
+    ];
+
     public function __construct(private readonly ConnectionInterface $db) {}
 
     public function record(Activity $activity, ?string $at = null): void
     {
-        $columns = 'user_id, username, method, path, query, status, duration_ms, ip, user_agent, referer';
-        $values = '?, ?, ?, ?, ?, ?, ?, ?, ?, ?';
 
+        $columns = implode(',', self::COLUMNS);
+        $values = implode(',', array_fill(0, count(self::COLUMNS), '?'));
         $params = [
             $activity->userId,
             $this->clip('username', $activity->username),
@@ -45,12 +58,13 @@ final class ActivityRepository
         ];
 
         if ($at !== null) {
-            $columns .= ', created_at';
-            $values .= ', ?';
+            $columns .= ',created_at';
+            $values .= ',?';
             $params[] = $at;
         }
 
-        $this->db->execute("INSERT INTO activity ({$columns}) VALUES ({$values})", $params);
+        $sql = sprintf("INSERT INTO activity (%s) VALUES (%s)", $columns, $values);
+        $this->db->execute($sql, $params);
     }
 
     private function clip(string $column, ?string $value): ?string
