@@ -18,10 +18,11 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * It implements no write interface, so the ladder stops at the row case: what
  * was changed is readable from the admin and not rewritable from it.
  *
- * The filter cases below are not part of that contract and are here because
- * nothing else can catch them. A filterable column the source does not declare
- * is not an error anywhere — the clause is simply never built — so the screen
- * answers a narrowed request with the whole table and says nothing.
+ * The filter cases below are not part of that contract. They are here for the
+ * SQL — that a declared filter reaches it, and that an undeclared one builds no
+ * clause rather than an empty result. Whether the module and the source agree
+ * on the column *name* is no longer asked here: AdminModulePairingTest asks it
+ * of every module at once.
  */
 #[CoversClass(AuditSource::class)]
 final class AuditSourceTest extends RowSourceContractTestCase
@@ -85,30 +86,11 @@ final class AuditSourceTest extends RowSourceContractTestCase
         $this->assertSame('posts', $page->rows[0]['module']);
     }
 
-    public function test_the_module_filter_is_the_column_the_module_offers(): void
-    {
-        // The pairing the framework cannot check: AuditModule renders a select
-        // named module, and this is the assertion that the source answers to
-        // that name rather than to one that only resembles it.
-        $this->assertSame(3, $this->source->page(new Criteria(filters: ['module' => 'users']))->total);
-    }
-
     public function test_a_filter_the_source_does_not_declare_is_ignored(): void
     {
         // Not narrowed to nothing: an undeclared key builds no clause at all, so
         // the honest answer is the unfiltered table.
         $this->assertSame(5, $this->source->page(new Criteria(filters: ['username' => 'ada']))->total);
-    }
-
-    public function test_search_reaches_every_column_the_module_calls_searchable(): void
-    {
-        foreach (['users' => 3, '42' => 1, 'barbara' => 1, 'published' => 1] as $term => $expected) {
-            $this->assertSame(
-                $expected,
-                $this->source->page(new Criteria(search: (string) $term))->total,
-                sprintf('Searching for "%s" did not reach the column holding it.', $term),
-            );
-        }
     }
 
     public function test_the_before_and_after_values_are_read_even_though_the_table_hides_them(): void

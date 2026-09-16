@@ -49,6 +49,18 @@ composer start                   # php -S localhost:8000 -t public/
 
 Open **http://localhost:8000**.
 
+## The console
+
+```bash
+./hydra                          # the command list
+./hydra admin:check
+./hydra make:source invoice --writable
+```
+
+`./hydra` is `./bin/exec bin/console` — the console inside the php container,
+which is where the database and Redis are reachable. `php bin/console` works
+directly too, on a machine with the extensions installed.
+
 ## Checks
 
 ```bash

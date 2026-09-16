@@ -1,3 +1,11 @@
 #!/usr/bin/env bash
+# Shortcut for ./bin/exec bin/console — the console, inside the php container.
+#   ./hydra                          # the command list
+#   ./hydra admin:check
+#   ./hydra make:source invoice --writable
+#
+# Arguments pass straight through, so anything bin/console accepts works here.
+# It runs from the project root whatever directory you call it from.
+set -euo pipefail
 
-./bin/exec bin/console
+exec "$(dirname "$0")/bin/exec" bin/console "$@"
