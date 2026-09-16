@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Admin\Modules\{ActivityModule, DashboardModule, SettingsModule, UsersModule};
+use App\Admin\Modules\{ActivityModule, AuditModule, DashboardModule, SettingsModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\{AdminController, AuthController, HomeController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
@@ -71,6 +71,7 @@ final class AppServiceProvider extends ServiceProvider
         DashboardModule::class,
         UsersModule::class,
         ActivityModule::class,
+        AuditModule::class,
         SettingsModule::class,
     ];
 
