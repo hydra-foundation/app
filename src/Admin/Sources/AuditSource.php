@@ -12,23 +12,24 @@ use Hydra\Admin\RowId;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
-* Activity module data contract
+* Audit module data contract
 */
-final class ActivitySource implements SourceInterface, RowSourceInterface
+final class AuditSource implements SourceInterface, RowSourceInterface
 {
-    private const TABLE = 'activity';
-    private const COLUMNS = 'id, user_id, username, method, path, query, status, duration_ms, ip, user_agent, referer, created_at';
-    private const SORTABLE = ['id', 'username', 'method', 'path', 'status', 'duration_ms', 'ip', 'created_at'];
-    private const SEARCHABLE = ['username', 'path', 'ip'];
+    private const TABLE = 'audit';
+    private const COLUMNS = 'id, table_name, table_id, old_value, new_value, user_id, message, created_at';
+    private const SORTABLE = ['id', 'table_name', 'table_id', 'old_value', 'new_value', 'created_at'];
+    private const SEARCHABLE = ['table_name', 'table_id', 'message'];
 
     public function __construct(private readonly ConnectionInterface $db) {}
 
     public function find(string $id): ?array
     {
         $key = RowId::int($id);
-        $sql = sprintf('SELECT %s 
-            FROM %s 
-            WHERE id=?', self::COLUMNS, self::TABLE);
+
+        $sql = sprintf("SELECT %s
+            FROM %s
+            WHERE id=?", self::COLUMNS, self::TABLE);
         return $key === null ? null : $this->db->selectOne($sql, [$key]);
     }
 
@@ -78,11 +79,9 @@ final class ActivitySource implements SourceInterface, RowSourceInterface
             }
         }
 
-        foreach (['method', 'status'] as $column) {
-            if (isset($criteria->filters[$column])) {
-                $clauses[] = "{$column} = ?";
-                $params[] = $criteria->filters[$column];
-            }
+        if (isset($criteria->filters['table_name'])) {
+            $clauses[] = 'table_name = ?';
+            $params[] = $criteria->filters['table_name'];
         }
 
         return [$clauses === [] ? '1=1' : implode(' AND ', $clauses), $params];

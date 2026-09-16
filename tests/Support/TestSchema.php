@@ -64,5 +64,18 @@ final class TestSchema
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )'
         );
+
+        $pdo->exec(
+            'CREATE TABLE audit (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                table_name TEXT NOT NULL,
+                table_id TEXT NOT NULL,
+                old_value TEXT NULL,
+                new_value TEXT NULL,
+                user_id INTEGER NULL,
+                message TEXT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )'
+        );
     }
 }
