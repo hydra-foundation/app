@@ -6,10 +6,11 @@ namespace App\Tests\Integration;
 
 use App\Providers\AppServiceProvider;
 use App\Repositories\PreferenceRepository;
-use App\Tests\Support\ArrayCacheServiceProvider;
-use App\Tests\Support\ArraySessionServiceProvider;
-use App\Tests\Support\FixedSignerServiceProvider;
-use App\Tests\Support\QuietLogServiceProvider;
+use Hydra\Cache\Testing\ArrayCacheServiceProvider;
+use Hydra\Session\Testing\ArraySessionServiceProvider;
+use Hydra\Core\Testing\FixedSignerServiceProvider;
+use Hydra\Log\Testing\CapturingLogger;
+use Psr\Log\LoggerInterface;
 use App\Tests\Support\TestAdminProvider;
 use App\Tests\Support\TestHttpProvider;
 use App\Tests\Support\TestSchema;
@@ -51,7 +52,7 @@ final class SettingsFlowTest extends TestCase
         $container->instance(ContainerInterface::class, $container);
         $container->instance(Environment::class, new Environment(__DIR__));
 
-        (new Application($container))
+        $app = (new Application($container))
             ->register(new ArraySessionServiceProvider)
             ->register(new NyholmServiceProvider)
             ->register(new FixedSignerServiceProvider)
@@ -61,9 +62,16 @@ final class SettingsFlowTest extends TestCase
             ->register(new AuthServiceProvider)
             ->register(new AuthorizationServiceProvider)
             ->register(new AppServiceProvider)
-            ->register(new QuietLogServiceProvider)
-            ->register(TestAdminProvider::make())
-            ->boot();
+            ->register(TestAdminProvider::make());
+
+        // Before boot(), not after: boot() builds its listeners with whatever
+        // LoggerInterface resolves to, so a logger swapped in afterwards hears
+        // nothing. In memory rather than stderr, because the real pipeline logs
+        // one line per request and those land in the middle of PHPUnit's own
+        // output, where they read as failures that are not failures.
+        $container->instance(LoggerInterface::class, new CapturingLogger);
+
+        $app->boot();
 
         $container->instance(AuthConfig::class, new AuthConfig(hashCost: 4));
 
