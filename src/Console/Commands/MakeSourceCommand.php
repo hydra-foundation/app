@@ -27,13 +27,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class MakeSourceCommand extends MakeFromTableCommand
 {
-    /**
-     * Columns a generated write never touches. The key is the database's to
-     * issue and the timestamps are its to keep; a form that posted any of them
-     * would be a form overwriting the record of when the row happened.
-     */
-    private const NOT_WRITABLE = ['id', 'created_at', 'updated_at'];
-
     private bool $writable = false;
 
     protected function configure(): void
@@ -152,7 +145,7 @@ final class MakeSourceCommand extends MakeFromTableCommand
         $writable = $this->listLiteral(
             array_values(array_filter(
                 $this->columnNames(),
-                static fn (string $n): bool => !in_array($n, self::NOT_WRITABLE, true),
+                static fn (string $n): bool => !in_array($n, self::NOT_WRITTEN, true),
             )),
             '    ',
         );

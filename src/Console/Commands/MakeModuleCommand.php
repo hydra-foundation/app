@@ -6,6 +6,9 @@ namespace App\Console\Commands;
 
 use App\Console\Support\Column;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
@@ -26,6 +29,28 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class MakeModuleCommand extends MakeFromTableCommand
 {
+    private ?string $source = null;
+
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->addOption(
+            'source',
+            's',
+            InputOption::VALUE_REQUIRED,
+            'The source class it reads. Defaults to the singular of the name, e.g. InvoiceSource.',
+        );
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $given = $input->getOption('source');
+        $this->source = is_string($given) && $given !== '' ? $given : null;
+
+        return parent::execute($input, $output);
+    }
+
     protected function nameHint(): string
     {
         return 'The module name, e.g. "invoices" or "InvoicesModule"';
@@ -106,6 +131,10 @@ final class MakeModuleCommand extends MakeFromTableCommand
      */
     private function sourceClass(string $class): string
     {
+        if ($this->source !== null) {
+            return $this->source;
+        }
+
         $base = substr($class, 0, -strlen($this->suffix()));
 
         // A module is plural ("Invoices") and a source is singular ("Invoice").

@@ -8,12 +8,14 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\Bootstrap;
 use App\Config\AppConfig;
 use App\Console\Commands\MakeAbilityCommand;
+use App\Console\Commands\MakeAdminCommand;
 use App\Console\Commands\MakeControllerCommand;
 use App\Console\Commands\MakeEntityCommand;
 use App\Console\Commands\MakeListenerCommand;
 use App\Console\Commands\MakeModuleCommand;
 use App\Console\Commands\MakeRepositoryCommand;
 use App\Console\Commands\MakeSourceCommand;
+use App\Console\Commands\MakeSourceTestCommand;
 use App\Console\Commands\MakeUserCommand;
 use App\Console\Support\TableColumns;
 use Hydra\Admin\Console\AdminCheckCommand;
@@ -54,6 +56,17 @@ $application->addCommands([
     new AdminCheckCommand($container->get(ModuleRegistry::class)),
 ]);
 
+// The table-shaped generators read the schema to fill in a column list, so
+// they are loaded lazily beside the migrate:* commands rather than eagerly:
+// a connection built for `list` is a connection a machine with no database
+// running cannot build.
+$tables = static fn (): TableColumns => new TableColumns($container->get(ConnectionInterface::class));
+$source = static fn (): MakeSourceCommand => new MakeSourceCommand(__DIR__ . '/../src/Admin/Sources', $tables());
+$module = static fn (): MakeModuleCommand => new MakeModuleCommand(__DIR__ . '/../src/Admin/Modules', $tables());
+$sourceTest = static fn (): MakeSourceTestCommand => new MakeSourceTestCommand(__DIR__ . '/../tests/Unit', $tables());
+$entity = static fn (): MakeEntityCommand => new MakeEntityCommand(__DIR__ . '/../src/Entities', $tables());
+$repository = static fn (): MakeRepositoryCommand => new MakeRepositoryCommand(__DIR__ . '/../src/Repositories', $tables());
+
 // The migrate:* commands need the database connection, so they are loaded lazily
 $application->setCommandLoader(new FactoryCommandLoader([
     'migrate:run' => static fn () => new MigrateRunCommand($container->get(MigrationRunner::class)),
@@ -67,26 +80,12 @@ $application->setCommandLoader(new FactoryCommandLoader([
         $container->get(HasherInterface::class),
     ),
 
-    // The table-shaped generators read the schema to fill in a column list, so
-    // they are loaded lazily beside the migrate:* commands rather than eagerly:
-    // a connection built for `list` is a connection a machine with no database
-    // running cannot build.
-    'make:source' => static fn () => new MakeSourceCommand(
-        __DIR__ . '/../src/Admin/Sources',
-        new TableColumns($container->get(ConnectionInterface::class)),
-    ),
-    'make:module' => static fn () => new MakeModuleCommand(
-        __DIR__ . '/../src/Admin/Modules',
-        new TableColumns($container->get(ConnectionInterface::class)),
-    ),
-    'make:repository' => static fn () => new MakeRepositoryCommand(
-        __DIR__ . '/../src/Repositories',
-        new TableColumns($container->get(ConnectionInterface::class)),
-    ),
-    'make:entity' => static fn () => new MakeEntityCommand(
-        __DIR__ . '/../src/Entities',
-        new TableColumns($container->get(ConnectionInterface::class)),
-    ),
+    'make:source' => $source,
+    'make:module' => $module,
+    'make:source-test' => $sourceTest,
+    'make:entity' => $entity,
+    'make:repository' => $repository,
+    'make:admin' => static fn () => new MakeAdminCommand($source(), $module(), $sourceTest(), $entity(), $repository()),
 ]));
 
 $application->run();

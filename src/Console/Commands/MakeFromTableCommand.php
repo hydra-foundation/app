@@ -15,7 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Shared base for the generators that write code shaped like a table:
- * make:source, make:module, make:repository, make:entity.
+ * make:source, make:module, make:repository, make:entity, make:source-test.
  *
  * Each of them otherwise begins with the same twenty seconds of copying a
  * column list out of a migration, which is exactly the transcription step that
@@ -25,16 +25,25 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 abstract class MakeFromTableCommand extends MakeClassCommand
 {
+    /** Columns the database issues rather than the application. */
+    protected const NOT_WRITTEN = ['id', 'created_at', 'updated_at'];
+
     /** @var list<Column> */
     protected array $columns = [];
 
     protected string $table = '';
 
     public function __construct(
-        string $targetDir,
+        private readonly string $targetDir,
         private readonly ?TableColumns $tables = null,
     ) {
         parent::__construct($targetDir);
+    }
+
+    /** The file this generator writes for an already-normalised class name. */
+    public function target(string $class): string
+    {
+        return $this->targetDir . '/' . $class . '.php';
     }
 
     protected function configure(): void

@@ -24,9 +24,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class MakeRepositoryCommand extends MakeFromTableCommand
 {
-    /** Columns the database issues rather than the application. */
-    private const NOT_WRITTEN = ['id', 'created_at', 'updated_at'];
-
     protected function nameHint(): string
     {
         return 'The repository name, e.g. "invoice" or "InvoiceRepository"';

@@ -10,7 +10,11 @@ use App\Console\Commands\MakeListenerCommand;
 use App\Console\Commands\MakeModuleCommand;
 use App\Console\Commands\MakeRepositoryCommand;
 use App\Console\Commands\MakeSourceCommand;
+use App\Console\Commands\MakeSourceTestCommand;
 use App\Console\Support\Column;
+use App\Console\Support\TableColumns;
+use Hydra\Database\PdoConnection;
+use PDO;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
@@ -31,6 +35,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 #[CoversClass(MakeModuleCommand::class)]
 #[CoversClass(MakeEntityCommand::class)]
 #[CoversClass(MakeRepositoryCommand::class)]
+#[CoversClass(MakeSourceTestCommand::class)]
 #[CoversClass(MakeListenerCommand::class)]
 #[CoversClass(Column::class)]
 final class MakeFromTableCommandsTest extends TestCase
@@ -145,6 +150,69 @@ final class MakeFromTableCommandsTest extends TestCase
 
         $this->assertStringContainsString("Field::text('status')->labelled('Status')->sortable()->searchable()->filterable()", $module);
         $this->assertStringContainsString("filterable: ['status'],", $source);
+    }
+
+    public function test_a_module_reads_the_source_it_is_told_to(): void
+    {
+        $tester = new CommandTester(new MakeModuleCommand($this->dir));
+        $tester->execute(['name' => 'addresses', '--columns' => 'id', '--source' => 'AddressSource']);
+
+        $this->assertStringContainsString('->source(AddressSource::class)', $this->body('AddressesModule'));
+    }
+
+    public function test_a_source_test_searches_the_column_the_source_searches(): void
+    {
+        $source = $this->generate(new MakeSourceCommand($this->dir), 'invoice', 'InvoiceSource');
+        $test = $this->generate(new MakeSourceTestCommand($this->dir), 'invoice', 'InvoiceSourceTest');
+
+        $this->assertStringContainsString("searchable: ['invoice_number', 'status', 'created_at'],", $source);
+        $this->assertStringContainsString("return 'grace';", $test);
+        $this->assertStringContainsString("['grace', 'value two', 'hashed-secret', '2026-01-02 09:00:00'],", $test);
+        $this->assertStringContainsString('INSERT INTO invoices (invoice_number, status, password_hash, created_at)', $test);
+    }
+
+    public function test_a_read_only_source_test_stops_at_the_row_case(): void
+    {
+        $test = $this->generate(new MakeSourceTestCommand($this->dir), 'invoice', 'InvoiceSourceTest');
+
+        $this->assertStringContainsString('final class InvoiceSourceTest extends RowSourceContractTestCase', $test);
+        $this->assertStringContainsString('#[CoversClass(InvoiceSource::class)]', $test);
+        $this->assertStringNotContainsString('newRow', $test);
+    }
+
+    public function test_a_writable_source_test_writes_what_the_writable_source_writes(): void
+    {
+        foreach ([new MakeSourceCommand($this->dir), new MakeSourceTestCommand($this->dir)] as $command) {
+            (new CommandTester($command))->execute(['name' => 'invoice', '--columns' => self::COLUMNS, '--writable' => true]);
+        }
+
+        $this->assertStringContainsString("private const WRITABLE = ['invoice_number', 'status'];", $this->body('InvoiceSource'));
+
+        $test = $this->body('InvoiceSourceTest');
+        $this->assertStringContainsString('extends WritableSourceContractTestCase', $test);
+        $this->assertStringContainsString("return ['invoice_number' => 'linus', 'status' => 'value six'];", $test);
+        $this->assertStringContainsString("return ['invoice_number' => 'margaret', 'status' => 'value seven'];", $test);
+    }
+
+    public function test_a_table_with_nothing_to_search_leaves_search_to_the_contract_default(): void
+    {
+        $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $pdo->exec('CREATE TABLE tallies (id INTEGER PRIMARY KEY, n INTEGER NOT NULL)');
+
+        $tester = new CommandTester(new MakeSourceTestCommand($this->dir, new TableColumns(new PdoConnection($pdo))));
+        $tester->execute(['name' => 'tally']);
+
+        $this->assertStringNotContainsString('searchMatchingSomeRows', $this->body('TallySourceTest'));
+    }
+
+    public function test_a_source_test_prints_the_sqlite_twin_it_depends_on(): void
+    {
+        $tester = new CommandTester(new MakeSourceTestCommand($this->dir));
+        $tester->execute(['name' => 'invoice', '--columns' => self::COLUMNS]);
+
+        $this->assertStringContainsString('TestSchema.php', $tester->getDisplay());
+        $this->assertStringContainsString('CREATE TABLE invoices (', $tester->getDisplay());
+        $this->assertStringContainsString('id INTEGER PRIMARY KEY AUTOINCREMENT', $tester->getDisplay());
     }
 
     public function test_an_entity_is_a_readonly_value_without_the_key(): void
