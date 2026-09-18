@@ -14,6 +14,7 @@ use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Core\Security\SignerServiceProvider;
 use Hydra\Kernel\HttpServiceProvider;
 use Hydra\Kernel\Kernel;
+use Hydra\Mail\MailServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
 use Hydra\Throttle\ThrottleServiceProvider;
@@ -33,6 +34,7 @@ final class Bootstrap
             ->register(new NyholmServiceProvider)
             ->register(new SignerServiceProvider)
             ->register(new CacheServiceProvider)
+            ->register(new MailServiceProvider)
             // After the cache: the limiter counts into that store.
             ->register(new ThrottleServiceProvider)
             ->register(new HttpServiceProvider(

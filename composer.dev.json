@@ -44,6 +44,7 @@
         "hydrakit/event": "*",
         "hydrakit/kernel": "*",
         "hydrakit/log": "*",
+        "hydrakit/mail": "*",
         "hydrakit/database": "*",
         "hydrakit/view": "*",
         "hydrakit/nyholm": "*",

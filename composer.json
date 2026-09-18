@@ -34,6 +34,7 @@
         "hydrakit/event": "^0.5",
         "hydrakit/kernel": "^0.5",
         "hydrakit/log": "^0.5",
+        "hydrakit/mail": "^0.5",
         "hydrakit/database": "^0.5",
         "hydrakit/view": "^0.5",
         "hydrakit/nyholm": "^0.5",
