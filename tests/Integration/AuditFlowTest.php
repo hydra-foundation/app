@@ -22,19 +22,16 @@ use Hydra\Authorization\AuthorizationServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
-use Hydra\Csrf\CsrfGuard;
+use Hydra\Csrf\Testing\CarriesCsrfToken;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
+use Hydra\Http\Testing\Client;
 use Hydra\Event\EventServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
-use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Hydra\Throttle\ThrottleServiceProvider;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * The audit slice end-to-end: rows written through the repository and read back
@@ -49,8 +46,8 @@ final class AuditFlowTest extends TestCase
 {
     private const PASSWORD = 'correct-horse-battery-staple';
 
-    private ContainerInterface $container;
     private ConnectionInterface $db;
+    private Client $http;
 
     protected function setUp(): void
     {
@@ -94,14 +91,14 @@ final class AuditFlowTest extends TestCase
         $insert->execute(['boss', $hash, 'admin']);
         $insert->execute(['clerk', $hash, 'user']);
 
-        $this->container = $container;
+        $this->http = Client::for($container, [CarriesCsrfToken::for($container)]);
     }
 
     public function test_the_module_lists_what_the_repository_recorded(): void
     {
         $this->seed(new Audit('users', '2', '{"role":"user"}', '{"role":"admin"}', 1, 'boss', 'promoted clerk'));
         $this->login('boss');
-        $body = $this->body('GET', '/admin/audit');
+        $body = $this->body('/admin/audit');
 
         $this->assertStringContainsString('<title>Audit · Admin</title>', $body);
         $this->assertStringContainsString('>boss</td>', $body);
@@ -113,7 +110,7 @@ final class AuditFlowTest extends TestCase
         $this->seed(new Audit('users', '2', null, null, 1, 'boss', 'renamed'));
         $this->seed(new Audit('invoices', '9', null, null, 1, 'boss', 'voided'));
         $this->login('boss');
-        $body = $this->body('GET', '/admin/audit');
+        $body = $this->body('/admin/audit');
 
         $this->assertStringContainsString('>Users</td>', $body);
         // A table outside the field's options falls back to the stored value
@@ -126,14 +123,14 @@ final class AuditFlowTest extends TestCase
         $this->seed(new Audit('users', '2', null, null, null, null, 'seeded'));
         $this->login('boss');
 
-        $this->assertStringContainsString('>system</td>', $this->body('GET', '/admin/audit'));
+        $this->assertStringContainsString('>system</td>', $this->body('/admin/audit'));
     }
 
     public function test_the_show_screen_carries_the_columns_the_table_cannot(): void
     {
         $this->seed(new Audit('users', '2', '{"role":"user"}', '{"role":"admin"}', 1, 'boss', 'promoted'));
         $this->login('boss');
-        $body = $this->body('GET', '/admin/audit/' . $this->lastId());
+        $body = $this->body('/admin/audit/' . $this->lastId());
 
         $this->assertStringContainsString('<title>Change · Admin</title>', $body);
         $this->assertStringContainsString('{&quot;role&quot;:&quot;user&quot;}</dd>', $body);
@@ -146,17 +143,17 @@ final class AuditFlowTest extends TestCase
         $this->login('boss');
         $id = $this->lastId();
 
-        $this->assertStringNotContainsString('>Edit</a>', $this->body('GET', '/admin/audit/' . $id));
-        $this->assertStringNotContainsString('>Delete</button>', $this->body('GET', '/admin/audit'));
-        $this->assertSame(404, $this->handle('GET', '/admin/audit/' . $id . '/edit')->getStatusCode());
-        $this->assertSame(404, $this->handle('POST', '/admin/audit/' . $id . '/delete')->getStatusCode());
+        $this->assertStringNotContainsString('>Edit</a>', $this->body('/admin/audit/' . $id));
+        $this->assertStringNotContainsString('>Delete</button>', $this->body('/admin/audit'));
+        $this->http->get('/admin/audit/' . $id . '/edit')->assertStatus(404);
+        $this->http->post('/admin/audit/' . $id . '/delete')->assertStatus(404);
     }
 
     public function test_the_module_is_admin_only(): void
     {
         $this->login('clerk');
 
-        $this->assertSame(403, $this->handle('GET', '/admin/audit')->getStatusCode());
+        $this->http->get('/admin/audit')->assertStatus(403);
     }
 
     public function test_the_module_filter_narrows_the_table(): void
@@ -164,7 +161,7 @@ final class AuditFlowTest extends TestCase
         $this->seed(new Audit('users', '2', null, null, 1, 'boss', 'renamed'));
         $this->seed(new Audit('invoices', '9', null, null, 1, 'boss', 'voided'));
         $this->login('boss');
-        $body = $this->body('GET', '/admin/audit?module=users');
+        $body = $this->body('/admin/audit?module=users');
 
         // The assertion the source's own case cannot make: this is the whole
         // round trip, from the select's name in the query string to the clause.
@@ -182,7 +179,7 @@ final class AuditFlowTest extends TestCase
         // so the table is unfiltered rather than empty.
         $this->assertStringContainsString(
             '>voided</td>',
-            $this->body('GET', '/admin/audit?module=DROP+TABLE'),
+            $this->body('/admin/audit?module=DROP+TABLE'),
         );
     }
 
@@ -194,7 +191,7 @@ final class AuditFlowTest extends TestCase
         foreach (['invoices', '90210', 'ghost', 'in error'] as $term) {
             $this->assertStringContainsString(
                 '>ghost</td>',
-                $this->body('GET', '/admin/audit?q=' . rawurlencode($term)),
+                $this->body('/admin/audit?q=' . rawurlencode($term)),
                 sprintf('Searching for "%s" did not reach the column holding it.', $term),
             );
         }
@@ -204,16 +201,13 @@ final class AuditFlowTest extends TestCase
     {
         $this->seed(new Audit('users', '2', null, null, 1, 'boss', 'promoted clerk'));
         $this->login('boss');
-        $response = $this->handle('GET', '/admin/audit/export');
-
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertStringContainsString('promoted clerk', (string) $response->getBody());
+        $this->http->get('/admin/audit/export')->assertOk()->assertSee('promoted clerk');
     }
 
     public function test_a_created_row_is_recorded_with_who_made_it(): void
     {
         $this->login('boss');
-        $this->handle('POST', '/admin/users/new', [], [
+        $this->http->post('/admin/users/new', [
             'username' => 'newcomer',
             'role' => 'user',
             'password' => 'correct-horse',
@@ -235,12 +229,12 @@ final class AuditFlowTest extends TestCase
         // a password input, so the values on the event carry one, and a listener
         // that recorded them wholesale would write it down here in plain text.
         $this->login('boss');
-        $this->handle('POST', '/admin/users/new', [], [
+        $this->http->post('/admin/users/new', [
             'username' => 'newcomer',
             'role' => 'user',
             'password' => 'correct-horse',
         ]);
-        $this->handle('POST', '/admin/users/3/edit', [], [
+        $this->http->post('/admin/users/3/edit', [
             'username' => 'newcomer',
             'role' => 'user',
             'password' => 'a-brand-new-secret',
@@ -255,7 +249,7 @@ final class AuditFlowTest extends TestCase
     public function test_a_rewrite_records_the_before_and_after_of_what_moved(): void
     {
         $this->login('boss');
-        $this->handle('POST', '/admin/users/2/edit', [], [
+        $this->http->post('/admin/users/2/edit', [
             'username' => 'clerk',
             'role' => 'admin',
             'password' => '',
@@ -277,7 +271,7 @@ final class AuditFlowTest extends TestCase
         // one back, so the event cannot tell a blank one from a new one on its
         // own. Every edit would otherwise claim the password changed.
         $this->login('boss');
-        $this->handle('POST', '/admin/users/2/edit', [], [
+        $this->http->post('/admin/users/2/edit', [
             'username' => 'clerical',
             'role' => 'user',
             'password' => '',
@@ -289,7 +283,7 @@ final class AuditFlowTest extends TestCase
     public function test_a_changed_password_is_recorded_by_name_and_not_by_value(): void
     {
         $this->login('boss');
-        $this->handle('POST', '/admin/users/2/edit', [], [
+        $this->http->post('/admin/users/2/edit', [
             'username' => 'clerk',
             'role' => 'user',
             'password' => 'a-brand-new-secret',
@@ -306,7 +300,7 @@ final class AuditFlowTest extends TestCase
     public function test_a_deleted_row_is_recorded_by_the_id_it_removed(): void
     {
         $this->login('boss');
-        $this->handle('POST', '/admin/users/2/delete');
+        $this->http->post('/admin/users/2/delete');
 
         $row = $this->audited()[0];
         $this->assertSame('users', $row['module']);
@@ -321,22 +315,20 @@ final class AuditFlowTest extends TestCase
     public function test_a_refused_write_records_nothing(): void
     {
         $this->login('boss');
-        $response = $this->handle('POST', '/admin/users/new', [], [
+        // The event is announced only once the source has taken the row, so an
+        // attempt the source refused must not be recorded as the deed.
+        $this->http->post('/admin/users/new', [
             'username' => 'clerk',
             'role' => 'user',
             'password' => 'correct-horse',
-        ]);
-
-        // The event is announced only once the source has taken the row, so an
-        // attempt the source refused must not be recorded as the deed.
-        $this->assertSame(422, $response->getStatusCode());
+        ])->assertStatus(422);
         $this->assertSame([], $this->audited());
     }
 
     public function test_an_export_is_recorded_under_a_row_id_of_its_own(): void
     {
         $this->login('boss');
-        $this->handle('GET', '/admin/users/export?role=admin');
+        $this->http->get('/admin/users/export?role=admin');
 
         $row = $this->audited()[0];
         $this->assertSame('users', $row['module']);
@@ -352,7 +344,7 @@ final class AuditFlowTest extends TestCase
     public function test_a_module_that_only_exports_is_recorded_too(): void
     {
         $this->login('boss');
-        $this->handle('GET', '/admin/audit/export');
+        $this->http->get('/admin/audit/export');
 
         $this->assertSame('audit', $this->audited()[0]['module']);
     }
@@ -360,12 +352,12 @@ final class AuditFlowTest extends TestCase
     public function test_the_change_arrives_on_the_audit_screen(): void
     {
         $this->login('boss');
-        $this->handle('POST', '/admin/users/2/edit', [], [
+        $this->http->post('/admin/users/2/edit', [
             'username' => 'clerical',
             'role' => 'user',
             'password' => '',
         ]);
-        $body = $this->body('GET', '/admin/audit');
+        $body = $this->body('/admin/audit');
 
         $this->assertStringContainsString('>Users</td>', $body);
         $this->assertStringContainsString('>boss</td>', $body);
@@ -388,43 +380,13 @@ final class AuditFlowTest extends TestCase
         (new AuditRepository($this->db))->record($audit);
     }
 
-    /** @param array<string, string> $headers */
-    private function body(string $method, string $path, array $headers = []): string
+    private function body(string $path): string
     {
-        $response = $this->handle($method, $path, $headers);
-        $this->assertSame(200, $response->getStatusCode());
-
-        return (string) $response->getBody();
-    }
-
-    /**
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $body
-     */
-    private function handle(string $method, string $path, array $headers = [], ?array $body = null): ResponseInterface
-    {
-        $request = (new Psr17Factory)->createServerRequest($method, $path);
-
-        if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) {
-            $this->container->get(SessionLifecycleInterface::class)->start();
-            $request = $request->withHeader('X-CSRF-Token', $this->container->get(CsrfGuard::class)->token());
-        }
-        foreach ($headers as $name => $value) {
-            $request = $request->withHeader($name, $value);
-        }
-        if ($body !== null) {
-            $request = $request->withParsedBody($body);
-        }
-
-        return $this->container->get(RequestHandlerInterface::class)->handle($request);
+        return $this->http->get($path)->assertOk()->body();
     }
 
     private function login(string $username): void
     {
-        $response = $this->handle('POST', '/login', [], [
-            'username' => $username,
-            'password' => self::PASSWORD,
-        ]);
-        $this->assertSame(302, $response->getStatusCode());
+        $this->http->post('/login', ['username' => $username, 'password' => self::PASSWORD])->assertStatus(302);
     }
 }

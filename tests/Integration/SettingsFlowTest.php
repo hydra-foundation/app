@@ -21,18 +21,16 @@ use Hydra\Authorization\AuthorizationServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
-use Hydra\Csrf\CsrfGuard;
+use Hydra\Csrf\Testing\CarriesCsrfToken;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
+use Hydra\Http\Testing\Client;
+use Hydra\Http\Testing\TestResponse;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
-use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Hydra\Throttle\ThrottleServiceProvider;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * The settings module end-to-end: categories that are screens rather than tab
@@ -45,6 +43,8 @@ final class SettingsFlowTest extends TestCase
     private const PASSWORD = 'correct-horse-battery-staple';
 
     private ContainerInterface $container;
+
+    private Client $http;
 
     protected function setUp(): void
     {
@@ -84,6 +84,7 @@ final class SettingsFlowTest extends TestCase
         $insert->execute(['clerk', $hash, 'user']);
 
         $this->container = $container;
+        $this->http = Client::for($container, [CarriesCsrfToken::for($container)]);
     }
 
     public function test_settings_are_reachable_by_anyone_signed_in(): void
@@ -92,14 +93,14 @@ final class SettingsFlowTest extends TestCase
         // read other people's rows are the ones that require the role.
         $this->login('clerk');
 
-        $this->assertSame(200, $this->handle('GET', '/admin/settings')->getStatusCode());
-        $this->assertSame(200, $this->handle('GET', '/admin/settings/appearance')->getStatusCode());
+        $this->http->get('/admin/settings')->assertOk();
+        $this->http->get('/admin/settings/appearance')->assertOk();
     }
 
     public function test_a_category_is_a_screen_of_its_own(): void
     {
         $this->login('boss');
-        $body = $this->body('GET', '/admin/settings/appearance');
+        $body = $this->body('/admin/settings/appearance');
 
         // Linkable and steppable: the crumb trail names it and the strip is
         // links, so the back button works between categories.
@@ -111,7 +112,7 @@ final class SettingsFlowTest extends TestCase
     public function test_the_picker_offers_every_palette_on_disk(): void
     {
         $this->login('boss');
-        $body = $this->body('GET', '/admin/settings/appearance');
+        $body = $this->body('/admin/settings/appearance');
 
         foreach (['paper', 'graphite'] as $theme) {
             $this->assertStringContainsString('value="' . $theme . '"', $body);
@@ -125,10 +126,10 @@ final class SettingsFlowTest extends TestCase
     public function test_choosing_a_theme_keeps_it(): void
     {
         $this->login('boss');
-        $this->assertSame(200, $this->save('graphite')->getStatusCode());
+        $this->save('graphite')->assertOk();
 
         $this->assertSame('graphite', $this->preferences()->get($this->id('boss'), 'theme'));
-        $this->assertStringContainsString('data-theme="graphite"', $this->body('GET', '/admin/settings'));
+        $this->assertStringContainsString('data-theme="graphite"', $this->body('/admin/settings'));
     }
 
     public function test_the_saved_fragment_carries_the_palette_the_page_must_repaint_in(): void
@@ -137,11 +138,10 @@ final class SettingsFlowTest extends TestCase
 
         // Only #admin-frame is swapped and data-theme lives on <html>, so the
         // fragment has to declare the new palette for the page to follow it.
-        $frame = (string) $this->save('graphite', frame: true)->getBody();
-
-        $this->assertStringContainsString('id="admin-theme" data-theme="graphite"', $frame);
-        $this->assertStringNotContainsString('<!doctype html>', $frame);
-        $this->assertStringContainsString('Saved', $frame);
+        $this->save('graphite', frame: true)
+            ->assertSee('id="admin-theme" data-theme="graphite"')
+            ->assertFragment()
+            ->assertSee('Saved');
     }
 
     public function test_a_theme_that_is_not_on_disk_is_refused(): void
@@ -149,11 +149,9 @@ final class SettingsFlowTest extends TestCase
         $this->login('boss');
         $this->save('graphite');
 
-        $response = $this->save('../../etc/passwd');
-
         // Accepting it would leave the page unstyled and the setting stuck on a
         // palette no stylesheet answers for.
-        $this->assertSame(422, $response->getStatusCode());
+        $this->save('../../etc/passwd')->assertStatus(422);
         $this->assertSame('graphite', $this->preferences()->get($this->id('boss'), 'theme'));
     }
 
@@ -162,24 +160,23 @@ final class SettingsFlowTest extends TestCase
         $this->login('boss');
         $this->save('graphite');
 
-        $this->container->get(SessionLifecycleInterface::class)->start();
-        $this->handle('POST', '/logout');
+        $this->http->post('/logout')->assertRedirect('/login');
         $this->login('clerk');
 
-        $this->assertStringContainsString('data-theme="paper"', $this->body('GET', '/admin/settings'));
+        $this->assertStringContainsString('data-theme="paper"', $this->body('/admin/settings'));
     }
 
     public function test_a_signed_out_page_takes_the_fallback(): void
     {
         // Nobody to ask. The login screen still has to be styled.
-        $this->assertStringContainsString('data-theme="paper"', $this->body('GET', '/login'));
+        $this->assertStringContainsString('data-theme="paper"', $this->body('/login'));
     }
 
-    private function save(string $theme, bool $frame = false): ResponseInterface
+    private function save(string $theme, bool $frame = false): TestResponse
     {
-        $headers = $frame ? ['HX-Request' => 'true', 'HX-Target' => 'div#admin-frame'] : [];
+        $http = $frame ? $this->http->htmx('div#admin-frame') : $this->http;
 
-        return $this->handle('POST', '/admin/settings/appearance', $headers, ['theme' => $theme]);
+        return $http->post('/admin/settings/appearance', ['theme' => $theme]);
     }
 
     private function preferences(): PreferenceRepository
@@ -206,46 +203,13 @@ final class SettingsFlowTest extends TestCase
         ));
     }
 
-    /** @param array<string, string> $headers */
-    private function body(string $method, string $path, array $headers = []): string
+    private function body(string $path): string
     {
-        $response = $this->handle($method, $path, $headers);
-        $this->assertSame(200, $response->getStatusCode());
-
-        return (string) $response->getBody();
-    }
-
-    /**
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $body
-     */
-    private function handle(string $method, string $path, array $headers = [], ?array $body = null): ResponseInterface
-    {
-        $request = (new Psr17Factory)->createServerRequest($method, $path);
-
-        if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) {
-            $this->container->get(SessionLifecycleInterface::class)->start();
-            $request = $request->withHeader('X-CSRF-Token', $this->container->get(CsrfGuard::class)->token());
-        }
-
-        foreach ($headers as $name => $value) {
-            $request = $request->withHeader($name, $value);
-        }
-
-        if ($body !== null) {
-            $request = $request->withParsedBody($body);
-        }
-
-        return $this->container->get(RequestHandlerInterface::class)->handle($request);
+        return $this->http->get($path)->assertOk()->body();
     }
 
     private function login(string $username): void
     {
-        $response = $this->handle('POST', '/login', [], [
-            'username' => $username,
-            'password' => self::PASSWORD,
-        ]);
-
-        $this->assertSame(302, $response->getStatusCode());
+        $this->http->post('/login', ['username' => $username, 'password' => self::PASSWORD])->assertStatus(302);
     }
 }

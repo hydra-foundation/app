@@ -22,18 +22,15 @@ use Hydra\Authorization\AuthorizationServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
-use Hydra\Csrf\CsrfGuard;
+use Hydra\Csrf\Testing\CarriesCsrfToken;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
+use Hydra\Http\Testing\Client;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
-use Hydra\Session\Contracts\SessionLifecycleInterface;
 use Hydra\Throttle\ThrottleServiceProvider;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * The activity slice end-to-end: the middleware recording one row per request
@@ -44,8 +41,8 @@ final class ActivityFlowTest extends TestCase
 {
     private const PASSWORD = 'correct-horse-battery-staple';
 
-    private ContainerInterface $container;
     private ConnectionInterface $db;
+    private Client $http;
 
     protected function setUp(): void
     {
@@ -85,12 +82,12 @@ final class ActivityFlowTest extends TestCase
         $insert->execute(['boss', $hash, 'admin']);
         $insert->execute(['clerk', $hash, 'user']);
 
-        $this->container = $container;
+        $this->http = Client::for($container, [CarriesCsrfToken::for($container)]);
     }
 
     public function test_a_request_writes_exactly_one_row(): void
     {
-        $this->handle('GET', '/');
+        $this->http->get('/');
 
         $rows = $this->recorded();
         $this->assertCount(1, $rows);
@@ -102,7 +99,7 @@ final class ActivityFlowTest extends TestCase
 
     public function test_a_guest_is_recorded_as_nobody(): void
     {
-        $this->handle('GET', '/');
+        $this->http->get('/');
 
         $row = $this->recorded()[0];
         $this->assertNull($row['user_id']);
@@ -113,7 +110,7 @@ final class ActivityFlowTest extends TestCase
     {
         $this->login('boss');
         $this->clear();
-        $this->handle('GET', '/admin/dashboard');
+        $this->http->get('/admin/dashboard');
 
         $row = $this->recorded()[0];
         $this->assertSame(1, (int) $row['user_id']);
@@ -124,13 +121,13 @@ final class ActivityFlowTest extends TestCase
     {
         // The auth failure is turned into a redirect further in, so the log must
         // say 302, not the 401 the exception carried on its way past.
-        $this->assertSame(302, $this->handle('GET', '/admin/users')->getStatusCode());
+        $this->http->get('/admin/users')->assertStatus(302);
         $this->assertSame(302, (int) $this->recorded()[0]['status']);
     }
 
     public function test_an_error_is_recorded_at_the_status_it_renders_as(): void
     {
-        $this->handle('GET', '/does-not-exist');
+        $this->http->get('/does-not-exist');
 
         $this->assertSame(404, (int) $this->recorded()[0]['status']);
     }
@@ -139,17 +136,17 @@ final class ActivityFlowTest extends TestCase
     {
         $this->login('clerk');
         $this->clear();
-        $this->handle('GET', '/admin/users');
+        $this->http->get('/admin/users');
 
         $this->assertSame(403, (int) $this->recorded()[0]['status']);
     }
 
     public function test_the_request_details_are_captured(): void
     {
-        $this->handle('GET', '/admin/users?role=admin&page=2', [
+        $this->http->from('203.0.113.7')->get('/admin/users?role=admin&page=2', [
             'User-Agent' => 'curl/8.11.0',
             'Referer' => 'http://hydra.localhost/admin/dashboard',
-        ], null, ['REMOTE_ADDR' => '203.0.113.7']);
+        ]);
 
         $row = $this->recorded()[0];
         $this->assertSame('/admin/users', $row['path']);
@@ -164,13 +161,13 @@ final class ActivityFlowTest extends TestCase
     {
         $this->db->execute('DROP TABLE activity');
 
-        $this->assertSame(200, $this->handle('GET', '/')->getStatusCode());
+        $this->http->get('/')->assertStatus(200);
     }
 
     public function test_the_module_lists_what_the_middleware_recorded(): void
     {
         $this->login('boss');
-        $body = $this->body('GET', '/admin/activity');
+        $body = $this->body('/admin/activity');
 
         $this->assertStringContainsString('<title>Activity · Admin</title>', $body);
         $this->assertStringContainsString('>/login</td>', $body);
@@ -185,7 +182,7 @@ final class ActivityFlowTest extends TestCase
         // Signing in records a row of its own, so take the id before that.
         $id = $this->lastId();
         $this->login('boss');
-        $body = $this->body('GET', '/admin/activity/' . $id);
+        $body = $this->body('/admin/activity/' . $id);
 
         $this->assertStringContainsString('<title>Request · Admin</title>', $body);
         $this->assertStringContainsString('>Mozilla/5.0 (X11)</dd>', $body);
@@ -199,24 +196,24 @@ final class ActivityFlowTest extends TestCase
         $id = $this->lastId();
         $this->login('boss');
 
-        $this->assertStringNotContainsString('>Edit</a>', $this->body('GET', '/admin/activity/' . $id));
-        $this->assertStringNotContainsString('>Delete</button>', $this->body('GET', '/admin/activity'));
-        $this->assertSame(404, $this->handle('GET', '/admin/activity/' . $id . '/edit')->getStatusCode());
-        $this->assertSame(404, $this->handle('POST', '/admin/activity/' . $id . '/delete')->getStatusCode());
+        $this->assertStringNotContainsString('>Edit</a>', $this->body('/admin/activity/' . $id));
+        $this->assertStringNotContainsString('>Delete</button>', $this->body('/admin/activity'));
+        $this->http->get('/admin/activity/' . $id . '/edit')->assertStatus(404);
+        $this->http->post('/admin/activity/' . $id . '/delete')->assertStatus(404);
     }
 
     public function test_the_module_is_admin_only(): void
     {
         $this->login('clerk');
 
-        $this->assertSame(403, $this->handle('GET', '/admin/activity')->getStatusCode());
+        $this->http->get('/admin/activity')->assertStatus(403);
     }
 
     public function test_the_table_shows_a_guest_as_a_guest_and_labels_the_status(): void
     {
         $this->seed(new Activity(null, null, 'GET', '/pricing', '', 404, 12, '203.0.113.9', null, null));
         $this->login('boss');
-        $body = $this->body('GET', '/admin/activity?q=/pricing');
+        $body = $this->body('/admin/activity?q=/pricing');
 
         $this->assertStringContainsString('>guest</td>', $body);
         $this->assertStringContainsString('>404 Not found</td>', $body);
@@ -230,14 +227,14 @@ final class ActivityFlowTest extends TestCase
 
         $this->assertStringContainsString(
             '>/search?q=hydra&amp;page=3</td>',
-            $this->body('GET', '/admin/activity?q=/search'),
+            $this->body('/admin/activity?q=/search'),
         );
     }
 
     public function test_the_method_filter_narrows_the_table(): void
     {
         $this->login('boss');
-        $body = $this->body('GET', '/admin/activity?method=POST');
+        $body = $this->body('/admin/activity?method=POST');
 
         // Logging in is the only POST so far.
         $this->assertStringContainsString('Showing 1–1 of 1', $body);
@@ -249,9 +246,9 @@ final class ActivityFlowTest extends TestCase
         $this->seed(new Activity(null, 'ghost', 'GET', '/somewhere', '', 200, 1, '198.51.100.4', null, null));
         $this->login('boss');
 
-        $this->assertStringContainsString('>ghost</td>', $this->body('GET', '/admin/activity?q=ghost'));
-        $this->assertStringContainsString('>ghost</td>', $this->body('GET', '/admin/activity?q=198.51.100'));
-        $this->assertStringContainsString('>ghost</td>', $this->body('GET', '/admin/activity?q=/somewhere'));
+        $this->assertStringContainsString('>ghost</td>', $this->body('/admin/activity?q=ghost'));
+        $this->assertStringContainsString('>ghost</td>', $this->body('/admin/activity?q=198.51.100'));
+        $this->assertStringContainsString('>ghost</td>', $this->body('/admin/activity?q=/somewhere'));
     }
 
     public function test_an_unknown_filter_value_is_ignored_rather_than_queried(): void
@@ -263,7 +260,7 @@ final class ActivityFlowTest extends TestCase
         // so the table is unfiltered rather than empty.
         $this->assertStringContainsString(
             '>ghost</td>',
-            $this->body('GET', '/admin/activity?status=DROP+TABLE'),
+            $this->body('/admin/activity?status=DROP+TABLE'),
         );
     }
 
@@ -288,49 +285,13 @@ final class ActivityFlowTest extends TestCase
         (new ActivityRepository($this->db))->record($activity);
     }
 
-    /** @param array<string, string> $headers */
-    private function body(string $method, string $path, array $headers = []): string
+    private function body(string $path): string
     {
-        $response = $this->handle($method, $path, $headers);
-        $this->assertSame(200, $response->getStatusCode());
-
-        return (string) $response->getBody();
-    }
-
-    /**
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $body
-     * @param array<string, mixed> $serverParams
-     */
-    private function handle(
-        string $method,
-        string $path,
-        array $headers = [],
-        ?array $body = null,
-        array $serverParams = [],
-    ): ResponseInterface {
-        $request = (new Psr17Factory)->createServerRequest($method, $path, $serverParams);
-
-        if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) {
-            $this->container->get(SessionLifecycleInterface::class)->start();
-            $request = $request->withHeader('X-CSRF-Token', $this->container->get(CsrfGuard::class)->token());
-        }
-        foreach ($headers as $name => $value) {
-            $request = $request->withHeader($name, $value);
-        }
-        if ($body !== null) {
-            $request = $request->withParsedBody($body);
-        }
-
-        return $this->container->get(RequestHandlerInterface::class)->handle($request);
+        return $this->http->get($path)->assertOk()->body();
     }
 
     private function login(string $username): void
     {
-        $response = $this->handle('POST', '/login', [], [
-            'username' => $username,
-            'password' => self::PASSWORD,
-        ]);
-        $this->assertSame(302, $response->getStatusCode());
+        $this->http->post('/login', ['username' => $username, 'password' => self::PASSWORD])->assertStatus(302);
     }
 }
