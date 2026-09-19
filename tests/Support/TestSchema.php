@@ -9,8 +9,7 @@ use PDO;
 /**
  * The sqlite mirror of database/migrations, for suites that swap the real
  * MariaDB connection for an in-memory database. One definition, so a column
- * added to a migration is added here once and every harness sees it, the same
- * anti-drift reason {@see TestHttpProvider} and {@see TestAdminProvider} exist.
+ * added to a migration is added here once and every harness sees it.
  */
 final class TestSchema
 {

@@ -5,31 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Entities\Audit;
-use App\Providers\AppServiceProvider;
+use App\Entities\Role;
 use App\Repositories\AuditRepository;
-use Hydra\Cache\Testing\ArrayCacheServiceProvider;
-use Hydra\Session\Testing\ArraySessionServiceProvider;
-use Hydra\Core\Testing\FixedSignerServiceProvider;
-use Hydra\Log\Testing\CapturingLogger;
-use Psr\Log\LoggerInterface;
-use App\Tests\Support\TestAdminProvider;
-use App\Tests\Support\TestHttpProvider;
-use App\Tests\Support\TestSchema;
-use Hydra\Auth\AuthConfig;
-use Hydra\Auth\AuthServiceProvider;
-use Hydra\Auth\Contracts\HasherInterface;
-use Hydra\Authorization\AuthorizationServiceProvider;
-use Hydra\Core\Application;
-use Hydra\Core\Contracts\ContainerInterface;
-use Hydra\Core\Environment;
-use Hydra\Csrf\Testing\CarriesCsrfToken;
+use App\Tests\Support\TestApp;
 use Hydra\Database\Contracts\ConnectionInterface;
-use Hydra\Database\PdoConnection;
 use Hydra\Http\Testing\Client;
-use Hydra\Event\EventServiceProvider;
-use Hydra\Nyholm\NyholmServiceProvider;
-use Hydra\PhpDi\Container;
-use Hydra\Throttle\ThrottleServiceProvider;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
@@ -44,54 +24,19 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 final class AuditFlowTest extends TestCase
 {
-    private const PASSWORD = 'correct-horse-battery-staple';
+    private TestApp $app;
 
     private ConnectionInterface $db;
     private Client $http;
 
     protected function setUp(): void
     {
-        $container = Container::create();
-        $container->instance(ContainerInterface::class, $container);
-        $container->instance(Environment::class, new Environment(__DIR__));
+        $this->app = TestApp::boot();
+        $this->app->seed('boss', Role::Admin);
+        $this->app->seed('clerk', Role::User);
 
-        $app = (new Application($container))
-            ->register(new ArraySessionServiceProvider)
-            ->register(new NyholmServiceProvider)
-            ->register(new FixedSignerServiceProvider)
-            ->register(new ArrayCacheServiceProvider)
-            ->register(new ThrottleServiceProvider)
-            ->register(TestHttpProvider::make())
-            // What makes the admin emit its events at all: without this binding
-            // AdminController holds a null dispatcher and every write here would
-            // pass while recording nothing. Kernel registers it in the real app.
-            ->register(new EventServiceProvider)
-            ->register(new AuthServiceProvider)
-            ->register(new AuthorizationServiceProvider)
-            ->register(new AppServiceProvider)
-            ->register(TestAdminProvider::make());
-
-        // Before boot(), not after: boot() builds its listeners with whatever
-        // LoggerInterface resolves to, so a logger swapped in afterwards hears
-        // nothing. In memory rather than stderr, because the real pipeline logs
-        // one line per request and those land in the middle of PHPUnit's own
-        // output, where they read as failures that are not failures.
-        $container->instance(LoggerInterface::class, new CapturingLogger);
-
-        $app->boot();
-
-        $container->instance(AuthConfig::class, new AuthConfig(hashCost: 4));
-
-        $pdo = TestSchema::connect();
-        $this->db = new PdoConnection($pdo);
-        $container->instance(ConnectionInterface::class, $this->db);
-
-        $hash = $container->get(HasherInterface::class)->hash(self::PASSWORD);
-        $insert = $pdo->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)');
-        $insert->execute(['boss', $hash, 'admin']);
-        $insert->execute(['clerk', $hash, 'user']);
-
-        $this->http = Client::for($container, [CarriesCsrfToken::for($container)]);
+        $this->db = $this->app->db();
+        $this->http = $this->app->http();
     }
 
     public function test_the_module_lists_what_the_repository_recorded(): void
@@ -387,6 +332,6 @@ final class AuditFlowTest extends TestCase
 
     private function login(string $username): void
     {
-        $this->http->post('/login', ['username' => $username, 'password' => self::PASSWORD])->assertStatus(302);
+        $this->app->login($username)->assertStatus(302);
     }
 }
