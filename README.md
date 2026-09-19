@@ -1,6 +1,7 @@
 # Hydra App
 
-The skeleton every Hydra project starts from.
+The skeleton every [Hydra PHP framework](https://hydra.williamhleucka.com) project starts from.
+Documentation: [hydra.williamhleucka.com/docs](https://hydra.williamhleucka.com/docs/).
 
 ## Status
 

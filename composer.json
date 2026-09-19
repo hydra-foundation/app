@@ -3,6 +3,7 @@
     "description": "The application skeleton every Hydra project starts from.",
     "type": "project",
     "license": "MIT",
+    "homepage": "https://hydra.williamhleucka.com",
     "autoload": {
         "psr-4": {
             "App\\": "src/"
