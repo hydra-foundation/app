@@ -9,12 +9,6 @@ use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
 * Audit module data contract.
-*
-* username is stored on the row rather than joined from users, the way activity
-* does it. The join would be the only reason this class could not be a
-* declaration, and it would answer the wrong question anyway: user_id is
-* ON DELETE SET NULL, so deleting an account would quietly erase who made every
-* change it ever made. The name as it was at the time is the record.
 */
 final class AuditSource extends TableSource
 {

@@ -16,16 +16,6 @@ use Hydra\Admin\Surface;
 /**
  * Every recorded change to a row, read-only: the log of who changed what is not
  * itself a thing the admin may edit.
- *
- * The before and after values are declared but kept off the table, the way
- * activity keeps agent and referer off it: they are the reason to open a row,
- * not something a row has to stay readable while carrying.
- *
- * MODULES is a written list rather than the distinct module values, because a
- * filter has to offer its options before the first row exists. It names the
- * modules that can announce anything — a write or an export — so it grows when
- * one of those does. A module missing from it still lists its rows, under its
- * own slug; it is only the filter that cannot offer it.
  */
 final class AuditModule implements ModuleInterface
 {

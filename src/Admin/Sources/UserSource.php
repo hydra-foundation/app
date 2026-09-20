@@ -19,9 +19,6 @@ use Hydra\Database\Contracts\ConnectionInterface;
 * Users module data contract. The read side is the declaration below; the write
 * side is written out, because what a blank password means, which names collide
 * and who may not be deleted are facts about this table rather than boilerplate.
-*
-* password_hash is deliberately absent from the columns: it is written here and
-* never read back into a screen.
 */
 final class UserSource extends TableSource implements UpdateSourceInterface, CreateSourceInterface, DeleteSourceInterface
 {

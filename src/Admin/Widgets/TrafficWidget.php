@@ -14,15 +14,6 @@ use Psr\Clock\ClockInterface;
 /**
  * Requests over the chosen period: the shape of them, how many failed, and how
  * long the average one took.
- *
- * The count itself is not here any more — it is the first figure in the strip
- * above the grid, which is where the period's headline numbers live. What this
- * card is for is the thing no figure can say, which is when they arrived.
- *
- * The window arrives resolved and its bounds are bound as values rather than
- * written as SQL date arithmetic, because `NOW() - INTERVAL 1 DAY` and
- * `datetime('now', '-1 day')` are not the same string and this has to answer
- * on both.
  */
 final class TrafficWidget implements PeriodAwareInterface
 {

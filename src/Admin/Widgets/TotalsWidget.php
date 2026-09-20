@@ -11,11 +11,6 @@ use Hydra\Database\Contracts\ConnectionInterface;
 /**
  * The three figures above the grid: what the chosen period brought in, with the
  * running total underneath each one.
- *
- * It used to answer for all of time while every card below answered for the
- * period, which put "4 accounts" directly above "3 new" in the same typeface —
- * two questions that read as one number disagreeing with itself. The page has
- * one now, and all time is a caption rather than a rival.
  */
 final class TotalsWidget implements PeriodAwareInterface
 {

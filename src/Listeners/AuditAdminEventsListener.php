@@ -23,11 +23,6 @@ use Throwable;
  *
  * The event carries no user, by design — the admin package does not depend on
  * authentication — so the guard is asked here, inside the request that raised it.
- *
- * An export is recorded too, under the literal row id "export". It moves no row
- * and has none to name, but it is the one admin action that takes a whole table
- * at once, and an audit trail that records every single-row edit and not that is
- * missing the largest thing that ever happens to the data.
  */
 final class AuditAdminEventsListener
 {
