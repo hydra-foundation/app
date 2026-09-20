@@ -14,7 +14,8 @@ use Hydra\Database\Contracts\ConnectionInterface;
 /** The writes the admin made over the period, straight off the audit trail. */
 final class RecentChangesWidget implements PeriodAwareInterface
 {
-    private const CHANGES = 5;
+    /** Also what the card reserves room for, so the two cannot drift. */
+    public const CHANGES = 5;
 
     private Window $window;
 

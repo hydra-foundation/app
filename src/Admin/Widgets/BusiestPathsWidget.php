@@ -11,7 +11,8 @@ use Hydra\Database\Contracts\ConnectionInterface;
 /** Where the period's requests went, and what each path cost on average. */
 final class BusiestPathsWidget implements PeriodAwareInterface
 {
-    private const PATHS = 6;
+    /** Also what the card reserves room for, so the two cannot drift. */
+    public const PATHS = 6;
 
     private Window $window;
 

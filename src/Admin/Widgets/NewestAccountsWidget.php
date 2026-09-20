@@ -15,7 +15,8 @@ use Hydra\Database\Contracts\ConnectionInterface;
 /** The accounts the period added most recently, and what each one may do. */
 final class NewestAccountsWidget implements PeriodAwareInterface
 {
-    private const ACCOUNTS = 5;
+    /** Also what the card reserves room for, so the two cannot drift. */
+    public const ACCOUNTS = 5;
 
     private Window $window;
 

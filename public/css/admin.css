@@ -159,9 +159,15 @@
 
 /* Frame and masthead ------------------------------------------------------- */
 
+/* The query container the widget grid sizes itself against. It is a flex child
+   with min-width: 0, so its inline size comes from the layout rather than from
+   its contents, which is what makes inline-size containment safe here. Both of
+   this sheet's position: fixed elements — the narrow-screen drawer and its
+   scrim — sit outside it, so the new containing block reaches nothing. */
 .admin-frame {
     min-width: 0;
     padding: var(--s-6) var(--s-6) var(--s-7);
+    container-type: inline-size;
 }
 
 .admin-frame .breadcrumb {
@@ -202,7 +208,6 @@
    and each site below keeps only what is its own — where it sits, what it
    sits on. */
 .admin-eyebrow,
-.admin-widget-title,
 .admin-stat-label,
 .admin-filters .form-label,
 .admin-sidebar #admin-nav h2,
@@ -551,7 +556,8 @@
    breakpoints measure the viewport and this grid does not live in one: the
    sidebar takes 14.5rem off the left before the cards see any width, so col-lg
    fires at 992px on a track that is only ~712px wide and a "third" card ends up
-   with 171px of text in it. These breakpoints are the content box's. */
+   with 171px of text in it. The breakpoints below are the content box's — see
+   the container queries, which is what that takes. */
 .admin-widgets {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -562,10 +568,14 @@
     grid-column: span 12;
 }
 
-/* Tablet: halves and nothing narrower. Between the drawer breakpoint and the
-   wide one every card used to be full width, which left a four-item list in an
-   830px box. */
-@media (min-width: 48rem) {
+/* Container queries and not media ones, which is what the comment above used
+   to claim of two @media rules that could not possibly do it: a media query
+   measures the viewport, the sidebar takes 14.5rem plus padding off the left
+   before the cards see any width, and the error was largest in the band where
+   the sidebar is gone entirely and the grid had more room than the query
+   assumed. These measure the grid's own box, so the thresholds are the widths
+   the cards actually get. */
+@container (min-width: 44rem) {
     .admin-widget-cell {
         grid-column: span 6;
     }
@@ -580,7 +590,7 @@
     }
 }
 
-@media (min-width: 68rem) {
+@container (min-width: 60rem) {
     .admin-widget-cell[data-span="1"] { grid-column: span 1; }
     .admin-widget-cell[data-span="2"] { grid-column: span 2; }
     .admin-widget-cell[data-span="3"] { grid-column: span 3; }
@@ -650,11 +660,18 @@
     margin: 0 0 var(--s-4);
 }
 
+/* Not an eyebrow, though it was one. TRAFFIC names a region and REQUESTS names
+   a number, and in one shared rule they were the same nine small capitals with
+   no rank between them. A card's title outranks the labels inside it. */
 .admin-widget-title {
     display: flex;
     align-items: center;
     gap: var(--s-2);
     margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--t-small);
+    font-weight: 500;
+    color: var(--ink);
 }
 
 .admin-widget-title i {
@@ -662,10 +679,45 @@
     color: var(--accent);
 }
 
+/* The stride of one item, per shape. The bar and the gap together have to come
+   out at the height of a real item, which is what the count in reserving() is a
+   count of — one abstract bar for everything meant the same integer was three
+   different heights, and the tallest card on the grid landed 160px below its
+   own placeholder and shoved the row under it down. */
 .admin-widget-loading {
     display: flex;
     flex-direction: column;
     gap: var(--s-3);
+}
+
+/* A link and a caption under it. */
+.admin-widget-loading.is-rows {
+    gap: var(--s-4);
+}
+
+.admin-widget-loading.is-rows .admin-bar {
+    height: 1.25rem;
+}
+
+/* A heading, a bar and a caption. */
+.admin-widget-loading.is-bars .admin-bar {
+    height: 2.25rem;
+}
+
+/* One area rather than items: a chart has no rows to count. */
+/* One block, filling whatever height the row turns out to be — the same thing
+   the card will do once the chart lands, so the two do not differ by the height
+   of a neighbour. */
+.admin-widget-loading.is-block {
+    flex: 1 1 auto;
+    gap: 0;
+    min-height: 7.5rem;
+}
+
+.admin-widget-loading.is-block .admin-bar {
+    width: 100%;
+    height: auto;
+    flex: 1 1 auto;
 }
 
 /* Not Bootstrap's .placeholder, for the reason written over the link tallies
@@ -680,22 +732,29 @@
     animation: admin-link-count-pending 1.4s ease-in-out infinite;
 }
 
-.admin-widget-loading .admin-bar:nth-child(3n+1) { width: 70%; }
-.admin-widget-loading .admin-bar:nth-child(3n+2) { width: 45%; }
-.admin-widget-loading .admin-bar:nth-child(3n+3) { width: 60%; }
+/* Ragged, so the placeholder reads as text rather than as a table. Excluded on
+   a block, whose one bar stands for a chart and has to be the full width it
+   will come back at. */
+.admin-widget-loading:not(.is-block) .admin-bar:nth-child(3n+1) { width: 70%; }
+.admin-widget-loading:not(.is-block) .admin-bar:nth-child(3n+2) { width: 45%; }
+.admin-widget-loading:not(.is-block) .admin-bar:nth-child(3n+3) { width: 60%; }
 
-/* Quiet, not hidden: it is there for the moment somebody doubts a number, not
-   a control they are meant to notice. The negative margin keeps the taller
-   target from growing the heading and nudging the body down by a few pixels
-   relative to the placeholder it replaces. */
-.admin-widget-refresh {
+/* Only where the card is one block: everything else stacks at its own size and
+   a column would change nothing but the rules it is laid out by. */
+.admin-widget.is-block .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ask again, now. One shape for both of them: the button in a card heading and
+   the one in the masthead that means the whole page. */
+.admin-refresh {
     flex: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
-    margin: -0.125rem -0.375rem -0.125rem 0;
     padding: 0;
     font-size: var(--t-lead);
     border: 0;
@@ -705,7 +764,19 @@
     transition: opacity var(--ease), color var(--ease), background-color var(--ease);
 }
 
-/* Fading it back is only honest where there is a pointer to bring it forward.
+/* The negative margin keeps the taller target from growing the heading and
+   nudging the body down by a few pixels relative to the placeholder it
+   replaces. */
+.admin-widget-refresh {
+    margin: -0.125rem -0.375rem -0.125rem 0;
+}
+
+/* Quiet, not hidden: a card's button is there for the moment somebody doubts
+   one number, not a control they are meant to notice. The masthead's is not in
+   here — it refreshes the page, and a reader should not have to hover a row to
+   learn it exists.
+
+   Fading it back is only honest where there is a pointer to bring it forward.
    On a touch screen there is no hover, so the old rule left an invisible but
    still tappable target at the corner of every card. */
 @media (hover: hover) and (pointer: fine) {
@@ -715,26 +786,24 @@
 
     .admin-widget:hover .admin-widget-refresh,
     .admin-widget:focus-within .admin-widget-refresh,
-    .admin-summary-card:hover .admin-widget-refresh,
-    .admin-summary-card:focus-within .admin-widget-refresh,
     .admin-widget-refresh:focus-visible {
         opacity: 1;
     }
 }
 
-.admin-widget-refresh:hover {
+.admin-refresh:hover {
     background: var(--sunk);
     color: var(--ink-strong);
 }
 
 /* In flight it stays put and spins, so the card is visibly working rather than
    simply unresponsive. */
-.admin-widget-refresh.htmx-request {
+.admin-refresh.htmx-request {
     opacity: 1;
     color: var(--accent);
 }
 
-.admin-widget-refresh.htmx-request i {
+.admin-refresh.htmx-request i {
     display: inline-block;
     animation: admin-refresh-spin 700ms linear infinite;
 }
@@ -747,16 +816,39 @@
 
 /* Summary strip ------------------------------------------------------------ */
 
-/* The masthead block: the running totals and the control that governs the grid
-   below them, under the screen's title and above everything the period touches.
-   One block, so the spacing lives here and neither part draws a rule of its
-   own — the title's is the only horizontal line on the page. */
+/* The masthead block: the totals and the controls that govern the grid below
+   them, then the dates the grid is covering. It carries the page's one
+   horizontal rule, which used to sit under the <h1> — where it separated the
+   title from its own content rather than marking the boundary that matters.
+   Scoped to the frame holding a dashboard, because .admin-title's border is
+   every other screen's and correct there. */
 .admin-dashboard-toolbar {
+    padding-bottom: var(--s-4);
     margin-bottom: var(--s-5);
+    border-bottom: 1px solid var(--line);
 }
 
-.admin-dashboard-toolbar > * + * {
-    margin-top: var(--s-4);
+.admin-frame:has(.admin-dashboard-toolbar) .admin-title {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+/* One row, not two bands. The totals cluster left — three figures read as one
+   instrument only if they are near each other — and the period and the page's
+   refresh take the other end, so the right of the row is occupied by something
+   that governs the page rather than by 28px of button alone. */
+.admin-masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-4) var(--s-5);
+}
+
+.admin-masthead-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
 }
 
 /* A band and not a box: this carried a fill, a border and a radius, which is a
@@ -767,7 +859,6 @@
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: var(--s-4);
     padding: 0;
     background: transparent;
@@ -791,23 +882,36 @@
     height: 1.25rem;
 }
 
-/* Distributed rather than clustered: as a flex row the three totals huddled in
-   the left third of a wide screen with the refresh alone at the far right. */
+/* A row of content-width figures, wrapping when there is no room for all of
+   them. Not stretched across the width: three big numbers with 300px of air
+   each stop reading as one instrument, and what was wrong with the old row was
+   its other occupant, not this.
+
+   Flex rather than grid, which is what it was. auto-fit counts its tracks from
+   the container's available inline size, and an indefinite one collapses the
+   repeat to a single track — so the moment the strip became a flex item of the
+   masthead instead of a block in the band, the three figures stacked. Flex
+   takes its line breaks from the items themselves and has no such cliff. */
 .admin-stats {
     flex: 1 1 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(11rem, max-content));
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--s-4) var(--s-7);
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-/* Named areas, because the icon had a row and no column and left the rest to
-   auto-placement: with an icon the caption landed under it in the wrong
+/* The min-width is a floor and not a width: the figures under a short label and
+   a long one line up, and a stat is still free to be wider than the floor.
+
+   Named areas inside, because the icon had a row and no column and left the
+   rest to auto-placement: with an icon the caption landed under it in the wrong
    column, and without one the label sat beside the figure instead of under it.
    Adding an icon re-laid-out the stat rather than adding an icon. */
 .admin-stat {
+    flex: 0 0 auto;
+    min-width: 11rem;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-areas:
@@ -852,34 +956,26 @@
 
 /* Period control ----------------------------------------------------------- */
 
-/* A bar and not a caption in the right margin. What the cards are answering
-   for is said in body ink on the left, where reading starts; the control that
-   changes it sits opposite. */
-.admin-period {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--s-3);
-}
+/* The dates the grid is covering, beside the control that chose them: the
+   select names the choice and this says what the choice came out as.
 
+   It had a line of its own under the masthead, where it sat directly beneath
+   the caption of the leftmost figure at the same size and in the same muted
+   ink, and read as a fourth line of that stat. Kept on one line, because
+   wrapping a date range mid-range is worse than letting the group wrap. */
 .admin-period-showing {
     margin: 0;
-    font-size: var(--t-lead);
-    color: var(--ink-strong);
+    font-size: var(--t-small);
+    color: var(--muted);
+    white-space: nowrap;
 }
 
 .admin-period-control {
     display: flex;
     align-items: center;
-    gap: var(--s-2);
 }
 
-.admin-period-control .form-label {
-    margin: 0;
-}
-
-.admin-period .form-select {
+.admin-period-control .form-select {
     width: auto;
 }
 
@@ -929,6 +1025,31 @@
 }
 
 /* Three figures reading as one row of an instrument panel. */
+/* The one chart on the dashboard. Stretched to whatever width the card ended
+   up with, which is what preserveAspectRatio="none" on the element is for; the
+   stroke is exempted from that stretch here, or a wide card would draw a line
+   that is hairline at one end and a smear at the other. */
+/* Takes the height the row leaves it, with the figures pinned under it. At a
+   fixed 4.5rem it sat in the middle of a card stretched to the height of its
+   neighbour, which is most of a span-8 card holding nothing. */
+.widget-spark {
+    display: block;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 4.5rem;
+    margin-bottom: var(--s-4);
+    overflow: visible;
+}
+
+.widget-spark-line {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
 .widget-figures {
     display: flex;
     flex-wrap: wrap;
@@ -1049,8 +1170,19 @@
         gap: var(--s-4);
     }
 
-    .admin-period {
-        align-items: flex-start;
+    /* The controls drop under the totals rather than squeezing beside them,
+       and the dates lead the row they land in. */
+    .admin-masthead {
+        align-items: stretch;
+    }
+
+    .admin-masthead-controls {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .admin-period-showing {
+        margin-right: auto;
     }
 }
 
