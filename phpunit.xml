@@ -17,6 +17,14 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <!--
+        Symfony's console wraps its output to the terminal width, and a long
+        word landing on the boundary splits mid-token. Pin the width so a
+        display assertion does not depend on the shell that ran the suite.
+    -->
+    <php>
+        <env name="COLUMNS" value="120" force="true"/>
+    </php>
     <source>
         <include>
             <directory>src</directory>
