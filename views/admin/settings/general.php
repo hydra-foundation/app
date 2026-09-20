@@ -3,7 +3,7 @@
 <?php /** @var array<string, string> $preferences */ ?>
 <?= $this->partial('admin/settings/nav', ['current' => '']) ?>
 
-<dl class="admin-show">
+<dl class="admin-show" hx-nonce="<?= $this->e($this->cspNonce()) ?>">
     <dt>Username</dt>
     <dd class="type-text"><?= $this->e($user->username) ?></dd>
 
@@ -14,4 +14,4 @@
     <dd class="type-id"><?= $this->e(count($preferences)) ?></dd>
 </dl>
 
-<p class="form-text">Settings that change how the admin behaves will appear here as they are added.</p>
+<p class="form-text" hx-nonce="<?= $this->e($this->cspNonce()) ?>">Settings that change how the admin behaves will appear here as they are added.</p>

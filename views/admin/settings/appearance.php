@@ -6,7 +6,7 @@
 <?php /* The swapped frame carries the chosen palette so the page it lands in can
    repaint itself: only #admin-frame is replaced, and the data-theme attribute
    that selects a palette lives on <html>, which is well outside it. */ ?>
-<div id="admin-theme" data-theme="<?= $this->e($selected) ?>" hidden></div>
+<div id="admin-theme" data-theme="<?= $this->e($selected) ?>" hx-nonce="<?= $this->e($this->cspNonce()) ?>" hidden></div>
 
 <form id="appearance-form"
       method="post"

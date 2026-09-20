@@ -6,6 +6,7 @@ namespace App\Admin\Modules;
 
 use App\Admin\Presenters\AppearancePresenter;
 use App\Admin\Presenters\GeneralSettingsPresenter;
+use App\Admin\Presenters\RegionalPresenter;
 use App\Controllers\SettingsController;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
@@ -33,6 +34,11 @@ final class SettingsModule implements ModuleInterface
                     ->title('Appearance')
                     ->presentedBy(AppearancePresenter::class)
                     ->submittedTo([SettingsController::class, 'saveAppearance']),
+                PageScreen::make('regional', 'admin/settings/regional')
+                    ->at('regional')
+                    ->title('Regional')
+                    ->presentedBy(RegionalPresenter::class)
+                    ->submittedTo([SettingsController::class, 'saveRegional']),
             );
     }
 }

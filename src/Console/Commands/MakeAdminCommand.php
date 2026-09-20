@@ -78,10 +78,8 @@ final class MakeAdminCommand extends Command
             ));
 
             if ($existing !== []) {
-                $io->error(sprintf(
-                    "Nothing was written. These already exist:\n%s\nRe-run with --force to overwrite them.",
-                    implode("\n", $existing),
-                ));
+                $io->error('Nothing was written. Re-run with --force to overwrite what already exists.');
+                $io->listing($existing);
 
                 return self::FAILURE;
             }

@@ -11,8 +11,9 @@ use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddle
 use App\Http\NegotiatingErrorRenderer;
 use App\Listeners\AuditAdminEventsListener;
 use App\Repositories\{ActivityRepository, UserRepository};
-use App\View\{ThemeResolver, Themes};
+use App\View\{ThemeResolver, Themes, TimezoneResolver, Timezones};
 use Hydra\Admin\AdminServiceProvider;
+use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Auth\Contracts\{GuardInterface, UserProviderInterface};
@@ -153,6 +154,17 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(Themes::class, function (): Themes {
             return new Themes(dirname(__DIR__, 2) . '/public/css/themes');
+        });
+
+        $container->singleton(Timezones::class, function () use ($container): Timezones {
+            return new Timezones($container->get(AppConfig::class)->timezone);
+        });
+
+        // The admin asks for the interface, and nothing but the admin does; the
+        // application's own code asks for the class. Bound both ways so that
+        // neither has to know about the other's name for it.
+        $container->singleton(TimezoneInterface::class, function () use ($container) {
+            return $container->get(TimezoneResolver::class);
         });
 
         $container->singleton(ViewInterface::class, function () use ($container) {

@@ -229,6 +229,71 @@
     padding-right: 1.75rem;
 }
 
+/* Filter links ------------------------------------------------------------- */
+
+/* The module's own named views of its table, above the table and below the
+   toolbar. Quiet by default and underlined rather than filled when current, so
+   a bar of six of them does not compete with the data it sits over. */
+
+.admin-links {
+    margin-bottom: var(--s-4);
+    padding-bottom: var(--s-2);
+    border-bottom: 1px solid var(--line);
+}
+
+.admin-links .nav-link {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--r-1);
+    font-size: var(--t-data);
+    font-weight: 500;
+    color: var(--muted);
+    transition: color var(--ease), background-color var(--ease), box-shadow var(--ease);
+}
+
+.admin-links .nav-link:hover {
+    background-color: var(--sunk);
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.admin-links .nav-link.active {
+    background-color: transparent;
+    color: var(--ink-strong);
+    box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.admin-link-count {
+    min-width: 1.75rem;
+    padding: 0.0625rem 0.3125rem;
+    border: 1px solid var(--line);
+    background-color: transparent;
+    font-family: var(--font-mono);
+    font-size: var(--t-micro);
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--muted);
+}
+
+.admin-links .nav-link.active .admin-link-count {
+    border-color: var(--line-strong);
+    color: var(--ink);
+}
+
+/* Waiting for its number, with nothing drawn inside it: the pill's own
+   min-width holds the space, so the bar does not move when the tally lands.
+   Bootstrap's placeholder is what this replaces — it fills itself with
+   currentColor, which on the link just clicked is the page's strongest ink,
+   and a block that dark is not a pending number. */
+.admin-link-count-pending {
+    animation: admin-link-count-pending 1.4s ease-in-out infinite;
+}
+
+@keyframes admin-link-count-pending {
+    50% {
+        opacity: 0.4;
+    }
+}
+
 /* Tables ------------------------------------------------------------------- */
 
 .admin-frame .table {
@@ -475,35 +540,37 @@
     margin: 0 !important;
 }
 
-.dash-meta {
-    margin: 0 0 var(--s-5);
-    font-size: var(--t-base);
-    color: var(--muted);
-}
+/* Dashboard widgets -------------------------------------------------------- */
 
-/* One panel divided by hairlines rather than three floating boxes: the numbers
-   read as one instrument. */
-.stats {
-    display: grid;
-    max-width: 44rem;
-    grid-template-columns: repeat(3, 1fr);
-    margin-bottom: var(--s-6);
+/* Each card is one instrument: a hairline box, a quiet mono heading, and the
+   figure it exists to show. They arrive one at a time, so nothing here may
+   depend on a neighbour having landed first. */
+
+.admin-widget {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--r-3);
-    overflow: hidden;
 }
 
-.stat {
-    padding: var(--s-4) var(--s-5);
-    border-left: 1px solid var(--line);
+.admin-widget .card-body {
+    padding: var(--s-4) var(--s-5) var(--s-5);
 }
 
-.stat:first-child {
-    border-left: 0;
+/* The heading and the refresh share a line, so the button sits against the
+   card's edge rather than indenting the figure below it. */
+.admin-widget-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-2);
+    margin: 0 0 var(--s-4);
 }
 
-.stat-label {
+.admin-widget-title {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    margin: 0;
     font-family: var(--font-mono);
     font-size: var(--t-micro);
     font-weight: 500;
@@ -512,8 +579,123 @@
     color: var(--muted);
 }
 
-.stat-value {
-    margin-top: 0.375rem;
+.admin-widget-title i {
+    font-size: var(--t-base);
+    color: var(--accent);
+}
+
+.admin-widget-loading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+}
+
+.admin-widget-loading .placeholder {
+    height: 0.75rem;
+    border-radius: var(--r-1);
+}
+
+/* Quiet until the card is hovered or the button is focused: it is there for the
+   moment somebody doubts a number, not a control they are meant to notice. */
+.admin-widget-refresh {
+    flex: none;
+    padding: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0;
+    border-radius: var(--r-1);
+    background: transparent;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity var(--ease), color var(--ease), background-color var(--ease);
+}
+
+.admin-widget:hover .admin-widget-refresh,
+.admin-summary-card:hover .admin-widget-refresh,
+.admin-widget-refresh:focus-visible {
+    opacity: 1;
+}
+
+.admin-widget-refresh:hover {
+    background: var(--sunk);
+    color: var(--ink-strong);
+}
+
+/* In flight it stays put and spins, so the card is visibly working rather than
+   simply unresponsive. */
+.admin-widget-refresh.htmx-request {
+    opacity: 1;
+    color: var(--accent);
+}
+
+.admin-widget-refresh.htmx-request i {
+    display: inline-block;
+    animation: admin-refresh-spin 700ms linear infinite;
+}
+
+@keyframes admin-refresh-spin {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+/* Summary strip ------------------------------------------------------------ */
+
+/* The running totals, above everything the period can touch. Flat rather than
+   carded, so it reads as the page's masthead and not as a sixth widget. */
+.admin-summary {
+    margin-bottom: var(--s-4);
+}
+
+/* The strip the totals actually live in. The wrapper above it exists only to
+   hold hx-preserve, so it carries no appearance of its own. */
+.admin-summary-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+    background: var(--sunk);
+}
+
+.admin-summary-loading {
+    display: flex;
+    gap: var(--s-5);
+    flex: 1;
+}
+
+.admin-summary-loading .placeholder {
+    height: 1.25rem;
+    border-radius: var(--r-1);
+}
+
+.admin-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-stat {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: baseline;
+    gap: 0 var(--s-2);
+}
+
+.admin-stat-icon {
+    grid-row: 1 / 3;
+    align-self: center;
+    font-size: var(--t-base);
+    color: var(--accent);
+}
+
+.admin-stat-figure {
     font-family: var(--font-mono);
     font-size: var(--t-stat);
     font-weight: 500;
@@ -522,13 +704,164 @@
     color: var(--ink-strong);
 }
 
-.section-title {
-    margin: 0 0 var(--s-3);
-    font-size: var(--t-h3);
+.admin-stat-label,
+.admin-stat-caption {
+    font-family: var(--font-mono);
+    font-size: var(--t-micro);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
 }
 
-.dash-table {
-    max-width: 44rem;
+/* Period control ----------------------------------------------------------- */
+
+.admin-period {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--s-2);
+    margin-bottom: var(--s-3);
+}
+
+.admin-period-label {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--t-micro);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.admin-period .form-select {
+    width: auto;
+    font-size: var(--t-data);
+}
+
+/* The one big number a card is usually about. */
+.widget-stat {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--t-stat);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    color: var(--ink-strong);
+}
+
+.widget-stat small {
+    font-size: var(--t-base);
+    color: var(--muted);
+}
+
+.widget-stat.is-warning,
+.is-warning {
+    color: var(--danger);
+}
+
+.widget-caption {
+    display: block;
+    margin: 0;
+    font-size: var(--t-small);
+    color: var(--muted);
+}
+
+/* Three figures reading as one row of an instrument panel. */
+.widget-figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-5);
+    margin-bottom: var(--s-3);
+}
+
+.widget-figure {
+    font-family: var(--font-mono);
+    font-size: var(--t-data);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+.widget-rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.widget-rows li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-2);
+    padding: var(--s-2) 0;
+    border-top: 1px solid var(--line);
+}
+
+.widget-rows li:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.widget-rows a {
+    font-size: var(--t-data);
+    text-decoration: none;
+}
+
+.widget-rows a:hover {
+    text-decoration: underline;
+}
+
+.widget-bars {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.widget-bars li + li {
+    margin-top: var(--s-3);
+}
+
+.widget-bar-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-3);
+}
+
+.widget-bar-head code {
+    font-size: var(--t-data);
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+/* Drawn against the busiest row rather than the total, so the smallest bar on
+   a flat day is still visible. */
+/* A <progress>, so the share is an attribute and the bar needs no inline style
+   for its width — which the CSP refuses. That costs the two vendor pseudo
+   elements below: WebKit paints the track and the value separately, Firefox
+   paints only the value over the element's own background. */
+.widget-bar {
+    appearance: none;
+    -webkit-appearance: none;
+    display: block;
+    width: 100%;
+    height: 4px;
+    margin: var(--s-1) 0;
+    border: 0;
+    background: var(--sunk);
+    border-radius: var(--r-1);
+    overflow: hidden;
+}
+
+.widget-bar::-webkit-progress-bar {
+    background: var(--sunk);
+}
+
+.widget-bar::-webkit-progress-value {
+    background: var(--accent);
+}
+
+.widget-bar::-moz-progress-bar {
+    background: var(--accent);
 }
 
 /* Narrow screens ----------------------------------------------------------- */
@@ -562,6 +895,28 @@
 .settings-tab.active {
     color: var(--accent-hover);
     border-bottom-color: var(--accent);
+}
+
+/* Narrow because it is one control and a sentence, and a select stretched the
+   width of the frame reads as a search box. */
+.regional-field {
+    max-width: 24rem;
+    margin-bottom: var(--s-5);
+}
+
+.regional-field .form-label {
+    display: block;
+    margin-bottom: var(--s-2);
+}
+
+.regional-field .form-text {
+    display: block;
+    margin-top: var(--s-2);
+}
+
+.regional-sample {
+    max-width: 24rem;
+    margin-bottom: var(--s-4);
 }
 
 /* The legend stays outside the grid: as a child of a grid container it takes a

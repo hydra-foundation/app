@@ -273,7 +273,9 @@ final class AuditFlowTest extends TestCase
     public function test_an_export_is_recorded_under_a_row_id_of_its_own(): void
     {
         $this->login('boss');
-        $this->http->get('/admin/users/export?role=admin');
+        // The module offers roles as filter links rather than as a toolbar
+        // select, so "admins only" is a view and the export inherits it.
+        $this->http->get('/admin/users/export?view=admin');
 
         $row = $this->audited()[0];
         $this->assertSame('users', $row['module']);
@@ -283,7 +285,7 @@ final class AuditFlowTest extends TestCase
         $this->assertSame('admin.exported: 1 rows', $row['message']);
         $this->assertSame('boss', $row['username']);
         // The view it left as, pasteable back into the admin to see what went.
-        $this->assertSame('{"rows":1,"view":"sort=id&dir=desc&role=admin"}', $row['new_value']);
+        $this->assertSame('{"rows":1,"view":"sort=id&dir=desc&view=admin"}', $row['new_value']);
     }
 
     public function test_a_module_that_only_exports_is_recorded_too(): void

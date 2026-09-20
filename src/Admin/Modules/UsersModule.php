@@ -11,6 +11,7 @@ use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Input;
+use Hydra\Admin\Link;
 use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\FormScreen;
@@ -33,10 +34,11 @@ final class UsersModule implements ModuleInterface
             ->source(UserSource::class)
             ->perPage(15)
             ->defaultSort('id', 'desc')
+            ->links(...$this->roles())
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
                 Field::text('username')->sortable()->searchable(),
-                Field::select('role', Role::options())->sortable()->filterable(),
+                Field::select('role', Role::options())->sortable(),
                 Field::datetime('created_at')->sortable(),
             )
             ->screens(
@@ -59,5 +61,24 @@ final class UsersModule implements ModuleInterface
                 DeleteScreen::make()->confirm('Delete this user? This cannot be undone.'),
                 ExportScreen::make(),
             );
+    }
+
+    /**
+     * A link per role, above the table, in place of a toolbar select over the
+     * same column. Built from the enum rather than written out, so adding a
+     * case stays the only edit — the same bargain Role::options() already makes
+     * with the select and the console.
+     *
+     * @return list<Link>
+     */
+    private function roles(): array
+    {
+        $links = [Link::make('All')];
+
+        foreach (Role::options() as $value => $label) {
+            $links[] = Link::make($label)->where('role', (string) $value);
+        }
+
+        return $links;
     }
 }
