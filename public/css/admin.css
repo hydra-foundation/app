@@ -95,10 +95,6 @@
 .admin-sidebar #admin-nav h2 {
     margin: var(--s-5) 0 var(--s-2);
     padding: 0 var(--s-2);
-    font-family: var(--font-mono);
-    font-size: var(--t-micro);
-    letter-spacing: 0.09em;
-    color: var(--muted);
 }
 
 .admin-sidebar #admin-nav > :first-child {
@@ -198,6 +194,28 @@
     margin-bottom: var(--s-5);
 }
 
+/* Eyebrows ----------------------------------------------------------------- */
+
+/* Small mono capitals, the admin's label voice: card headings, stat labels,
+   filter labels, sidebar groups, definition terms and column headers all used
+   it and all restated it, six hand-kept copies of six declarations. One rule,
+   and each site below keeps only what is its own — where it sits, what it
+   sits on. */
+.admin-eyebrow,
+.admin-widget-title,
+.admin-stat-label,
+.admin-filters .form-label,
+.admin-sidebar #admin-nav h2,
+.admin-show dt,
+.admin-frame .table thead th {
+    font-family: var(--font-mono);
+    font-size: var(--t-micro);
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
 /* Filters ------------------------------------------------------------------ */
 
 .admin-filters {
@@ -206,12 +224,6 @@
 
 .admin-filters .form-label {
     margin-bottom: var(--s-1);
-    font-family: var(--font-mono);
-    font-size: var(--t-micro);
-    font-weight: 500;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted);
 }
 
 .admin-filters .form-control,
@@ -319,12 +331,6 @@
 .admin-frame .table thead th {
     padding-top: 0.4375rem;
     padding-bottom: 0.4375rem;
-    font-family: var(--font-mono);
-    font-size: var(--t-micro);
-    font-weight: 500;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted);
     white-space: nowrap;
     background: var(--sunk);
     border-bottom: 1px solid var(--line-strong);
@@ -474,12 +480,7 @@
 
 .admin-show dt {
     padding: 0.625rem var(--s-4) 0.625rem 0;
-    font-family: var(--font-mono);
-    font-size: var(--t-micro);
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
     line-height: 1.9;
-    color: var(--muted);
     border-bottom: 1px solid var(--line);
 }
 
@@ -546,14 +547,97 @@
    figure it exists to show. They arrive one at a time, so nothing here may
    depend on a neighbour having landed first. */
 
+/* Twelve columns of its own rather than Bootstrap's row, because Bootstrap's
+   breakpoints measure the viewport and this grid does not live in one: the
+   sidebar takes 14.5rem off the left before the cards see any width, so col-lg
+   fires at 992px on a track that is only ~712px wide and a "third" card ends up
+   with 171px of text in it. These breakpoints are the content box's. */
+.admin-widgets {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--s-4);
+}
+
+.admin-widget-cell {
+    grid-column: span 12;
+}
+
+/* Tablet: halves and nothing narrower. Between the drawer breakpoint and the
+   wide one every card used to be full width, which left a four-item list in an
+   830px box. */
+@media (min-width: 48rem) {
+    .admin-widget-cell {
+        grid-column: span 6;
+    }
+
+    .admin-widget-cell[data-span="7"],
+    .admin-widget-cell[data-span="8"],
+    .admin-widget-cell[data-span="9"],
+    .admin-widget-cell[data-span="10"],
+    .admin-widget-cell[data-span="11"],
+    .admin-widget-cell[data-span="12"] {
+        grid-column: span 12;
+    }
+}
+
+@media (min-width: 68rem) {
+    .admin-widget-cell[data-span="1"] { grid-column: span 1; }
+    .admin-widget-cell[data-span="2"] { grid-column: span 2; }
+    .admin-widget-cell[data-span="3"] { grid-column: span 3; }
+    .admin-widget-cell[data-span="4"] { grid-column: span 4; }
+    .admin-widget-cell[data-span="5"] { grid-column: span 5; }
+    .admin-widget-cell[data-span="6"] { grid-column: span 6; }
+    .admin-widget-cell[data-span="7"] { grid-column: span 7; }
+    .admin-widget-cell[data-span="8"] { grid-column: span 8; }
+    .admin-widget-cell[data-span="9"] { grid-column: span 9; }
+    .admin-widget-cell[data-span="10"] { grid-column: span 10; }
+    .admin-widget-cell[data-span="11"] { grid-column: span 11; }
+    .admin-widget-cell[data-span="12"] { grid-column: span 12; }
+}
+
 .admin-widget {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--r-3);
+    transition: border-color var(--ease);
 }
 
+/* Something happens when the card is pointed at, so the refresh fading in at
+   the far right reads as a response rather than as a glitch. */
+.admin-widget:hover {
+    border-color: var(--line-strong);
+}
+
+/* A column, so a card paired with a taller neighbour can push its last line to
+   the floor instead of leaving the surplus as a void under the figures — which
+   on a dashboard reads as a fetch that never finished. */
 .admin-widget .card-body {
+    display: flex;
+    flex-direction: column;
     padding: var(--s-4) var(--s-5) var(--s-5);
+}
+
+.admin-widget .card-body > :last-child {
+    margin-bottom: 0;
+}
+
+.admin-widget .widget-rows,
+.admin-widget .widget-bars,
+.admin-widget .widget-empty {
+    flex: 1 1 auto;
+}
+
+/* Pinned to the card's floor rather than trailing the figures. */
+.widget-foot {
+    margin-top: auto;
+    padding-top: var(--s-3);
+}
+
+/* Replacing itself is an update, not a disappearance. */
+.admin-widget.htmx-swapping,
+.admin-summary-card.htmx-swapping {
+    opacity: 0.6;
+    transition: opacity 90ms ease;
 }
 
 /* The heading and the refresh share a line, so the button sits against the
@@ -571,12 +655,6 @@
     align-items: center;
     gap: var(--s-2);
     margin: 0;
-    font-family: var(--font-mono);
-    font-size: var(--t-micro);
-    font-weight: 500;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted);
 }
 
 .admin-widget-title i {
@@ -587,33 +665,61 @@
 .admin-widget-loading {
     display: flex;
     flex-direction: column;
-    gap: var(--s-2);
+    gap: var(--s-3);
 }
 
-.admin-widget-loading .placeholder {
+/* Not Bootstrap's .placeholder, for the reason written over the link tallies
+   above: it fills itself with currentColor, which here is the page's body ink,
+   so five cards opened as fifteen near-black slabs. Its min-height also beat
+   the height set beside it, so the bars were never the size they asked for. */
+.admin-bar {
+    display: block;
     height: 0.75rem;
     border-radius: var(--r-1);
+    background: var(--line-strong);
+    animation: admin-link-count-pending 1.4s ease-in-out infinite;
 }
 
-/* Quiet until the card is hovered or the button is focused: it is there for the
-   moment somebody doubts a number, not a control they are meant to notice. */
+.admin-widget-loading .admin-bar:nth-child(3n+1) { width: 70%; }
+.admin-widget-loading .admin-bar:nth-child(3n+2) { width: 45%; }
+.admin-widget-loading .admin-bar:nth-child(3n+3) { width: 60%; }
+
+/* Quiet, not hidden: it is there for the moment somebody doubts a number, not
+   a control they are meant to notice. The negative margin keeps the taller
+   target from growing the heading and nudging the body down by a few pixels
+   relative to the placeholder it replaces. */
 .admin-widget-refresh {
     flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: -0.125rem -0.375rem -0.125rem 0;
     padding: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    font-size: var(--t-lead);
     border: 0;
     border-radius: var(--r-1);
     background: transparent;
     color: var(--muted);
-    opacity: 0;
     transition: opacity var(--ease), color var(--ease), background-color var(--ease);
 }
 
-.admin-widget:hover .admin-widget-refresh,
-.admin-summary-card:hover .admin-widget-refresh,
-.admin-widget-refresh:focus-visible {
-    opacity: 1;
+/* Fading it back is only honest where there is a pointer to bring it forward.
+   On a touch screen there is no hover, so the old rule left an invisible but
+   still tappable target at the corner of every card. */
+@media (hover: hover) and (pointer: fine) {
+    .admin-widget-refresh {
+        opacity: 0.45;
+    }
+
+    .admin-widget:hover .admin-widget-refresh,
+    .admin-widget:focus-within .admin-widget-refresh,
+    .admin-summary-card:hover .admin-widget-refresh,
+    .admin-summary-card:focus-within .admin-widget-refresh,
+    .admin-widget-refresh:focus-visible {
+        opacity: 1;
+    }
 }
 
 .admin-widget-refresh:hover {
@@ -641,100 +747,140 @@
 
 /* Summary strip ------------------------------------------------------------ */
 
-/* The running totals, above everything the period can touch. Flat rather than
-   carded, so it reads as the page's masthead and not as a sixth widget. */
-.admin-summary {
-    margin-bottom: var(--s-4);
+/* The masthead block: the running totals and the control that governs the grid
+   below them, under the screen's title and above everything the period touches.
+   One block, so the spacing lives here and neither part draws a rule of its
+   own — the title's is the only horizontal line on the page. */
+.admin-dashboard-toolbar {
+    margin-bottom: var(--s-5);
 }
 
-/* The strip the totals actually live in. The wrapper above it exists only to
-   hold hx-preserve, so it carries no appearance of its own. */
+.admin-dashboard-toolbar > * + * {
+    margin-top: var(--s-4);
+}
+
+/* A band and not a box: this carried a fill, a border and a radius, which is a
+   card, and the fill was --sunk — the same colour as a table's column headers,
+   and darker than the page in both themes. The most important element on the
+   screen was painted as a recess in it. */
 .admin-summary-card {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--s-4);
-    padding: var(--s-3) var(--s-4);
-    border: 1px solid var(--line);
-    border-radius: var(--r-3);
-    background: var(--sunk);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
 }
 
+/* The height the figures will take, held open before they arrive: this is the
+   topmost element on the page, and 28px appearing under it pushed the whole
+   dashboard down every time it landed. */
 .admin-summary-loading {
     display: flex;
+    align-items: center;
     gap: var(--s-5);
     flex: 1;
+    min-height: calc(var(--t-display) * 1.1 + var(--t-micro) * 1.5);
 }
 
-.admin-summary-loading .placeholder {
+.admin-summary-loading .admin-bar {
+    width: 6rem;
     height: 1.25rem;
-    border-radius: var(--r-1);
 }
 
+/* Distributed rather than clustered: as a flex row the three totals huddled in
+   the left third of a wide screen with the refresh alone at the far right. */
 .admin-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s-5);
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, max-content));
+    gap: var(--s-4) var(--s-7);
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
+/* Named areas, because the icon had a row and no column and left the rest to
+   auto-placement: with an icon the caption landed under it in the wrong
+   column, and without one the label sat beside the figure instead of under it.
+   Adding an icon re-laid-out the stat rather than adding an icon. */
 .admin-stat {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        "icon figure"
+        "icon label"
+        "icon caption";
     align-items: baseline;
-    gap: 0 var(--s-2);
 }
 
 .admin-stat-icon {
-    grid-row: 1 / 3;
+    grid-area: icon;
     align-self: center;
+    /* On the icon and not as a column gap, so a stat without one is not
+       indented by the space where it would have been. */
+    margin-right: var(--s-3);
     font-size: var(--t-base);
     color: var(--accent);
 }
 
 .admin-stat-figure {
+    grid-area: figure;
     font-family: var(--font-mono);
-    font-size: var(--t-stat);
+    font-size: var(--t-display);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     line-height: 1.1;
     color: var(--ink-strong);
 }
 
-.admin-stat-label,
+.admin-stat-label {
+    grid-area: label;
+}
+
+/* Prose, where the label is a label. The two were styled identically, so a
+   stat with both showed two indistinguishable lines and no rank between
+   them. */
 .admin-stat-caption {
-    font-family: var(--font-mono);
-    font-size: var(--t-micro);
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+    grid-area: caption;
+    font-size: var(--t-small);
     color: var(--muted);
 }
 
 /* Period control ----------------------------------------------------------- */
 
+/* A bar and not a caption in the right margin. What the cards are answering
+   for is said in body ink on the left, where reading starts; the control that
+   changes it sits opposite. */
 .admin-period {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--s-2);
-    margin-bottom: var(--s-3);
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-3);
 }
 
-.admin-period-label {
+.admin-period-showing {
     margin: 0;
-    font-family: var(--font-mono);
-    font-size: var(--t-micro);
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted);
+    font-size: var(--t-lead);
+    color: var(--ink-strong);
+}
+
+.admin-period-control {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+}
+
+.admin-period-control .form-label {
+    margin: 0;
 }
 
 .admin-period .form-select {
     width: auto;
-    font-size: var(--t-data);
 }
 
 /* The one big number a card is usually about. */
@@ -753,9 +899,11 @@
     color: var(--muted);
 }
 
+/* A failure rate is a caution and not a destructive action, which is what it
+   read as while it shared the delete button's red. */
 .widget-stat.is-warning,
 .is-warning {
-    color: var(--danger);
+    color: var(--warn);
 }
 
 .widget-caption {
@@ -763,6 +911,21 @@
     margin: 0;
     font-size: var(--t-small);
     color: var(--muted);
+}
+
+/* An empty card, said deliberately. Centred in whatever height the card ended
+   up with, so a quiet morning reads as an answer rather than as five fetches
+   that failed. */
+.widget-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 4rem;
+    margin: 0;
+    padding: var(--s-4) 0;
+    font-size: var(--t-small);
+    color: var(--muted);
+    text-align: center;
 }
 
 /* Three figures reading as one row of an instrument panel. */
@@ -865,6 +1028,31 @@
 }
 
 /* Narrow screens ----------------------------------------------------------- */
+
+@media (max-width: 48rem) {
+    .admin-widget .card-body {
+        padding: var(--s-3) var(--s-4) var(--s-4);
+    }
+
+    .admin-stats {
+        gap: var(--s-3) var(--s-5);
+    }
+
+    /* The display step is for a screen with room for it; on a phone it is just
+       a number that wraps. */
+    .admin-stat-figure,
+    .widget-stat {
+        font-size: var(--t-h1);
+    }
+
+    .widget-figures {
+        gap: var(--s-4);
+    }
+
+    .admin-period {
+        align-items: flex-start;
+    }
+}
 
 /* Settings ----------------------------------------------------------------- */
 
@@ -1064,16 +1252,4 @@
         padding: var(--s-5) var(--s-4) var(--s-6);
     }
 
-    .stats {
-        grid-template-columns: 1fr;
-    }
-
-    .stat {
-        border-left: 0;
-        border-top: 1px solid var(--line);
-    }
-
-    .stat:first-child {
-        border-top: 0;
-    }
 }

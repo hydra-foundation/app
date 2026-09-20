@@ -48,6 +48,8 @@ final class DashboardModule implements ModuleInterface
                             ->titled('Traffic')
                             ->withIcon('activity')
                             ->spanning(8)
+                            // Three figures on one line, then the period.
+                            ->reserving(2)
                             // The only number here that moves while somebody is
                             // watching it.
                             ->refreshEvery(60)
@@ -57,24 +59,33 @@ final class DashboardModule implements ModuleInterface
                             ->titled('Accounts')
                             ->withIcon('people')
                             ->spanning(4)
+                            // The figure, then a line per role.
+                            ->reserving(4)
                             ->periodic()
                             ->from(AccountsWidget::class),
                         Widget::make('paths', 'admin/widgets/paths')
                             ->titled('Busiest paths')
                             ->withIcon('signpost-split')
                             ->spanning(12)
+                            // The tallest card on the grid: five paths, each a
+                            // heading, a bar and a caption. Left at the default
+                            // it landed 300px taller than its placeholder and
+                            // shoved the row below it down.
+                            ->reserving(9)
                             ->periodic()
                             ->from(BusiestPathsWidget::class),
                         Widget::make('newest', 'admin/widgets/newest')
                             ->titled('Newest accounts')
                             ->withIcon('person-plus')
                             ->spanning(6)
+                            ->reserving(5)
                             ->periodic()
                             ->from(NewestAccountsWidget::class),
                         Widget::make('changes', 'admin/widgets/changes')
                             ->titled('Recent changes')
                             ->withIcon('clock-history')
                             ->spanning(6)
+                            ->reserving(5)
                             ->periodic()
                             ->from(RecentChangesWidget::class),
                     ),

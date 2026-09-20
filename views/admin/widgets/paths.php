@@ -2,7 +2,7 @@
 <?php /** @var string $period */ ?>
 <?php /** @var list<array{path: string, hits: int, failed: int, average: int, share: int}> $paths */ ?>
 <?php if ($paths === []): ?>
-    <p class="text-body-secondary mb-0">No requests in this period.</p>
+    <?= $this->partial('admin/partials/widget-empty', ['message' => 'No requests in this period.']) ?>
 <?php else: ?>
     <ul class="widget-bars">
         <?php foreach ($paths as $row): ?>

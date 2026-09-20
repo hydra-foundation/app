@@ -1,7 +1,7 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var list<array<string, mixed>> $changes */ ?>
 <?php if ($changes === []): ?>
-    <p class="text-body-secondary mb-0">Nothing was changed in this period.</p>
+    <?= $this->partial('admin/partials/widget-empty', ['message' => 'Nothing was changed in this period.']) ?>
 <?php else: ?>
     <ul class="widget-rows">
         <?php foreach ($changes as $change): ?>

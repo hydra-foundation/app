@@ -1,7 +1,7 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var list<array<string, mixed>> $accounts */ ?>
 <?php if ($accounts === []): ?>
-    <p class="text-body-secondary mb-0">No accounts in this period.</p>
+    <?= $this->partial('admin/partials/widget-empty', ['message' => 'No accounts in this period.']) ?>
 <?php else: ?>
     <ul class="widget-rows">
         <?php foreach ($accounts as $account): ?>

@@ -5,7 +5,7 @@
 <?php /** @var float|null $failureRate */ ?>
 <?php /** @var int|null $average */ ?>
 <?php if ($total === 0): ?>
-    <p class="text-body-secondary mb-0">No requests in this period.</p>
+    <?= $this->partial('admin/partials/widget-empty', ['message' => 'No requests in this period.']) ?>
 <?php else: ?>
     <div class="widget-figures">
         <div>
@@ -21,5 +21,5 @@
             <span class="widget-caption">average</span>
         </div>
     </div>
-    <p class="widget-caption mb-0"><?= $this->e($period) ?></p>
+    <p class="widget-caption widget-foot"><?= $this->e($period) ?></p>
 <?php endif ?>

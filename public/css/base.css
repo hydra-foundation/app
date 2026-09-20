@@ -18,6 +18,9 @@
     --t-h2: 1.25rem;
     --t-h1: 1.75rem;
     --t-stat: 1.875rem;
+    /* One step above a card's figure, for the running totals that answer for
+       the whole page rather than for one instrument on it. */
+    --t-display: 2.5rem;
 
     --s-1: 0.25rem;
     --s-2: 0.5rem;
@@ -229,6 +232,23 @@ code, kbd, samp, pre {
     background-image: var(--chevron);
     background-position: right 0.625rem center;
     background-size: 11px 8px;
+}
+
+/* Bootstrap spells the small variant in padding LONGHANDS, and the rule above
+   sets the shorthand at equal specificity and later in the file, so .form-*-sm
+   was silently a no-op: the admin's period select came out taller than the
+   filter selects on the list screens beside it. Restated here as a shorthand so
+   it wins, and so nothing downstream has to restate it again. */
+.form-control-sm,
+.form-select-sm {
+    padding: 0.3125rem 0.5rem;
+    font-size: var(--t-data);
+    border-radius: var(--r-1);
+}
+
+.form-select-sm {
+    padding-right: 1.75rem;
+    background-position: right 0.5rem center;
 }
 
 .form-control::placeholder {

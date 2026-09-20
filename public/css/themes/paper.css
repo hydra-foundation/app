@@ -42,6 +42,10 @@
     --accent-rgb: 15, 107, 96;
     --on-accent: #ffffff;
 
+    /* Caution, not destruction: a failure rate is worth noticing and is not a
+       button that deletes something. */
+    --warn: #8a5a10;
+
     --danger: #a33121;
     --danger-wash: #fbeeeb;
     --danger-line: #e8cdc6;
