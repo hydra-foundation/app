@@ -71,6 +71,10 @@ final class AuditAdminEventsListener
             return;
         }
 
+        if ($event instanceof RowUpdated && $this->changed($event) === []) {
+            return;
+        }
+
         if ($event instanceof RowCreated || $event instanceof RowUpdated || $event instanceof RowDeleted) {
             $this->write($event, $event->id, $this->before($event), $this->after($event));
         }
@@ -161,7 +165,7 @@ final class AuditAdminEventsListener
             return sprintf('%s: %d rows', $event->action(), $event->rows);
         }
 
-        if (!$event instanceof RowUpdated || $this->changed($event) === []) {
+        if (!$event instanceof RowUpdated) {
             return $event->action();
         }
 

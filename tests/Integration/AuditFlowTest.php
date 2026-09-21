@@ -225,6 +225,18 @@ final class AuditFlowTest extends TestCase
         $this->assertSame('admin.row_updated: username', $this->audited()[0]['message']);
     }
 
+    public function test_a_save_that_changed_nothing_records_nothing(): void
+    {
+        $this->login('boss');
+        $this->http->post('/admin/users/2/edit', [
+            'username' => 'clerk',
+            'role' => 'user',
+            'password' => '',
+        ])->assertStatus(302);
+
+        $this->assertSame([], $this->audited());
+    }
+
     public function test_a_changed_password_is_recorded_by_name_and_not_by_value(): void
     {
         $this->login('boss');
