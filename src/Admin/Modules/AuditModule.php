@@ -11,7 +11,6 @@ use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\ShowScreen;
-use Hydra\Admin\Surface;
 
 /**
  * Every recorded change to a row, read-only: the log of who changed what is not
@@ -37,13 +36,13 @@ final class AuditModule implements ModuleInterface
             ->defaultSort('id', 'desc')
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
-                Field::datetime('created_at')->labelled('Changed at')->sortable(),
+                Field::datetime('created_at')->labelled('Changed at')->sortable()->relative(),
                 Field::text('username')->labelled('User')->sortable()->searchable()->emptyAs('system'),
                 Field::select('module', self::MODULES)->labelled('Module')->sortable()->filterable(),
                 Field::text('table_id')->labelled('Row')->sortable()->searchable(),
                 Field::text('message')->searchable(),
-                Field::text('old_value')->labelled('Before')->hiddenOn(Surface::List),
-                Field::text('new_value')->labelled('After')->hiddenOn(Surface::List),
+                Field::text('old_value')->labelled('Before')->truncate(32),
+                Field::text('new_value')->labelled('After')->truncate(32),
             )
             ->screens(
                 ShowScreen::make()->title('Change'),

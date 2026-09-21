@@ -39,7 +39,7 @@ final class UsersModule implements ModuleInterface
                 Field::id()->labelled('ID')->sortable(),
                 Field::text('username')->sortable()->searchable(),
                 Field::select('role', Role::options())->sortable(),
-                Field::datetime('created_at')->sortable(),
+                Field::date('created_at')->sortable(),
             )
             ->screens(
                 ShowScreen::make()->title('User'),

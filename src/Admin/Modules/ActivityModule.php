@@ -11,12 +11,12 @@ use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\ShowScreen;
-use Hydra\Admin\Surface;
 
 /**
  * The request log every visitor writes to. The two heaviest columns (agent and
- * referer) are declared but kept off the table: they belong to the show screen,
- * not to a row that has to stay readable.
+ * referer) are truncated rather than hidden: a prefix and a title attribute is
+ * enough to tell a browser from a bot without opening the row, and the whole
+ * value is still one hover away.
  */
 final class ActivityModule implements ModuleInterface
 {
@@ -50,7 +50,7 @@ final class ActivityModule implements ModuleInterface
             ->defaultSort('id', 'desc')
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
-                Field::datetime('created_at')->labelled('Created at')->sortable(),
+                Field::datetime('created_at')->labelled('Created at')->sortable()->relative(),
                 Field::text('username')->labelled('User')->sortable()->searchable()->emptyAs('guest'),
                 Field::select('method', self::METHODS)->sortable()->filterable(),
                 Field::text('path')->labelled('URI')->sortable()->searchable()
@@ -58,11 +58,11 @@ final class ActivityModule implements ModuleInterface
                         ? (string) $value
                         : $value . '?' . $row['query']),
                 Field::select('status', self::STATUSES)->sortable()->filterable(),
-                Field::text('duration_ms')->labelled('Time')->sortable()
-                    ->format(static fn (mixed $value): string => $value . ' ms'),
+                Field::number('duration_ms')->labelled('Time')->sortable()
+                    ->grouped()->suffix(' ms'),
                 Field::text('ip')->labelled('IP')->sortable()->searchable(),
-                Field::text('user_agent')->labelled('Agent')->hiddenOn(Surface::List),
-                Field::text('referer')->hiddenOn(Surface::List),
+                Field::text('user_agent')->labelled('Agent')->truncate(32),
+                Field::text('referer')->truncate(32),
             )
             ->screens(
                 ShowScreen::make()->title('Request'),
