@@ -26,6 +26,17 @@ final class TrafficWidget implements PeriodAwareInterface
     /** A guard on the loop, not a design: no window should reach it. */
     private const POINTS = 1000;
 
+    /** The plot in user units: a 100 by 32 viewBox with a unit of headroom. */
+    private const BASE = 31.0;
+    private const SPAN = 30.0;
+
+    /** A quarter of the slot, and never more than this, so 365 bars still fit. */
+    private const GAP = 0.25;
+    private const GAP_MAX = 0.5;
+
+    /** A bucket with requests in it never draws as a bucket with none. */
+    private const STUB = 0.6;
+
     private Window $window;
 
     public function __construct(
@@ -70,37 +81,66 @@ final class TrafficWidget implements PeriodAwareInterface
     }
 
     /**
-     * The line itself, as the attribute a <polyline> takes.
+     * The chart, as the geometry a <rect> takes.
+     *
+     * Columns and not a line. These are counts in discrete buckets, and a line
+     * drawn through them interpolates hours that never happened: an idle
+     * afternoon arrives as a cliff, a floor and a recovery rather than as six
+     * empty bars, which is a different and much more alarming claim.
      *
      * Drawn here rather than in the template because it is arithmetic, and
      * because the alternative under this content policy is a style attribute:
      * style-src carries no 'unsafe-inline' and a nonce does not reach a style
-     * attribute, so anything positioned by CSS from PHP is refused. A points
-     * list is a presentation attribute and arrives intact.
+     * attribute, so anything positioned by CSS from PHP is refused. Geometry is
+     * a presentation attribute and arrives intact.
      *
-     * @return array{points: string, peak: int, unit: string}|null
+     * @return array{
+     *     bars: list<array{x: float, y: float, width: float, height: float, title: string, partial: bool}>,
+     *     peak: int,
+     *     unit: string,
+     *     first: string,
+     *     last: string,
+     * }|null
      */
     private function spark(): ?array
     {
-        [$counts, $unit] = $this->buckets();
+        [$buckets, $unit] = $this->buckets();
 
-        if (count($counts) < 2) {
+        if (count($buckets) < 2) {
             return null;
         }
 
-        $peak = max($counts);
-        $last = count($counts) - 1;
-        $points = [];
+        $peak = max(array_column($buckets, 'total'));
+        $slot = 100 / count($buckets);
+        $gap = min($slot * self::GAP, self::GAP_MAX);
+        $bars = [];
 
-        foreach ($counts as $index => $value) {
-            // A viewBox of 100 by 32, stretched to the card by the SVG itself.
-            // One unit of headroom top and bottom so the peak and the floor are
-            // both a line rather than a clipped edge.
-            $points[] = round($index / $last * 100, 2) . ','
-                . round($peak === 0 ? 31 : 31 - $value / $peak * 30, 2);
+        foreach ($buckets as $index => $bucket) {
+            $height = $peak === 0 || $bucket['total'] === 0
+                ? 0.0
+                : max(self::STUB, $bucket['total'] / $peak * self::SPAN);
+
+            $bars[] = [
+                'x' => round($index * $slot + $gap / 2, 2),
+                'y' => round(self::BASE - $height, 2),
+                'width' => round($slot - $gap, 2),
+                'height' => round($height, 2),
+                'title' => $this->title($bucket, $unit),
+                'partial' => $bucket['partial'],
+            ];
         }
 
-        return ['points' => implode(' ', $points), 'peak' => $peak, 'unit' => $unit];
+        return [
+            'bars' => $bars,
+            'peak' => $peak,
+            'unit' => $unit,
+            'first' => $this->tick($buckets[0]['at'], $unit),
+            // An open window ends wherever the reader is standing, and that is
+            // a truer name for the right edge than the hour it happens to be.
+            'last' => $this->window->until === null
+                ? 'now'
+                : $this->tick($buckets[count($buckets) - 1]['at'], $unit),
+        ];
     }
 
     /**
@@ -111,10 +151,9 @@ final class TrafficWidget implements PeriodAwareInterface
      * out of a datetime without being told how, and walked in UTC because that
      * is what the column holds: a bucket is a range of instants either way, and
      * lining the walk up with the storage is what keeps every row in exactly
-     * one of them. Which hour of the reader's day a bucket starts on does not
-     * arise — the line carries no axis, only a shape.
+     * one of them.
      *
-     * @return array{0: list<int>, 1: string}
+     * @return array{0: list<array{at: DateTimeImmutable, total: int, partial: bool}>, 1: string}
      */
     private function buckets(): array
     {
@@ -161,11 +200,70 @@ final class TrafficWidget implements PeriodAwareInterface
         $series = [];
 
         while ($cursor < $until && count($series) < self::POINTS) {
-            $series[] = (int) ($counted[$cursor->format($format)] ?? 0);
-            $cursor = $cursor->modify('+1 ' . $unit);
+            $next = $cursor->modify('+1 ' . $unit);
+
+            $series[] = [
+                'at' => $cursor,
+                'total' => (int) ($counted[$cursor->format($format)] ?? 0),
+                // A bucket the window opens or closes partway through is short
+                // for that reason alone, and saying so is the difference
+                // between a quiet hour and an hour that is ten minutes old.
+                'partial' => $cursor < $since || $next > $until,
+            ];
+
+            $cursor = $next;
         }
 
         return [$series, $unit];
+    }
+
+    /**
+     * What a bucket is called on the axis: its own boundary, named in the zone
+     * that boundary belongs to.
+     *
+     * An hour bucket is a UTC hour, and every whole-hour zone puts that on one
+     * of the reader's own hours, so it is shown as one — an axis reading 06:00
+     * for the reader's midnight is the whole confusion this label exists to
+     * settle. A day or a month bucket is a UTC day or month and nothing else;
+     * moved into a zone behind UTC it would be named for the day before, so it
+     * keeps the name it was counted under.
+     */
+    private function tick(DateTimeImmutable $at, string $unit): string
+    {
+        return match ($unit) {
+            'hour' => $at->setTimezone($this->zone())->format('H:i'),
+            'day' => $at->format('j M'),
+            default => $at->format('M Y'),
+        };
+    }
+
+    /**
+     * The hover text on one column, which is the only place a reader can put a
+     * number to a bucket that is neither the peak nor an edge.
+     *
+     * @param array{at: DateTimeImmutable, total: int, partial: bool} $bucket
+     */
+    private function title(array $bucket, string $unit): string
+    {
+        $when = $this->tick($bucket['at'], $unit);
+
+        if ($unit === 'hour') {
+            $when .= '–' . $this->tick($bucket['at']->modify('+1 hour'), $unit);
+        }
+
+        return $when . ' · ' . number_format($bucket['total'])
+            . ($bucket['total'] === 1 ? ' request' : ' requests')
+            . ($bucket['partial'] ? ' · partial' : '');
+    }
+
+    /**
+     * The reader's zone, which the window is already resolved in. Read off the
+     * window rather than asked for again, so the axis cannot name a zone the
+     * counting underneath it did not use.
+     */
+    private function zone(): DateTimeZone
+    {
+        return ($this->window->now ?? $this->window->since)?->getTimezone() ?? new DateTimeZone('UTC');
     }
 
     /**

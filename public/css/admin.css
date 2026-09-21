@@ -633,6 +633,7 @@
 
 .admin-widget .widget-rows,
 .admin-widget .widget-bars,
+.admin-widget .widget-chart,
 .admin-widget .widget-empty {
     flex: 1 1 auto;
 }
@@ -1024,32 +1025,93 @@
     text-align: center;
 }
 
-/* Three figures reading as one row of an instrument panel. */
-/* The one chart on the dashboard. Stretched to whatever width the card ended
-   up with, which is what preserveAspectRatio="none" on the element is for; the
-   stroke is exempted from that stretch here, or a wide card would draw a line
-   that is hairline at one end and a smear at the other. */
-/* Takes the height the row leaves it, with the figures pinned under it. At a
-   fixed 4.5rem it sat in the middle of a card stretched to the height of its
-   neighbour, which is most of a span-8 card holding nothing. */
+/* The one chart on the dashboard: the plot, the number its ceiling is worth,
+   and the two ends of the axis, as one column that takes the height the row
+   leaves it. Wrapping them together is what keeps the words with the picture —
+   at a fixed height the plot sat in the middle of a card stretched to the
+   height of its neighbour, and the scale has to travel with it. */
+.widget-chart {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    margin: 0 0 var(--s-4);
+}
+
+/* What the top of the plot is worth. Without it a flat row of bars at half
+   height is sixty requests an hour or sixty thousand, and the plot rescales
+   itself on every refresh, so the same traffic draws a different picture. */
+.widget-chart-scale {
+    margin: 0 0 var(--s-2);
+    font-size: var(--t-small);
+    color: var(--muted);
+}
+
+.widget-chart-peak {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+/* Where the plot starts and where it stops. Two labels and not a tick per
+   bucket: the card is not wide enough to letter twenty-four of them, and the
+   ends are what a reader is actually missing. */
+.widget-chart-axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--s-2);
+    font-family: var(--font-mono);
+    font-size: var(--t-small);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+
+/* Stretched to whatever width the card ended up with, which is what
+   preserveAspectRatio="none" on the element is for. Strokes are exempted from
+   that stretch below, or a wide card would draw a baseline that is hairline at
+   one end and a smear at the other. */
 .widget-spark {
     display: block;
     flex: 1 1 auto;
     width: 100%;
     min-height: 4.5rem;
-    margin-bottom: var(--s-4);
     overflow: visible;
 }
 
-.widget-spark-line {
-    fill: none;
+.widget-spark-bar {
+    fill: var(--accent);
+}
+
+/* A bucket the window opens or closes partway through. Drawn hollow, because a
+   solid bar that short reads as traffic falling off rather than as an hour
+   that is ten minutes old — and it is the last bar on every open period, so it
+   is the one a reader looks at first. */
+.widget-spark-bar.is-partial {
+    fill: var(--accent);
+    fill-opacity: 0.3;
     stroke: var(--accent);
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    stroke-width: 1;
     vector-effect: non-scaling-stroke;
 }
 
+/* Two hairlines a shade off the surface: the floor the bars stand on, so an
+   empty bucket reads as empty rather than as absent, and the ceiling the peak
+   label names. */
+.widget-spark-base,
+.widget-spark-grid {
+    fill: none;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+
+.widget-spark-base {
+    stroke: var(--line-strong);
+}
+
+.widget-spark-grid {
+    stroke: var(--line);
+}
+
+/* Three figures reading as one row of an instrument panel. */
 .widget-figures {
     display: flex;
     flex-wrap: wrap;

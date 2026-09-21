@@ -137,6 +137,26 @@ final class RecordActivityMiddlewareTest extends TestCase
         $this->assertNull($this->db->selectOne('SELECT * FROM activity'));
     }
 
+    public function test_a_dashboard_card_polling_itself_is_not_recorded(): void
+    {
+        // One row a minute per open tab, all of them naming the card that draws
+        // the traffic chart: the log would end up mostly about itself.
+        $response = $this->middleware()
+            ->process($this->request(path: '/admin/dashboard/w/traffic'), $this->handler());
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertNull($this->db->selectOne('SELECT * FROM activity'));
+    }
+
+    public function test_the_page_the_cards_sit_on_is_still_recorded(): void
+    {
+        // Only the fragments are noise. Someone opening the dashboard is a
+        // visit like any other, and dropping it would hide real use.
+        $this->middleware()->process($this->request(path: '/admin/dashboard'), $this->handler());
+
+        $this->assertSame('/admin/dashboard', $this->row()['path']);
+    }
+
     /** @param list<string> $trustedProxies */
     private function middleware(array $trustedProxies = []): RecordActivityMiddleware
     {
@@ -180,9 +200,9 @@ final class RecordActivityMiddlewareTest extends TestCase
     }
 
     /** @param array<string, mixed> $serverParams */
-    private function request(array $serverParams = []): ServerRequestInterface
+    private function request(array $serverParams = [], string $path = '/admin/users?page=2'): ServerRequestInterface
     {
-        return (new Psr17Factory)->createServerRequest('GET', '/admin/users?page=2', $serverParams);
+        return (new Psr17Factory)->createServerRequest('GET', $path, $serverParams);
     }
 
     /** @return array<string, mixed> */
