@@ -26,16 +26,17 @@ final class TrafficWidget implements PeriodAwareInterface
     /** A guard on the loop, not a design: no window should reach it. */
     private const POINTS = 1000;
 
-    /** The plot in user units: a 100 by 32 viewBox with a unit of headroom. */
-    private const BASE = 31.0;
-    private const SPAN = 30.0;
-
-    /** A quarter of the slot, and never more than this, so 365 bars still fit. */
-    private const GAP = 0.25;
-    private const GAP_MAX = 0.5;
-
-    /** A bucket with requests in it never draws as a bucket with none. */
-    private const STUB = 0.6;
+    /**
+     * How many buckets an axis label is worth, per unit, smallest first. The
+     * card is one column of a dashboard and not a screen, so a tick every
+     * bucket is a smear; six labels is about what fits at this width.
+     */
+    private const TICKS = 6;
+    private const STEPS = [
+        'hour' => [1, 2, 3, 4, 6, 8, 12, 24],
+        'day' => [1, 2, 5, 7, 10, 14, 28, 30, 60, 90],
+        'month' => [1, 2, 3, 6, 12],
+    ];
 
     private Window $window;
 
@@ -76,33 +77,26 @@ final class TrafficWidget implements PeriodAwareInterface
             // requests is not zero percent, it is nothing to report.
             'failureRate' => $total === 0 ? null : round($failed / $total * 100, 1),
             'average' => $total === 0 ? null : (int) round((float) ($row['average'] ?? 0)),
-            'spark' => $total === 0 ? null : $this->spark(),
+            'chart' => $total === 0 ? null : $this->chart(),
         ];
     }
 
     /**
-     * The chart, as the geometry a <rect> takes.
+     * The card's picture: up to three plots over one axis.
      *
-     * Columns and not a line. These are counts in discrete buckets, and a line
-     * drawn through them interpolates hours that never happened: an idle
-     * afternoon arrives as a cliff, a floor and a recovery rather than as six
-     * empty bars, which is a different and much more alarming claim.
+     * Three plots and not one with three series, because they are measures of
+     * different sizes — six hundred requests, two failures and forty-eight
+     * milliseconds share no scale, and a second axis fitted to the second
+     * measure would invent a relationship between them that the numbers do not
+     * have. Stacked and sharing an x axis, each is read against its own
+     * ceiling and against the same hours.
      *
-     * Drawn here rather than in the template because it is arithmetic, and
-     * because the alternative under this content policy is a style attribute:
-     * style-src carries no 'unsafe-inline' and a nonce does not reach a style
-     * attribute, so anything positioned by CSS from PHP is refused. Geometry is
-     * a presentation attribute and arrives intact.
+     * Failures get a plot only when there are some. An empty band under a busy
+     * chart is a line of furniture claiming to be a finding.
      *
-     * @return array{
-     *     bars: list<array{x: float, y: float, width: float, height: float, title: string, partial: bool}>,
-     *     peak: int,
-     *     unit: string,
-     *     first: string,
-     *     last: string,
-     * }|null
+     * @return array{plots: list<Plot>, ticks: list<array{at: string, label: string, anchor: string, spare: bool}>, density: string, unit: string}|null
      */
-    private function spark(): ?array
+    private function chart(): ?array
     {
         [$buckets, $unit] = $this->buckets();
 
@@ -110,42 +104,132 @@ final class TrafficWidget implements PeriodAwareInterface
             return null;
         }
 
-        $peak = max(array_column($buckets, 'total'));
-        $slot = 100 / count($buckets);
-        $gap = min($slot * self::GAP, self::GAP_MAX);
-        $bars = [];
+        $plots = [Plot::of('Requests per ' . $unit, 'lead', $this->points($buckets, $unit, 'total'))];
 
-        foreach ($buckets as $index => $bucket) {
-            $height = $peak === 0 || $bucket['total'] === 0
-                ? 0.0
-                : max(self::STUB, $bucket['total'] / $peak * self::SPAN);
-
-            $bars[] = [
-                'x' => round($index * $slot + $gap / 2, 2),
-                'y' => round(self::BASE - $height, 2),
-                'width' => round($slot - $gap, 2),
-                'height' => round($height, 2),
-                'title' => $this->title($bucket, $unit),
-                'partial' => $bucket['partial'],
-            ];
+        if (array_sum(array_column($buckets, 'failed')) > 0) {
+            $plots[] = Plot::of('Failed', 'fault', $this->points($buckets, $unit, 'failed'), halfway: false);
         }
 
+        $plots[] = Plot::of(
+            'Slowest request',
+            'slow',
+            $this->points($buckets, $unit, 'slowest'),
+            'ms',
+            halfway: false,
+        );
+
         return [
-            'bars' => $bars,
-            'peak' => $peak,
+            'plots' => $plots,
+            'ticks' => $this->ticks($buckets, $unit),
+            'density' => Plot::density(count($buckets)),
             'unit' => $unit,
-            'first' => $this->tick($buckets[0]['at'], $unit),
-            // An open window ends wherever the reader is standing, and that is
-            // a truer name for the right edge than the hour it happens to be.
-            'last' => $this->window->until === null
-                ? 'now'
-                : $this->tick($buckets[count($buckets) - 1]['at'], $unit),
         ];
     }
 
     /**
-     * Requests per bucket across the window, zeroes included, and the word for
-     * what a bucket is.
+     * One series out of the buckets, as the points a plot is built from.
+     *
+     * Every point is titled with the whole bucket and not with its own series,
+     * because the hover target is shared: a reader who stops on nine in the
+     * morning wants what happened at nine, not one third of it.
+     *
+     * @param list<array{at: DateTimeImmutable, total: int, failed: int, slowest: int, partial: bool}> $buckets
+     * @param 'total'|'failed'|'slowest' $series
+     * @return list<array{value: int, partial: bool, title: string}>
+     */
+    private function points(array $buckets, string $unit, string $series): array
+    {
+        return array_map(
+            fn (array $bucket): array => [
+                'value' => $bucket[$series],
+                'partial' => $bucket['partial'],
+                'title' => $this->title($bucket, $unit),
+            ],
+            $buckets,
+        );
+    }
+
+    /**
+     * The labels under the axis, each sitting over the middle of the bucket it
+     * names, as a percentage of the width.
+     *
+     * A percentage because the plots above are stretched to the card and the
+     * labels are not — they live in a second SVG of their own, drawn at one
+     * unit to the pixel, and a percentage is the one coordinate both agree on
+     * without either of them knowing how wide the card turned out.
+     *
+     * The two ends are the exception: they sit on the edges of the plot rather
+     * than on the middles of their buckets, and are anchored outwards from
+     * there. Centred like the rest they would hang half their width off the
+     * card, and pulled back in they would start where their own bar's middle
+     * is, which reads as a label for the bar after it.
+     *
+     * Every other middle label is marked spare. Six labels fit a card the width
+     * of half a screen and collide on a card the width of a phone, and how wide
+     * the card turned out is the one thing this cannot know: it is a container
+     * query away, in the sheet, which drops the spare ones and leaves a run
+     * that is still evenly spaced because it is every second one of an evenly
+     * spaced run. The ends are never spare.
+     *
+     * @param list<array{at: DateTimeImmutable, total: int, failed: int, slowest: int, partial: bool}> $buckets
+     * @return list<array{at: string, label: string, anchor: string, spare: bool}>
+     */
+    private function ticks(array $buckets, string $unit): array
+    {
+        $count = count($buckets);
+        $last = $count - 1;
+        $step = $this->step($count, $unit);
+        $ticks = [];
+
+        for ($index = 0; $index < $count; $index += $step) {
+            // The closing label is worth more than the one before it, and two
+            // labels a part-step apart sit on top of each other, so the run
+            // stops a whole step short and the end is added on its own below.
+            if ($index > $last - $step) {
+                break;
+            }
+
+            $ticks[] = [
+                'at' => $index === 0 ? '0%' : $this->at($index, $count),
+                'label' => $this->tick($buckets[$index]['at'], $unit),
+                'anchor' => $index === 0 ? 'start' : 'middle',
+                'spare' => count($ticks) % 2 === 1,
+            ];
+        }
+
+        $ticks[] = [
+            'at' => '100%',
+            // An open window ends wherever the reader is standing, and that is
+            // a truer name for the right edge than the hour it happens to be.
+            'label' => $this->window->until === null ? 'now' : $this->tick($buckets[$last]['at'], $unit),
+            'anchor' => 'end',
+            'spare' => false,
+        ];
+
+        return $ticks;
+    }
+
+    /** How many buckets apart the labels sit: the first step that thins them enough. */
+    private function step(int $count, string $unit): int
+    {
+        foreach (self::STEPS[$unit] as $step) {
+            if ((int) ceil($count / $step) <= self::TICKS) {
+                return $step;
+            }
+        }
+
+        return (int) ceil($count / self::TICKS);
+    }
+
+    /** The middle of a bucket, across the width of the plot. */
+    private function at(int $index, int $count): string
+    {
+        return round(($index + 0.5) / $count * 100, 2) . '%';
+    }
+
+    /**
+     * Requests, failures and the slowest one per bucket across the window,
+     * zeroes included, and the word for what a bucket is.
      *
      * Grouped on a prefix of the stored timestamp, which both dialects will cut
      * out of a datetime without being told how, and walked in UTC because that
@@ -153,7 +237,12 @@ final class TrafficWidget implements PeriodAwareInterface
      * lining the walk up with the storage is what keeps every row in exactly
      * one of them.
      *
-     * @return array{0: list<array{at: DateTimeImmutable, total: int, partial: bool}>, 1: string}
+     * The slowest request and not the average one, because on a site this size
+     * the average is one number for a hundred identical fragment fetches and
+     * hides the single request that took a second. The average is already on
+     * the card, as a figure, where an average belongs.
+     *
+     * @return array{0: list<array{at: DateTimeImmutable, total: int, failed: int, slowest: int, partial: bool}>, 1: string}
      */
     private function buckets(): array
     {
@@ -175,17 +264,22 @@ final class TrafficWidget implements PeriodAwareInterface
 
         [$condition, $bindings] = $this->window->condition('created_at');
 
-        $counted = array_column(
+        $counted = [];
+
+        foreach (
             $this->db->select(
-                "SELECT SUBSTR(created_at, 1, {$width}) AS bucket, COUNT(*) AS total
+                "SELECT SUBSTR(created_at, 1, {$width}) AS bucket,
+                        COUNT(*) AS total,
+                        SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) AS failed,
+                        MAX(duration_ms) AS slowest
                  FROM activity
                  WHERE {$condition}
                  GROUP BY bucket",
                 $bindings,
-            ),
-            'total',
-            'bucket',
-        );
+            ) as $row
+        ) {
+            $counted[(string) $row['bucket']] = $row;
+        }
 
         // The walk starts on a bucket boundary, not at the window's edge: a
         // window opening at 09:40 shares its first hour with rows before it,
@@ -201,10 +295,13 @@ final class TrafficWidget implements PeriodAwareInterface
 
         while ($cursor < $until && count($series) < self::POINTS) {
             $next = $cursor->modify('+1 ' . $unit);
+            $row = $counted[$cursor->format($format)] ?? [];
 
             $series[] = [
                 'at' => $cursor,
-                'total' => (int) ($counted[$cursor->format($format)] ?? 0),
+                'total' => (int) ($row['total'] ?? 0),
+                'failed' => (int) ($row['failed'] ?? 0),
+                'slowest' => (int) ($row['slowest'] ?? 0),
                 // A bucket the window opens or closes partway through is short
                 // for that reason alone, and saying so is the difference
                 // between a quiet hour and an hour that is ten minutes old.
@@ -238,10 +335,10 @@ final class TrafficWidget implements PeriodAwareInterface
     }
 
     /**
-     * The hover text on one column, which is the only place a reader can put a
-     * number to a bucket that is neither the peak nor an edge.
+     * The hover text on one bucket, which reports all three plots at once: the
+     * cursor is over an hour, not over a series.
      *
-     * @param array{at: DateTimeImmutable, total: int, partial: bool} $bucket
+     * @param array{at: DateTimeImmutable, total: int, failed: int, slowest: int, partial: bool} $bucket
      */
     private function title(array $bucket, string $unit): string
     {
@@ -251,9 +348,21 @@ final class TrafficWidget implements PeriodAwareInterface
             $when .= '–' . $this->tick($bucket['at']->modify('+1 hour'), $unit);
         }
 
-        return $when . ' · ' . number_format($bucket['total'])
-            . ($bucket['total'] === 1 ? ' request' : ' requests')
-            . ($bucket['partial'] ? ' · partial' : '');
+        $said = [number_format($bucket['total']) . ($bucket['total'] === 1 ? ' request' : ' requests')];
+
+        if ($bucket['failed'] > 0) {
+            $said[] = number_format($bucket['failed']) . ' failed';
+        }
+
+        if ($bucket['slowest'] > 0) {
+            $said[] = $bucket['slowest'] . 'ms slowest';
+        }
+
+        if ($bucket['partial']) {
+            $said[] = 'partial';
+        }
+
+        return $when . ' · ' . implode(' · ', $said);
     }
 
     /**

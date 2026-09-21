@@ -633,9 +633,15 @@
 
 .admin-widget .widget-rows,
 .admin-widget .widget-bars,
-.admin-widget .widget-chart,
 .admin-widget .widget-empty {
     flex: 1 1 auto;
+}
+
+/* The chart takes the height its plots add up to, so the figures are pinned to
+   the card's floor instead of trailing it — the surplus in a card stretched to
+   a taller neighbour belongs between the two, not inside the plots. */
+.admin-widget .widget-chart + .widget-figures {
+    margin-top: auto;
 }
 
 /* Pinned to the card's floor rather than trailing the figures. */
@@ -1025,43 +1031,54 @@
     text-align: center;
 }
 
-/* The one chart on the dashboard: the plot, the number its ceiling is worth,
-   and the two ends of the axis, as one column that takes the height the row
-   leaves it. Wrapping them together is what keeps the words with the picture —
-   at a fixed height the plot sat in the middle of a card stretched to the
-   height of its neighbour, and the scale has to travel with it. */
+/* The one chart on the dashboard: up to three plots stacked over one axis,
+   each with its own scale down the left. A grid rather than nested flex,
+   because the scales have to share a column width — three plots whose numbers
+   started at three different x is three charts sitting near each other. */
 .widget-chart {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: var(--s-2);
+    align-content: start;
     margin: 0 0 var(--s-4);
+    /* So the mark widths below can be asked for as a share of the card rather
+       than of the window: this card is eight columns beside a four, and a
+       viewport unit would size its bars for a width it does not have. */
+    container-type: inline-size;
 }
 
-/* What the top of the plot is worth. Without it a flat row of bars at half
-   height is sixty requests an hour or sixty thousand, and the plot rescales
-   itself on every refresh, so the same traffic draws a different picture. */
-.widget-chart-scale {
-    margin: 0 0 var(--s-2);
+/* Names the series under it, and doubles as the legend: three plots in three
+   colours with nothing written down would leave the colour carrying the
+   identity on its own. */
+/* The gap below looks a step too large written down and is not: the scale
+   beside the plot is pulled up half a line of text to centre its top number on
+   the gridline it names, and that half line is taken out of this margin. */
+.widget-plot-label {
+    grid-column: 1 / -1;
+    margin: var(--s-4) 0 var(--s-3);
     font-size: var(--t-small);
     color: var(--muted);
 }
 
-.widget-chart-peak {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    color: var(--ink);
+.widget-chart > .widget-plot-label:first-child {
+    margin-top: 0;
 }
 
-/* Where the plot starts and where it stops. Two labels and not a tick per
-   bucket: the card is not wide enough to letter twenty-four of them, and the
-   ends are what a reader is actually missing. */
-.widget-chart-axis {
+/* The numbers the plot beside it is drawn against. space-between rather than a
+   coordinate per label — which would want an inline style, and the CSP refuses
+   those — because the gridlines they name are at the ends of the plot and, on
+   the tall one, halfway. The negative margins are the half line of text either
+   end that centres each number on its own rule instead of hanging it below. */
+.widget-plot-scale {
     display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     justify-content: space-between;
-    margin-top: var(--s-2);
+    margin: -0.5em 0;
     font-family: var(--font-mono);
     font-size: var(--t-small);
     font-variant-numeric: tabular-nums;
+    line-height: 1;
     color: var(--muted);
 }
 
@@ -1069,46 +1086,138 @@
    preserveAspectRatio="none" on the element is for. Strokes are exempted from
    that stretch below, or a wide card would draw a baseline that is hairline at
    one end and a smear at the other. */
-.widget-spark {
+.widget-plot {
     display: block;
-    flex: 1 1 auto;
     width: 100%;
-    min-height: 4.5rem;
     overflow: visible;
 }
 
-.widget-spark-bar {
-    fill: var(--accent);
+/* The subject of the card gets the height; the two bands under it are there to
+   be glanced at against the same hours, and a band tall enough to study would
+   push the lead plot down to the size of one. */
+.widget-plot.is-lead {
+    min-height: 5.5rem;
 }
 
-/* A bucket the window opens or closes partway through. Drawn hollow, because a
-   solid bar that short reads as traffic falling off rather than as an hour
-   that is ten minutes old — and it is the last bar on every open period, so it
-   is the one a reader looks at first. */
-.widget-spark-bar.is-partial {
-    fill: var(--accent);
-    fill-opacity: 0.3;
+.widget-plot.is-fault,
+.widget-plot.is-slow {
+    height: 1.75rem;
+}
+
+/* Each bar is a stroked line, not a filled rectangle, so that its width can
+   be stated here in pixels: non-scaling-stroke exempts it from the stretch
+   that fits the viewBox to the card, which a rectangle's width has no way to
+   escape. Butt caps, or every bar would stand half its own width proud of the
+   baseline and a bucket of nothing would draw a blob. */
+.widget-plot-bar {
+    fill: none;
     stroke: var(--accent);
-    stroke-width: 1;
+    stroke-linecap: butt;
     vector-effect: non-scaling-stroke;
 }
 
-/* Two hairlines a shade off the surface: the floor the bars stand on, so an
-   empty bucket reads as empty rather than as absent, and the ceiling the peak
-   label names. */
-.widget-spark-base,
-.widget-spark-grid {
+/* The smaller of a share of the card and a ceiling: the share keeps bars off
+   each other on a narrow card, and the ceiling stops twenty buckets across a
+   wide one drawing forty-pixel slabs. The plain width above it is what a
+   browser without container units gets, sized for the card at its usual width.
+   Each class is named for the most buckets it covers and sized for that many,
+   so a window partway up a band comes out thinner rather than overlapping. */
+.widget-chart.is-n12 .widget-plot-bar {
+    stroke-width: 24px;
+    stroke-width: min(5.4cqw, 26px);
+}
+
+.widget-chart.is-n24 .widget-plot-bar {
+    stroke-width: 18px;
+    stroke-width: min(2.7cqw, 20px);
+}
+
+.widget-chart.is-n48 .widget-plot-bar {
+    stroke-width: 12px;
+    stroke-width: min(1.35cqw, 14px);
+}
+
+.widget-chart.is-n120 .widget-plot-bar {
+    stroke-width: 6px;
+    stroke-width: min(0.55cqw, 8px);
+}
+
+.widget-chart.is-nmany .widget-plot-bar {
+    stroke-width: 2px;
+    stroke-width: max(1px, min(0.2cqw, 3px));
+}
+
+/* Failures are not a fourth series in the palette, they are a state, so they
+   take the status colour and are drawn in a plot of their own that only
+   appears when there are some. */
+.widget-plot.is-fault .widget-plot-bar {
+    stroke: var(--danger);
+}
+
+/* Context rather than a finding: grey, because the card is about traffic and
+   the slowest request is what you check once the shape has caught your eye. */
+.widget-plot.is-slow .widget-plot-bar {
+    stroke: var(--line-strong);
+}
+
+/* A bucket the window opens or closes partway through. Drawn faint, because a
+   solid bar that short reads as traffic falling off rather than as an hour
+   that is ten minutes old — and it is the last bar on every open period, so it
+   is the one a reader looks at first. */
+.widget-plot-bar.is-partial {
+    stroke-opacity: 0.4;
+}
+
+/* transparent and not none: a fill of none takes no pointer events, and being
+   hoverable is the whole of what these are for. Full height and full slot, so
+   the hour under the cursor answers whether or not it drew a bar. */
+.widget-plot-hit {
+    fill: transparent;
+}
+
+/* Hairlines a shade off the surface: the floor the bars stand on, so an empty
+   bucket reads as empty rather than as absent, and the rules the scale names. */
+.widget-plot-base,
+.widget-plot-grid {
     fill: none;
     stroke-width: 1;
     vector-effect: non-scaling-stroke;
 }
 
-.widget-spark-base {
+.widget-plot-base {
     stroke: var(--line-strong);
 }
 
-.widget-spark-grid {
+.widget-plot-grid {
     stroke: var(--line);
+}
+
+/* The axis carries no viewBox, so one unit is one pixel and the lettering
+   comes out the size it was asked for. It lines up with the stretched plots
+   above because every tick is placed as a percentage, which is the same
+   fraction of the width in both boxes. */
+.widget-chart-axis {
+    display: block;
+    width: 100%;
+    height: 1.125rem;
+    margin-top: var(--s-1);
+    overflow: visible;
+}
+
+.widget-chart-axis text {
+    font-family: var(--font-mono);
+    font-size: var(--t-small);
+    font-variant-numeric: tabular-nums;
+    fill: var(--muted);
+}
+
+/* Six labels across a card half a screen wide are a scale; across a card the
+   width of a phone they are one another. The widget marks every second middle
+   label spare and this drops them, which halves the row without unevening it. */
+@container (max-width: 28rem) {
+    .widget-chart-axis text.is-spare {
+        display: none;
+    }
 }
 
 /* Three figures reading as one row of an instrument panel. */
