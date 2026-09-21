@@ -3,7 +3,9 @@
 <?php $this->extends('layouts/base') ?>
 
 <?php /* The admin's own sheet and script, loaded only on admin screens. Both
-   travel with admin.css if it ever moves into the package. */ ?>
-<?php $this->start('meta') ?><link rel="stylesheet" href="/css/admin.css" /><script src="/js/admin.js" defer></script><?php $this->stop() ?>
+   are the package's and are served by it, so an upgrade that adds a field type
+   or a control brings the styling for it with no file to re-copy here. Add a
+   sheet of your own after this one to override any of it. */ ?>
+<?php $this->start('meta') ?><link rel="stylesheet" href="/admin/assets/stylesheet" /><script src="/admin/assets/script" defer></script><?php $this->stop() ?>
 
 <?= $this->partial('admin/partials/shell', ['screen' => $screen, 'content' => $this->section('content')]) ?>

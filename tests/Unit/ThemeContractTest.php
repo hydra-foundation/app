@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use Hydra\Admin\AdminServiceProvider;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +34,14 @@ final class ThemeContractTest extends TestCase
         );
     }
 
-    /** Sheets that consume tokens rather than define them. */
+    /**
+     * Sheets that consume tokens rather than define them. admin.css is the
+     * admin package's and is served by it, so the contract it is held to here
+     * now spans two repositories: the themes are this application's, and the
+     * sheet asking them for a token is not. That is the half worth testing
+     * from this side, because a package upgrade can introduce a token no
+     * palette here has ever heard of.
+     */
     private const CONSUMERS = ['base.css', 'admin.css', 'app.css'];
 
     /**
@@ -128,7 +136,9 @@ final class ThemeContractTest extends TestCase
 
     private function read(string $path): string
     {
-        $file = self::CSS . '/' . $path;
+        $file = $path === 'admin.css'
+            ? AdminServiceProvider::assets() . '/admin.css'
+            : self::CSS . '/' . $path;
 
         return file_get_contents($file) ?: self::fail("Missing stylesheet: {$path}.");
     }
