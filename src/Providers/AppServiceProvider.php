@@ -22,6 +22,7 @@ use Hydra\Auth\LogAuthEventsListener;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
 use Hydra\Core\Providers\ServiceProvider;
+use Hydra\Core\Versions;
 use Hydra\Csrf\{CsrfGuard, VerifyCsrfTokenMiddleware};
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\{MigrationRunner, PdoConnection};
@@ -104,6 +105,10 @@ final class AppServiceProvider extends ServiceProvider
     {
         $container->singleton(AppConfig::class, function () use ($container) {
             return AppConfig::fromEnvironment($container->get(Environment::class));
+        });
+
+        $container->singleton(Versions::class, function () {
+            return new Versions(dirname(__DIR__, 2));
         });
 
         $container->singleton(LogConfig::class, function () use ($container) {
@@ -195,6 +200,7 @@ final class AppServiceProvider extends ServiceProvider
                     // it, or the switch that exists to rule the policy out
                     // breaks more than it rules out.
                     'csp' => $container->get(CspConfig::class),
+                    'versions' => $container->get(Versions::class),
                 ],
             );
         });

@@ -8,4 +8,8 @@
    sheet of your own after this one to override any of it. */ ?>
 <?php $this->start('meta') ?><link rel="stylesheet" href="/admin/assets/stylesheet" /><script src="/admin/assets/script" defer></script><?php $this->stop() ?>
 
-<?= $this->partial('admin/partials/shell', ['screen' => $screen, 'content' => $this->section('content')]) ?>
+<?= $this->partial('admin/partials/shell', [
+    'screen' => $screen,
+    'content' => $this->section('content'),
+    'footer' => trim($this->partial('partials/version')),
+]) ?>

@@ -11,5 +11,8 @@
             <h1 class="auth-title">Sign in</h1>
             <?= $this->partial('auth/login/form', ['vm' => $vm]) ?>
         </div>
+        <?php if (($version = trim($this->partial('partials/version'))) !== ''): ?>
+            <p class="auth-version"><?= $version ?></p>
+        <?php endif ?>
     </div>
 </div>

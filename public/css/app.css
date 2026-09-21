@@ -28,6 +28,14 @@
     border-radius: var(--r-3);
 }
 
+.auth-version {
+    margin: var(--s-3) 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--t-small);
+    color: var(--muted);
+    text-align: center;
+}
+
 .auth-title {
     margin: 0 0 var(--s-5);
     padding-bottom: var(--s-3);

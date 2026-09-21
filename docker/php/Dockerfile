@@ -38,10 +38,10 @@ RUN if [ "$BUILD_MODE" = "dev" ]; then \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# The repo is bind-mounted from the host (owned by the host user), but the
-# container runs as root, so git's "dubious ownership" guard would otherwise
-# block Composer from reading the package's VCS metadata.
-RUN git config --global --add safe.directory '*'
+# The repo is bind-mounted from the host (owned by the host user), so git's
+# "dubious ownership" guard would otherwise block Composer (running as root)
+# and the version read by FPM (running as www-data). System-wide for both.
+RUN git config --system --add safe.directory '*'
 
 # PHP-FPM pool config
 COPY ./fpm-pool.conf /usr/local/etc/php-fpm.d/zz-pool.conf
