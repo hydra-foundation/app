@@ -24,7 +24,8 @@ final class AppearancePresenter implements PresenterInterface
     {
         return [
             'options' => $this->themes->options(),
-            'selected' => $this->resolver->current(),
+            'selected' => $this->resolver->choice(),
+            'current' => $this->resolver->current(),
         ];
     }
 }

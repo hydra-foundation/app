@@ -1,0 +1,51 @@
+/* Phosphor: an amber monochrome terminal. Every colour on the page is the
+ * one phosphor at a different intensity, so hierarchy is carried by
+ * brightness alone, and the accent is the phosphor driven hottest.
+ *
+ * Two states cannot be left to intensity: a destructive action and a failed
+ * check have to be recognisable without comparing them to anything. Danger
+ * breaks the monochrome with a red that is still on the warm side, and ok
+ * with a pale lime from the same end of the spectrum. */
+
+[data-theme="phosphor"] {
+    --paper: #0b0804;
+    --surface: #110d06;
+    --sunk: #0e0a05;
+    --line: #2b200e;
+    --line-strong: #463515;
+
+    --ink: #e0a040;
+    --ink-strong: #ffbf59;
+    --muted: #a8772f;
+    --ink-rgb: 224, 160, 64;
+
+    --accent: #ffd98a;
+    --accent-hover: #ffe9b8;
+    --accent-wash: #2a1f0c;
+    --accent-ring: rgba(255, 217, 138, 0.28);
+    --accent-rgb: 255, 217, 138;
+    --on-accent: #110d06;
+
+    --warn: #ffb52e;
+
+    --danger: #ff6a3d;
+    --danger-wash: #2e130a;
+    --danger-line: #57230f;
+    --danger-ink: #ffa184;
+    --danger-ring: rgba(255, 106, 61, 0.25);
+    --danger-rgb: 255, 106, 61;
+    --on-danger: #110d06;
+
+    --ok: #c9d65e;
+    --ok-wash: #1f220c;
+    --ok-line: #3b4116;
+    --ok-ink: #dde68f;
+    --ok-rgb: 201, 214, 94;
+
+    --hover-tint: rgba(255, 191, 89, 0.06);
+    --mark: #4a3510;
+    --scrim: rgba(0, 0, 0, 0.7);
+    --chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a8772f' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+    color-scheme: dark;
+}

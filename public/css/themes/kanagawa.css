@@ -1,0 +1,51 @@
+/* Kanagawa: rebelot's neovim palette after Hokusai's Great Wave, the "wave"
+ * variant. Fuji white on sumi ink.
+ *
+ * The accent is oni violet, the colour the editor gives a keyword, rather
+ * than the wave blue the name suggests: Tokyo Night and Nord already take the
+ * blues, and a picker of six blues is a picker of one. fujiGray is the
+ * palette's muted grey and too faint for text here, so --muted is the old
+ * white it sits under, dimmed until it reads. */
+
+[data-theme="kanagawa"] {
+    --paper: #16161d;
+    --surface: #1f1f28;
+    --sunk: #1a1a22;
+    --line: #2a2a37;
+    --line-strong: #363646;
+
+    --ink: #dcd7ba;
+    --ink-strong: #f2ecd0;
+    --muted: #a09a80;
+    --ink-rgb: 220, 215, 186;
+
+    --accent: #957fb8;
+    --accent-hover: #ad9bd0;
+    --accent-wash: #241f30;
+    --accent-ring: rgba(149, 127, 184, 0.28);
+    --accent-rgb: 149, 127, 184;
+    --on-accent: #16161d;
+
+    --warn: #e6c384;
+
+    --danger: #ff5d62;
+    --danger-wash: #43242b;
+    --danger-line: #62313a;
+    --danger-ink: #ffa3a5;
+    --danger-ring: rgba(255, 93, 98, 0.22);
+    --danger-rgb: 255, 93, 98;
+    --on-danger: #16161d;
+
+    --ok: #98bb6c;
+    --ok-wash: #2b3328;
+    --ok-line: #404c36;
+    --ok-ink: #b8d493;
+    --ok-rgb: 152, 187, 108;
+
+    --hover-tint: rgba(220, 215, 186, 0.05);
+    --mark: #49443c;
+    --scrim: rgba(0, 0, 0, 0.62);
+    --chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a09a80' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+    color-scheme: dark;
+}

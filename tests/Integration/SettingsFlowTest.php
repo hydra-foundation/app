@@ -60,7 +60,7 @@ final class SettingsFlowTest extends TestCase
         $this->login('boss');
         $body = $this->body('/admin/settings/appearance');
 
-        foreach (['paper', 'graphite'] as $theme) {
+        foreach (['auto', 'paper', 'graphite', 'tokyo-night', 'nord'] as $theme) {
             $this->assertStringContainsString('value="' . $theme . '"', $body);
         }
 
@@ -88,6 +88,21 @@ final class SettingsFlowTest extends TestCase
             ->assertSee('id="admin-theme" data-theme="graphite"')
             ->assertFragment()
             ->assertSee('Saved');
+    }
+
+    public function test_auto_is_kept_as_the_choice_and_painted_as_a_palette(): void
+    {
+        $this->login('boss');
+        $this->save('auto');
+
+        $this->assertSame('auto', $this->preferences()->get($this->id('boss'), 'theme'));
+
+        // The picker remembers auto; the page is painted in whichever palette
+        // it stands for right now, since no stylesheet answers to "auto".
+        $body = $this->body('/admin/settings/appearance');
+        $this->assertMatchesRegularExpression('~value="auto"\s+checked~', $body);
+        $this->assertMatchesRegularExpression('~<html lang="en" data-theme="(paper|graphite)"~', $body);
+        $this->assertMatchesRegularExpression('~id="admin-theme" data-theme="(paper|graphite)"~', $body);
     }
 
     public function test_a_theme_that_is_not_on_disk_is_refused(): void

@@ -21,6 +21,17 @@ final class Themes
      */
     public const PREFERENCE = 'theme';
 
+    /**
+     * A choice rather than a palette: paper through the working day and
+     * graphite outside it, by the reader's own clock. It has no stylesheet, so
+     * it is offered and accepted but never linked.
+     */
+    public const AUTO = 'auto';
+
+    public const DAY = 'paper';
+
+    public const NIGHT = 'graphite';
+
     /** @var list<string>|null */
     private ?array $names = null;
 
@@ -47,7 +58,7 @@ final class Themes
 
     public function has(string $name): bool
     {
-        return in_array($name, $this->names(), true);
+        return $name === self::AUTO || in_array($name, $this->names(), true);
     }
 
     /** A name the picker can show: "high-contrast" reads as "High contrast". */
@@ -59,7 +70,7 @@ final class Themes
     /** @return array<string, string> name => label, in listing order */
     public function options(): array
     {
-        $options = [];
+        $options = [self::AUTO => $this->label(self::AUTO)];
 
         foreach ($this->names() as $name) {
             $options[$name] = $this->label($name);
@@ -68,7 +79,7 @@ final class Themes
         return $options;
     }
 
-    /** The name to use, given what someone asked for. */
+    /** The choice to keep, given what someone asked for. It may be AUTO. */
     public function resolve(?string $name): string
     {
         return $name !== null && $this->has($name) ? $name : self::FALLBACK;

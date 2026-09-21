@@ -1,0 +1,49 @@
+/* Nord: arcticicestudio's palette of polar night, snow storm and frost.
+ *
+ * Polar night's nord0 is the raised surface, and the recessed ground is a
+ * shade under it, since the palette has nothing darker. Nord's aurora red is
+ * too dim to read as text on it, so --danger is the same hue lifted until it
+ * does; the other aurora colours pass as they are. */
+
+[data-theme="nord"] {
+    --paper: #272c36;
+    --surface: #2e3440;
+    --sunk: #2a2f3a;
+    --line: #3b4252;
+    --line-strong: #4c566a;
+
+    --ink: #d8dee9;
+    --ink-strong: #eceff4;
+    --muted: #a3acbd;
+    --ink-rgb: 216, 222, 233;
+
+    --accent: #88c0d0;
+    --accent-hover: #a5d3df;
+    --accent-wash: #2f4250;
+    --accent-ring: rgba(136, 192, 208, 0.25);
+    --accent-rgb: 136, 192, 208;
+    --on-accent: #2e3440;
+
+    --warn: #ebcb8b;
+
+    --danger: #d98a91;
+    --danger-wash: #3d3039;
+    --danger-line: #5e404a;
+    --danger-ink: #ecb4b8;
+    --danger-ring: rgba(217, 138, 145, 0.25);
+    --danger-rgb: 217, 138, 145;
+    --on-danger: #2e3440;
+
+    --ok: #a3be8c;
+    --ok-wash: #313d3a;
+    --ok-line: #4a5a48;
+    --ok-ink: #c2d8ae;
+    --ok-rgb: 163, 190, 140;
+
+    --hover-tint: rgba(236, 239, 244, 0.05);
+    --mark: #4f4a3a;
+    --scrim: rgba(21, 24, 30, 0.66);
+    --chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a3acbd' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+    color-scheme: dark;
+}

@@ -1,0 +1,49 @@
+/* Rosé Pine Dawn: the light variant of the Rosé Pine palette, and the second
+ * light theme beside paper.
+ *
+ * Paper already carries a teal accent on warm ground, so this one takes iris
+ * rather than pine. Dawn's colours are drawn for syntax on a large screen and
+ * several are too light for small text on it: iris, love and gold are each
+ * deepened here until they clear AA, keeping their hue. Rosé Pine has no
+ * green, so success is pine, as it is for an added line in the ports. */
+
+[data-theme="rose-pine-dawn"] {
+    --paper: #faf4ed;
+    --surface: #fffaf3;
+    --sunk: #f8f1e9;
+    --line: #ece4dc;
+    --line-strong: #d8d1cd;
+
+    --ink: #575279;
+    --ink-strong: #3b3760;
+    --muted: #6f6a8b;
+    --ink-rgb: 87, 82, 121;
+
+    --accent: #6f5b96;
+    --accent-hover: #5a4880;
+    --accent-wash: #f1ebf4;
+    --accent-ring: rgba(111, 91, 150, 0.2);
+    --accent-rgb: 111, 91, 150;
+    --on-accent: #fffaf3;
+
+    --warn: #95600f;
+
+    --danger: #a4445f;
+    --danger-wash: #fbecee;
+    --danger-line: #efcdd4;
+    --danger-ink: #83354c;
+    --danger-ring: rgba(164, 68, 95, 0.16);
+    --danger-rgb: 164, 68, 95;
+    --on-danger: #fffaf3;
+
+    --ok: #286983;
+    --ok-wash: #eaf1f1;
+    --ok-line: #c7dbdf;
+    --ok-ink: #1f5468;
+    --ok-rgb: 40, 105, 131;
+
+    --hover-tint: rgba(87, 82, 121, 0.045);
+    --mark: #f6e3c4;
+    --scrim: rgba(59, 55, 96, 0.34);
+    --chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236f6a8b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}

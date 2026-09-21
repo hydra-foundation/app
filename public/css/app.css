@@ -119,3 +119,29 @@
     font-size: var(--t-small);
     white-space: pre-wrap;
 }
+
+/* Auto is two palettes, so its swatch is both halves joined into the width of
+   one, day on the left. */
+.theme-swatch-pair {
+    display: flex;
+}
+
+.theme-swatch-pair .theme-swatch {
+    width: 1.125rem;
+    padding-inline: 0.1875rem;
+}
+
+.theme-swatch-pair .theme-swatch:first-child {
+    border-right: 0;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+}
+
+.theme-swatch-pair .theme-swatch:last-child {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+}
+
+.theme-swatch-pair .theme-swatch-dot {
+    width: 0.5rem;
+}

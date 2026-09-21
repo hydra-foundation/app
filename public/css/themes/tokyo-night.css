@@ -1,0 +1,49 @@
+/* Tokyo Night: folke's neovim palette, the "night" variant.
+ *
+ * The editor's own roles map straight across: bg_dark is the recessed ground
+ * the sidebar sits on, bg the raised one, and blue the accent, as it is for a
+ * function name. The editor's comment grey is too faint for body text, so
+ * --muted takes dark5, the one grey in the palette that clears AA. */
+
+[data-theme="tokyo-night"] {
+    --paper: #16161e;
+    --surface: #1a1b26;
+    --sunk: #171821;
+    --line: #292e42;
+    --line-strong: #3b4261;
+
+    --ink: #a9b1d6;
+    --ink-strong: #c0caf5;
+    --muted: #7c83ab;
+    --ink-rgb: 169, 177, 214;
+
+    --accent: #7aa2f7;
+    --accent-hover: #9ab8ff;
+    --accent-wash: #1f2744;
+    --accent-ring: rgba(122, 162, 247, 0.25);
+    --accent-rgb: 122, 162, 247;
+    --on-accent: #16161e;
+
+    --warn: #e0af68;
+
+    --danger: #f7768e;
+    --danger-wash: #2d1c28;
+    --danger-line: #55283a;
+    --danger-ink: #ffa7b6;
+    --danger-ring: rgba(247, 118, 142, 0.22);
+    --danger-rgb: 247, 118, 142;
+    --on-danger: #16161e;
+
+    --ok: #9ece6a;
+    --ok-wash: #1c2922;
+    --ok-line: #33472c;
+    --ok-ink: #bde39a;
+    --ok-rgb: 158, 206, 106;
+
+    --hover-tint: rgba(192, 202, 245, 0.05);
+    --mark: #283457;
+    --scrim: rgba(0, 0, 0, 0.62);
+    --chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%237c83ab' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+    color-scheme: dark;
+}
