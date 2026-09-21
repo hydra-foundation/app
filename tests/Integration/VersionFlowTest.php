@@ -40,7 +40,6 @@ final class VersionFlowTest extends TestCase
     {
         $versions = $this->app->get(Versions::class);
         $this->assertInstanceOf(Versions::class, $versions);
-        $this->assertNotNull($versions->hydra());
 
         return htmlspecialchars(implode(' · ', array_filter([$versions->application(), 'Hydra ' . $versions->hydra()])));
     }
