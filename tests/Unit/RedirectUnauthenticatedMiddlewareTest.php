@@ -10,13 +10,12 @@ use Hydra\Core\Security\Signer;
 use Hydra\Csrf\CsrfGuard;
 use Hydra\Csrf\Exceptions\TokenMismatchException;
 use Hydra\Http\Responder;
+use Hydra\Http\Testing\FakeHandler;
 use Hydra\Session\Stores\ArraySessionStore;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 
 /**
@@ -119,25 +118,13 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
         return (new Psr17Factory)->createServerRequest('POST', '/profile');
     }
 
-    private function handler(): RequestHandlerInterface
+    private function handler(): FakeHandler
     {
-        return new class implements RequestHandlerInterface {
-            public function handle(ServerRequestInterface $request): ResponseInterface
-            {
-                return (new Psr17Factory)->createResponse(200);
-            }
-        };
+        return FakeHandler::respondingWith((new Psr17Factory)->createResponse(200));
     }
 
-    private function throwingHandler(Throwable $e): RequestHandlerInterface
+    private function throwingHandler(Throwable $e): FakeHandler
     {
-        return new class ($e) implements RequestHandlerInterface {
-            public function __construct(private readonly Throwable $e) {}
-
-            public function handle(ServerRequestInterface $request): ResponseInterface
-            {
-                throw $this->e;
-            }
-        };
+        return FakeHandler::throwing($e);
     }
 }

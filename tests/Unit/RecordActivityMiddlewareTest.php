@@ -12,6 +12,7 @@ use App\Tests\Support\TestSchema;
 use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\ClientIpResolver;
+use Hydra\Http\Testing\FakeHandler;
 use Hydra\Http\TrustedProxies;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
@@ -19,9 +20,7 @@ use Hydra\Http\Exceptions\HttpException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
 use Throwable;
@@ -214,25 +213,13 @@ final class RecordActivityMiddlewareTest extends TestCase
         return $row;
     }
 
-    private function handler(): RequestHandlerInterface
+    private function handler(): FakeHandler
     {
-        return new class implements RequestHandlerInterface {
-            public function handle(ServerRequestInterface $request): ResponseInterface
-            {
-                return (new Psr17Factory)->createResponse(200);
-            }
-        };
+        return FakeHandler::respondingWith((new Psr17Factory)->createResponse(200));
     }
 
-    private function throwingHandler(Throwable $e): RequestHandlerInterface
+    private function throwingHandler(Throwable $e): FakeHandler
     {
-        return new class ($e) implements RequestHandlerInterface {
-            public function __construct(private readonly Throwable $e) {}
-
-            public function handle(ServerRequestInterface $request): ResponseInterface
-            {
-                throw $this->e;
-            }
-        };
+        return FakeHandler::throwing($e);
     }
 }

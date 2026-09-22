@@ -8,12 +8,11 @@ use App\Http\Middleware\RedirectAuthenticatedMiddleware;
 use Hydra\Auth\Testing\FakeGuard;
 use Hydra\Auth\Testing\FakeUser;
 use Hydra\Http\Responder;
+use Hydra\Http\Testing\FakeHandler;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Covers the middleware that keeps a signed-in user off the login page. The
@@ -29,7 +28,7 @@ final class RedirectAuthenticatedMiddlewareTest extends TestCase
 
         $response = $this->middleware(authenticated: false)->process($this->request(), $handler);
 
-        $this->assertSame(1, $handler->calls);
+        $handler->assertHandled();
         $this->assertSame(200, $response->getStatusCode());
     }
 
@@ -39,7 +38,7 @@ final class RedirectAuthenticatedMiddlewareTest extends TestCase
 
         $response = $this->middleware(authenticated: true)->process($this->request(), $handler);
 
-        $this->assertSame(0, $handler->calls, 'an authenticated visitor never reaches the guest route');
+        $this->assertCount(0, $handler->requests(), 'an authenticated visitor never reaches the guest route');
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/admin', $response->getHeaderLine('Location'));
     }
@@ -72,21 +71,8 @@ final class RedirectAuthenticatedMiddlewareTest extends TestCase
         return (new Psr17Factory)->createServerRequest('GET', '/login');
     }
 
-    private function handler(): CountingHandler
+    private function handler(): FakeHandler
     {
-        return new CountingHandler;
-    }
-}
-
-/** Records whether the route behind the middleware was reached, and how often. */
-final class CountingHandler implements RequestHandlerInterface
-{
-    public int $calls = 0;
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        $this->calls++;
-
-        return (new Psr17Factory)->createResponse(200);
+        return FakeHandler::respondingWith((new Psr17Factory)->createResponse(200));
     }
 }

@@ -9,8 +9,8 @@ use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Testing\WritableSourceContractTestCase;
 use Hydra\Auth\Contracts\GuardInterface;
-use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Auth\Testing\FakeGuard;
+use Hydra\Auth\Testing\FakeHasher;
 use Hydra\Auth\Testing\FakeUser;
 use Hydra\Database\PdoConnection;
 use PDO;
@@ -46,7 +46,7 @@ final class UserSourceTest extends WritableSourceContractTestCase
         $this->source = new UserSource(
             new PdoConnection($this->pdo),
             $this->guard(),
-            $this->hasher(),
+            new FakeHasher,
         );
     }
 
@@ -88,27 +88,6 @@ final class UserSourceTest extends WritableSourceContractTestCase
         unset($data['password']);
 
         return $data;
-    }
-
-    /** A hasher that does not cost anything: what is under test is the source. */
-    private function hasher(): HasherInterface
-    {
-        return new class implements HasherInterface {
-            public function hash(string $plain): string
-            {
-                return 'hashed:' . $plain;
-            }
-
-            public function verify(string $plain, string $hash): bool
-            {
-                return $hash === 'hashed:' . $plain;
-            }
-
-            public function needsRehash(string $hash): bool
-            {
-                return false;
-            }
-        };
     }
 
     /** Signed in as an id the fixture does not hold, so no row here is protected. */

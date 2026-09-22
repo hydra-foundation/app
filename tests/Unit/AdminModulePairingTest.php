@@ -14,6 +14,7 @@ use Hydra\Admin\ModuleRegistry;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Auth\Testing\FakeGuard;
+use Hydra\Auth\Testing\FakeHasher;
 use Hydra\Auth\Testing\FakeUser;
 use Hydra\Console\ExitCode;
 use Hydra\Core\Contracts\ContainerInterface;
@@ -82,31 +83,10 @@ final class AdminModulePairingTest extends TestCase
         $container = Container::create();
         $container->instance(ContainerInterface::class, $container);
         $container->instance(ConnectionInterface::class, new PdoConnection(TestSchema::connect()));
-        $container->instance(HasherInterface::class, $this->hasher());
+        $container->instance(HasherInterface::class, new FakeHasher);
         $container->instance(GuardInterface::class, $this->guard());
 
         return $container;
-    }
-
-    /** Nothing here hashes or authorizes; the sources only have to be built. */
-    private function hasher(): HasherInterface
-    {
-        return new class implements HasherInterface {
-            public function hash(string $plain): string
-            {
-                return 'hashed:' . $plain;
-            }
-
-            public function verify(string $plain, string $hash): bool
-            {
-                return $hash === 'hashed:' . $plain;
-            }
-
-            public function needsRehash(string $hash): bool
-            {
-                return false;
-            }
-        };
     }
 
     private function guard(): GuardInterface
