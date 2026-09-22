@@ -7,10 +7,10 @@ namespace App\Tests\Unit;
 use App\Entities\Role;
 use App\Entities\User;
 use App\Repositories\PreferenceRepository;
-use App\Tests\Support\SignedInAs;
 use App\Tests\Support\TestSchema;
 use App\View\TimezoneResolver;
 use App\View\Timezones;
+use Hydra\Auth\Testing\FakeGuard;
 use Hydra\Database\PdoConnection;
 use PDO;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -39,7 +39,7 @@ final class TimezoneResolverTest extends TestCase
 
     public function test_a_visitor_nobody_knows_gets_the_application_default(): void
     {
-        $resolver = new TimezoneResolver(new SignedInAs(null), $this->preferences, new Timezones('America/Regina'));
+        $resolver = new TimezoneResolver(new FakeGuard(null), $this->preferences, new Timezones('America/Regina'));
 
         // The login screen and the public pages have nobody to ask, and a
         // resolver that read the session anyway would need one to exist.
@@ -105,7 +105,7 @@ final class TimezoneResolverTest extends TestCase
 
     private function resolverFor(User $user): TimezoneResolver
     {
-        return new TimezoneResolver(new SignedInAs($user), $this->preferences, new Timezones);
+        return new TimezoneResolver(new FakeGuard($user), $this->preferences, new Timezones);
     }
 
     private function user(): User

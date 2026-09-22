@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Providers\AppServiceProvider;
 use App\Tests\Support\CommandRun;
 use App\Tests\Support\Console;
-use Hydra\Console\ExitCode;
-use App\Providers\AppServiceProvider;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Console\AdminCheckCommand;
 use Hydra\Admin\Contracts\DescribesColumnsInterface;
 use Hydra\Admin\ModuleRegistry;
-use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Testing\FakeGuard;
+use Hydra\Auth\Testing\FakeUser;
+use Hydra\Console\ExitCode;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
@@ -110,30 +111,6 @@ final class AdminModulePairingTest extends TestCase
 
     private function guard(): GuardInterface
     {
-        return new class implements GuardInterface {
-            public function user(): ?AuthenticatableInterface
-            {
-                return null;
-            }
-
-            public function check(): bool
-            {
-                return true;
-            }
-
-            public function id(): int
-            {
-                return 99;
-            }
-
-            public function attempt(string $username, string $password): bool
-            {
-                return false;
-            }
-
-            public function login(AuthenticatableInterface $user): void {}
-
-            public function logout(): void {}
-        };
+        return FakeGuard::signedInAs(new FakeUser(99));
     }
 }

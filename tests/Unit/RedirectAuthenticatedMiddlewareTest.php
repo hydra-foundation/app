@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Http\Middleware\RedirectAuthenticatedMiddleware;
-use Hydra\Auth\Contracts\AuthenticatableInterface;
-use Hydra\Auth\Contracts\GuardInterface;
+use Hydra\Auth\Testing\FakeGuard;
+use Hydra\Auth\Testing\FakeUser;
 use Hydra\Http\Responder;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -62,7 +62,7 @@ final class RedirectAuthenticatedMiddlewareTest extends TestCase
         $factory = new Psr17Factory;
 
         return new RedirectAuthenticatedMiddleware(
-            new FakeGuestGuard($authenticated),
+            $authenticated ? FakeGuard::signedInAs(new FakeUser) : FakeGuard::guest(),
             new Responder($factory, $factory),
         );
     }
@@ -89,34 +89,4 @@ final class CountingHandler implements RequestHandlerInterface
 
         return (new Psr17Factory)->createResponse(200);
     }
-}
-
-/** A guard whose authentication state is fixed for the test. */
-final class FakeGuestGuard implements GuardInterface
-{
-    public function __construct(private readonly bool $authenticated) {}
-
-    public function check(): bool
-    {
-        return $this->authenticated;
-    }
-
-    public function user(): ?AuthenticatableInterface
-    {
-        return null;
-    }
-
-    public function id(): int|string|null
-    {
-        return null;
-    }
-
-    public function attempt(string $username, string $password): bool
-    {
-        return false;
-    }
-
-    public function login(AuthenticatableInterface $user): void {}
-
-    public function logout(): void {}
 }

@@ -7,12 +7,12 @@ namespace App\Tests\Unit;
 use App\Entities\Role;
 use App\Entities\User;
 use App\Repositories\PreferenceRepository;
-use App\Tests\Support\SignedInAs;
 use App\Tests\Support\TestSchema;
 use App\View\ThemeResolver;
 use App\View\Themes;
 use App\View\TimezoneResolver;
 use App\View\Timezones;
+use Hydra\Auth\Testing\FakeGuard;
 use Hydra\Core\Testing\FrozenClock;
 use Hydra\Database\PdoConnection;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -99,7 +99,7 @@ final class ThemeResolverTest extends TestCase
 
     private function resolver(bool $signedIn = true): ThemeResolver
     {
-        $guard = new SignedInAs($signedIn ? new User(1, 'will', 'x', Role::User, '2026-01-01 00:00:00') : null);
+        $guard = new FakeGuard($signedIn ? new User(1, 'will', 'x', Role::User, '2026-01-01 00:00:00') : null);
 
         return new ThemeResolver(
             $guard,

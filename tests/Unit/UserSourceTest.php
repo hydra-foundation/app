@@ -8,9 +8,10 @@ use App\Admin\Sources\UserSource;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Testing\WritableSourceContractTestCase;
-use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Testing\FakeGuard;
+use Hydra\Auth\Testing\FakeUser;
 use Hydra\Database\PdoConnection;
 use PDO;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -113,30 +114,6 @@ final class UserSourceTest extends WritableSourceContractTestCase
     /** Signed in as an id the fixture does not hold, so no row here is protected. */
     private function guard(): GuardInterface
     {
-        return new class implements GuardInterface {
-            public function user(): ?AuthenticatableInterface
-            {
-                return null;
-            }
-
-            public function check(): bool
-            {
-                return true;
-            }
-
-            public function id(): int
-            {
-                return 99;
-            }
-
-            public function attempt(string $username, string $password): bool
-            {
-                return false;
-            }
-
-            public function login(AuthenticatableInterface $user): void {}
-
-            public function logout(): void {}
-        };
+        return FakeGuard::signedInAs(new FakeUser(99));
     }
 }
