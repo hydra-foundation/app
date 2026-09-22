@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Hydra\Console\Attributes\AsCommand;
 use Hydra\Console\Commands\MakeClassCommand;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Contracts\OutputInterface;
 
 /**
  * Generates a controller in App\Controllers, already carrying a #[Route] so the
@@ -56,8 +56,8 @@ final class MakeControllerCommand extends MakeClassCommand
         PHP;
     }
 
-    protected function afterCreate(SymfonyStyle $io, string $class): void
+    protected function afterCreate(OutputInterface $output, string $class): void
     {
-        $io->note("Register it: add {$class}::class to App\\Providers\\AppServiceProvider::CONTROLLERS.");
+        $output->note("Register it: add {$class}::class to App\\Providers\\AppServiceProvider::CONTROLLERS.");
     }
 }

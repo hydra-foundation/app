@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Attributes\AsCommand;
+use Hydra\Console\Contracts\OutputInterface;
+use Hydra\Console\ExitCode;
 
 /**
  * Generates a repository in App\Repositories: the application's own way into a
@@ -47,7 +48,7 @@ final class MakeRepositoryCommand extends MakeFromTableCommand
 
         $columns = $this->listLiteral($written, '    ');
         $reads = $this->listLiteral($readable, '    ');
-        $arguments = $this->arguments($written, $entity);
+        $arguments = $this->boundValues($written, $entity);
         // The entity's properties, which are every readable column but the key —
         // the same rule make:entity applies. Hydrating only the written ones
         // would leave a required constructor argument unfilled.
@@ -178,7 +179,7 @@ final class MakeRepositoryCommand extends MakeFromTableCommand
      *
      * @param list<string> $columns
      */
-    private function arguments(array $columns, string $entity): string
+    private function boundValues(array $columns, string $entity): string
     {
         $variable = $this->variable($entity);
         $indent = '                ';
@@ -199,10 +200,10 @@ final class MakeRepositoryCommand extends MakeFromTableCommand
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
     }
 
-    protected function afterCreate(SymfonyStyle $io, string $class): void
+    protected function afterCreate(OutputInterface $output, string $class): void
     {
-        $this->reportSecrets($io);
-        $io->note(
+        $this->reportSecrets($output);
+        $output->note(
             'Only write one of these when code outside the admin touches the table. '
             . 'Fill in hydrate(), and clip anything a caller can overrun to its column width.',
         );

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Tests\Support\CommandRun;
+use App\Tests\Support\Console;
+use Hydra\Console\ExitCode;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Console\AdminCheckCommand;
@@ -18,8 +21,6 @@ use Hydra\Database\PdoConnection;
 use Hydra\PhpDi\Container;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * Every module in `AppServiceProvider::MODULES` against the source it reads.
@@ -49,10 +50,9 @@ final class AdminModulePairingTest extends TestCase
 
     public function test_every_module_names_only_columns_its_source_offers(): void
     {
-        $tester = new CommandTester(new AdminCheckCommand($this->registry));
-        $tester->execute([]);
+        $run = Console::run(new AdminCheckCommand($this->registry), []);
 
-        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertSame(ExitCode::Success, $run->code, $run->display());
     }
 
     public function test_every_module_that_declares_a_source_is_one_the_check_can_read(): void

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Support\Column;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Attributes\AsCommand;
+use Hydra\Console\Contracts\InputInterface;
+use Hydra\Console\Contracts\OutputInterface;
+use Hydra\Console\ExitCode;
+use Hydra\Console\Option;
 
 /**
  * Generates an admin source in App\Admin\Sources: the module's data contract,
@@ -29,21 +29,17 @@ final class MakeSourceCommand extends MakeFromTableCommand
 {
     private bool $writable = false;
 
-    protected function configure(): void
+    public function options(): array
     {
-        parent::configure();
-
-        $this->addOption(
-            'writable',
-            'w',
-            InputOption::VALUE_NONE,
-            'Add the create, update and delete contracts as well as the read side.',
-        );
+        return [
+            ...parent::options(),
+            Option::flag('writable', 'w', 'Add the create, update and delete contracts as well as the read side.'),
+        ];
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): ExitCode
     {
-        $this->writable = (bool) $input->getOption('writable');
+        $this->writable = $input->flag('writable');
 
         return parent::execute($input, $output);
     }
@@ -278,10 +274,10 @@ final class MakeSourceCommand extends MakeFromTableCommand
         ));
     }
 
-    protected function afterCreate(SymfonyStyle $io, string $class): void
+    protected function afterCreate(OutputInterface $output, string $class): void
     {
-        $this->reportSecrets($io);
-        $io->note(
+        $this->reportSecrets($output);
+        $output->note(
             'Narrow the lists by hand — sortable is every column, searchable is the text ones, '
             . 'and filterable is a guess. Then run admin:check to hold the module to them.',
         );

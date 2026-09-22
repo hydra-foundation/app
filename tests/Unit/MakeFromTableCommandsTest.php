@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Tests\Support\CommandRun;
+use App\Tests\Support\Console;
+use Hydra\Console\Command;
+use Hydra\Console\ExitCode;
 use App\Console\Commands\MakeEntityCommand;
 use App\Console\Commands\MakeFromTableCommand;
 use App\Console\Commands\MakeListenerCommand;
@@ -17,8 +21,6 @@ use Hydra\Database\PdoConnection;
 use PDO;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * The generators that write code shaped like a table, driven with an explicit
@@ -70,8 +72,7 @@ final class MakeFromTableCommandsTest extends TestCase
 
     public function test_the_table_is_the_plural_of_the_name_unless_one_is_given(): void
     {
-        $tester = new CommandTester(new MakeSourceCommand($this->dir));
-        $tester->execute(['name' => 'invoice', '--columns' => 'id', '--table' => 'billing_docs']);
+        $run = Console::run(new MakeSourceCommand($this->dir), ['name' => 'invoice', '--columns' => 'id', '--table' => 'billing_docs']);
 
         $this->assertStringContainsString("table: 'billing_docs',", $this->body('InvoiceSource'));
     }
@@ -90,16 +91,14 @@ final class MakeFromTableCommandsTest extends TestCase
     {
         // A secret omitted is the one thing about the generated file that is not
         // visible in the generated file.
-        $tester = new CommandTester(new MakeSourceCommand($this->dir));
-        $tester->execute(['name' => 'invoice', '--columns' => self::COLUMNS]);
+        $run = Console::run(new MakeSourceCommand($this->dir), ['name' => 'invoice', '--columns' => self::COLUMNS]);
 
-        $this->assertStringContainsString('password_hash', $tester->getDisplay());
+        $this->assertStringContainsString('password_hash', $run->display());
     }
 
     public function test_a_writable_source_takes_the_write_contracts_and_not_the_key(): void
     {
-        $tester = new CommandTester(new MakeSourceCommand($this->dir));
-        $tester->execute(['name' => 'invoice', '--columns' => self::COLUMNS, '--writable' => true]);
+        $run = Console::run(new MakeSourceCommand($this->dir), ['name' => 'invoice', '--columns' => self::COLUMNS, '--writable' => true]);
 
         $body = $this->body('InvoiceSource');
 
@@ -154,8 +153,7 @@ final class MakeFromTableCommandsTest extends TestCase
 
     public function test_a_module_reads_the_source_it_is_told_to(): void
     {
-        $tester = new CommandTester(new MakeModuleCommand($this->dir));
-        $tester->execute(['name' => 'addresses', '--columns' => 'id', '--source' => 'AddressSource']);
+        $run = Console::run(new MakeModuleCommand($this->dir), ['name' => 'addresses', '--columns' => 'id', '--source' => 'AddressSource']);
 
         $this->assertStringContainsString('->source(AddressSource::class)', $this->body('AddressesModule'));
     }
@@ -183,7 +181,7 @@ final class MakeFromTableCommandsTest extends TestCase
     public function test_a_writable_source_test_writes_what_the_writable_source_writes(): void
     {
         foreach ([new MakeSourceCommand($this->dir), new MakeSourceTestCommand($this->dir)] as $command) {
-            (new CommandTester($command))->execute(['name' => 'invoice', '--columns' => self::COLUMNS, '--writable' => true]);
+            Console::run($command, ['name' => 'invoice', '--columns' => self::COLUMNS, '--writable' => true])->code;
         }
 
         $this->assertStringContainsString("private const WRITABLE = ['invoice_number', 'status'];", $this->body('InvoiceSource'));
@@ -199,20 +197,18 @@ final class MakeFromTableCommandsTest extends TestCase
         $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
         $pdo->exec('CREATE TABLE tallies (id INTEGER PRIMARY KEY, n INTEGER NOT NULL)');
 
-        $tester = new CommandTester(new MakeSourceTestCommand($this->dir, new TableColumns(new PdoConnection($pdo))));
-        $tester->execute(['name' => 'tally']);
+        $run = Console::run(new MakeSourceTestCommand($this->dir, new TableColumns(new PdoConnection($pdo))), ['name' => 'tally']);
 
         $this->assertStringNotContainsString('searchMatchingSomeRows', $this->body('TallySourceTest'));
     }
 
     public function test_a_source_test_prints_the_sqlite_twin_it_depends_on(): void
     {
-        $tester = new CommandTester(new MakeSourceTestCommand($this->dir));
-        $tester->execute(['name' => 'invoice', '--columns' => self::COLUMNS]);
+        $run = Console::run(new MakeSourceTestCommand($this->dir), ['name' => 'invoice', '--columns' => self::COLUMNS]);
 
-        $this->assertStringContainsString('TestSchema.php', $tester->getDisplay());
-        $this->assertStringContainsString('CREATE TABLE invoices (', $tester->getDisplay());
-        $this->assertStringContainsString('id INTEGER PRIMARY KEY AUTOINCREMENT', $tester->getDisplay());
+        $this->assertStringContainsString('TestSchema.php', $run->display());
+        $this->assertStringContainsString('CREATE TABLE invoices (', $run->display());
+        $this->assertStringContainsString('id INTEGER PRIMARY KEY AUTOINCREMENT', $run->display());
     }
 
     public function test_an_entity_is_a_readonly_value_without_the_key(): void
@@ -255,8 +251,7 @@ final class MakeFromTableCommandsTest extends TestCase
 
     public function test_a_listener_hears_one_event_and_imports_it_once(): void
     {
-        $tester = new CommandTester(new MakeListenerCommand($this->dir));
-        $tester->execute(['name' => 'AuditWrites', '--event' => 'Hydra\Admin\Events\RowUpdated']);
+        $run = Console::run(new MakeListenerCommand($this->dir), ['name' => 'AuditWrites', '--event' => 'Hydra\Admin\Events\RowUpdated']);
 
         $body = $this->body('AuditWritesListener');
 
@@ -268,8 +263,7 @@ final class MakeFromTableCommandsTest extends TestCase
     {
         // A backslash is the shell's escape character as well as PHP's namespace
         // separator, so both spellings arrive and both have to work.
-        $tester = new CommandTester(new MakeListenerCommand($this->dir));
-        $tester->execute([
+        $run = Console::run(new MakeListenerCommand($this->dir), [
             'name' => 'AuditWrites',
             '--event' => 'Hydra\\\\Admin\\\\Events\\\\RowUpdated',
         ]);
@@ -279,31 +273,29 @@ final class MakeFromTableCommandsTest extends TestCase
 
     public function test_a_listener_defaults_to_the_event_every_admin_write_raises(): void
     {
-        $tester = new CommandTester(new MakeListenerCommand($this->dir));
-        $tester->execute(['name' => 'AuditWrites']);
+        $run = Console::run(new MakeListenerCommand($this->dir), ['name' => 'AuditWrites']);
 
         $this->assertStringContainsString('use Hydra\Admin\Events\AdminEvent;', $this->body('AuditWritesListener'));
         // The registration is the half a generator cannot write and the half
         // with the trap in it, so it is printed rather than summarised.
-        $this->assertStringContainsString('closure', $tester->getDisplay());
+        $this->assertStringContainsString('closure', $run->display());
     }
 
     public function test_without_a_database_or_a_column_list_it_says_which_is_missing(): void
     {
-        $tester = new CommandTester(new MakeSourceCommand($this->dir));
+        $run = Console::run(new MakeSourceCommand($this->dir), ['name' => 'invoice']);
 
-        $this->assertSame(Command::FAILURE, $tester->execute(['name' => 'invoice']));
-        $this->assertStringContainsString('No database connection', $tester->getDisplay());
-        $this->assertStringContainsString('--columns', $tester->getDisplay());
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('No database connection', $run->display());
+        $this->assertStringContainsString('--columns', $run->display());
         $this->assertSame([], glob($this->dir . '/*.php') ?: []);
     }
 
     private function generate(Command $command, string $name, string $class): string
     {
-        $tester = new CommandTester($command);
-        $tester->execute(['name' => $name, '--columns' => self::COLUMNS]);
+        $run = Console::run($command, ['name' => $name, '--columns' => self::COLUMNS]);
 
-        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertSame(ExitCode::Success, $run->code, $run->display());
 
         return $this->body($class);
     }

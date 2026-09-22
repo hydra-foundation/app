@@ -7,13 +7,13 @@ namespace App\Console\Commands;
 use App\Entities\Role;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Argument;
+use Hydra\Console\Attributes\AsCommand;
+use Hydra\Console\Command;
+use Hydra\Console\Contracts\InputInterface;
+use Hydra\Console\Contracts\OutputInterface;
+use Hydra\Console\ExitCode;
+use Hydra\Console\Option;
 
 /**
  * Creates an account from the terminal, which is how the first admin comes to
@@ -30,66 +30,67 @@ final class MakeUserCommand extends Command
     public function __construct(
         private readonly UserRepository $users,
         private readonly HasherInterface $hasher,
-    ) {
-        parent::__construct();
+    ) {}
+
+    public function arguments(): array
+    {
+        return [Argument::optional('username', 'The login username')];
     }
 
-    protected function configure(): void
+    public function options(): array
     {
-        $this->addArgument('username', InputArgument::OPTIONAL, 'The login username');
-        $this->addOption(
-            'role',
-            'r',
-            InputOption::VALUE_REQUIRED,
-            'One of: ' . implode(', ', Role::values()),
-            Role::DEFAULT->value,
-        );
+        return [
+            Option::value(
+                'role',
+                'r',
+                'One of: ' . implode(', ', Role::values()),
+                Role::DEFAULT->value,
+            ),
+        ];
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): ExitCode
     {
-        $io = new SymfonyStyle($input, $output);
 
-        $role = Role::tryFrom((string) $input->getOption('role'));
+        $role = Role::tryFrom($input->option('role'));
         if ($role === null) {
-            $io->error('Role must be one of: ' . implode(', ', Role::values()) . '.');
-            return Command::FAILURE;
+            $output->error('Role must be one of: ' . implode(', ', Role::values()) . '.');
+            return ExitCode::Failure;
         }
 
-        /** @var string|null $usernameArg */
-        $usernameArg = $input->getArgument('username');
+        $typed = $input->hasArgument('username');
 
         // Interactive: ->ask re-prompts when the validator throws. From the
         // argument: validate once and fail cleanly (no re-prompt, no stack trace).
-        if ($usernameArg === null) {
-            $username = (string) $io->ask('Username', null, $this->checkUsername(...));
+        if (!$typed) {
+            $username = (string) $output->ask('Username', null, $this->checkUsername(...));
         } else {
             try {
-                $username = $this->checkUsername(trim($usernameArg));
+                $username = $this->checkUsername(trim($input->argument('username')));
             } catch (\RuntimeException $e) {
-                $io->error($e->getMessage());
-                return Command::FAILURE;
+                $output->error($e->getMessage());
+                return ExitCode::Failure;
             }
         }
 
-        $password = $io->askHidden('Password (min 8 characters)', $this->checkPassword(...));
-        $confirm = $io->askHidden('Confirm password', $this->checkPassword(...));
+        $password = $output->askHidden('Password (min 8 characters)', $this->checkPassword(...));
+        $confirm = $output->askHidden('Confirm password', $this->checkPassword(...));
 
         if ($password !== $confirm) {
-            $io->error('Passwords do not match.');
-            return Command::FAILURE;
+            $output->error('Passwords do not match.');
+            return ExitCode::Failure;
         }
 
         $id = $this->users->create($username, $this->hasher->hash($password), $role);
 
-        $io->success("Created {$role->value} '{$username}' (id {$id}).");
+        $output->success("Created {$role->value} '{$username}' (id {$id}).");
 
-        return Command::SUCCESS;
+        return ExitCode::Success;
     }
 
     /**
      * Validate the username against the same rules as the admin form, throwing
-     * so SymfonyStyle re-prompts (interactive) or aborts (from the argument).
+     * so the output re-prompts (interactive) or aborts (from the argument).
      */
     private function checkUsername(string $username): string
     {

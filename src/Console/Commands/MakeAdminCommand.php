@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Argument;
+use Hydra\Console\ArrayInput;
+use Hydra\Console\Attributes\AsCommand;
+use Hydra\Console\Command;
+use Hydra\Console\Contracts\InputInterface;
+use Hydra\Console\Contracts\OutputInterface;
+use Hydra\Console\ExitCode;
+use Hydra\Console\Option;
 
 /**
  * Generates an admin module's whole set from one table: the source, the module
@@ -30,79 +30,89 @@ final class MakeAdminCommand extends Command
         private readonly MakeSourceTestCommand $test,
         private readonly MakeEntityCommand $entity,
         private readonly MakeRepositoryCommand $repository,
-    ) {
-        parent::__construct();
+    ) {}
+
+    public function arguments(): array
+    {
+        return [Argument::required('name', 'The thing the table holds, e.g. "invoice" or "invoices"')];
     }
 
-    protected function configure(): void
+    public function options(): array
     {
-        $this->addArgument('name', InputArgument::REQUIRED, 'The thing the table holds, e.g. "invoice" or "invoices"');
-        $this->addOption('table', 't', InputOption::VALUE_REQUIRED, 'The table to read. Defaults to the plural of the name.');
-        $this->addOption('columns', 'c', InputOption::VALUE_REQUIRED, 'A comma-separated column list, instead of reading the database.');
-        $this->addOption('writable', 'w', InputOption::VALUE_NONE, 'Write the source and its test with the create, update and delete contracts.');
-        $this->addOption('repository', 'r', InputOption::VALUE_NONE, 'Also write the entity and repository, for code outside the admin.');
-        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Overwrite existing files');
+        return [
+            Option::value('table', 't', 'The table to read. Defaults to the plural of the name.'),
+            Option::value('columns', 'c', 'A comma-separated column list, instead of reading the database.'),
+            Option::flag('writable', 'w', 'Write the source and its test with the create, update and delete contracts.'),
+            Option::flag('repository', 'r', 'Also write the entity and repository, for code outside the admin.'),
+            Option::flag('force', 'f', 'Overwrite existing files'),
+        ];
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): ExitCode
     {
-        $io = new SymfonyStyle($input, $output);
 
-        $singular = $this->singular($this->studly((string) $input->getArgument('name')));
+        $singular = $this->singular($this->studly($input->argument('name')));
 
         if ($singular === '') {
-            $io->error('Name must contain at least one letter or digit.');
+            $output->error('Name must contain at least one letter or digit.');
 
-            return self::FAILURE;
+            return ExitCode::Failure;
         }
 
         $plural = $this->plural($singular);
-        $table = $input->getOption('table');
-        $table = is_string($table) && $table !== '' ? $table : $this->snake($plural);
+        $table = $input->option('table');
+        $table = $table !== '' ? $table : $this->snake($plural);
+
+        // Each step: the generator, the class it writes, the options only it
+        // takes, and the flags only it takes.
+        $writable = $input->flag('writable') ? ['writable'] : [];
 
         $plan = [
-            [$this->source, $singular . 'Source', ['--writable' => $input->getOption('writable')]],
-            [$this->module, $plural . 'Module', ['--source' => $singular . 'Source']],
-            [$this->test, $singular . 'SourceTest', ['--writable' => $input->getOption('writable')]],
+            [$this->source, $singular . 'Source', [], $writable],
+            [$this->module, $plural . 'Module', ['source' => $singular . 'Source'], []],
+            [$this->test, $singular . 'SourceTest', [], $writable],
         ];
 
-        if ($input->getOption('repository')) {
-            $plan[] = [$this->entity, $singular, []];
-            $plan[] = [$this->repository, $singular . 'Repository', []];
+        if ($input->flag('repository')) {
+            $plan[] = [$this->entity, $singular, [], []];
+            $plan[] = [$this->repository, $singular . 'Repository', [], []];
         }
 
-        if (!$input->getOption('force')) {
+        if (!$input->flag('force')) {
             $existing = array_values(array_filter(
                 array_map(static fn (array $step): string => $step[0]->target($step[1]), $plan),
                 'is_file',
             ));
 
             if ($existing !== []) {
-                $io->error('Nothing was written. Re-run with --force to overwrite what already exists.');
-                $io->listing($existing);
+                $output->error('Nothing was written. Re-run with --force to overwrite what already exists.');
+                $output->listing($existing);
 
-                return self::FAILURE;
+                return ExitCode::Failure;
             }
         }
 
-        $shared = array_filter([
-            '--table' => $table,
-            '--columns' => $input->getOption('columns'),
-            '--force' => true,
-        ]);
+        // --force is passed on unconditionally: whether anything may be
+        // overwritten was decided once, above, for the set as a whole.
+        $shared = array_filter(['table' => $table, 'columns' => $input->option('columns')]);
 
-        foreach ($plan as [$command, $class, $options]) {
-            $status = $command->run(
-                new ArrayInput(['name' => $class, ...$shared, ...array_filter($options)]),
+        foreach ($plan as [$command, $class, $options, $flags]) {
+            $status = $command->execute(
+                ArrayInput::forCommand(
+                    $command,
+                    arguments: ['name' => $class],
+                    options: [...$shared, ...$options],
+                    flags: ['force', ...$flags],
+                ),
                 $output,
             );
 
-            if ($status !== self::SUCCESS) {
+            if ($status !== ExitCode::Success) {
                 return $status;
             }
         }
 
-        return self::SUCCESS;
+        return ExitCode::Success;
     }
 
     private function studly(string $name): string

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Support\Column;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Attributes\AsCommand;
+use Hydra\Console\Contracts\OutputInterface;
 
 /**
  * Generates an entity in App\Entities: the shape of one row, and nothing else.
@@ -102,8 +102,8 @@ final class MakeEntityCommand extends MakeFromTableCommand
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
     }
 
-    protected function afterCreate(SymfonyStyle $io, string $class): void
+    protected function afterCreate(OutputInterface $output, string $class): void
     {
-        $this->reportSecrets($io);
+        $this->reportSecrets($output);
     }
 }

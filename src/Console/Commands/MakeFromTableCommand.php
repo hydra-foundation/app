@@ -7,11 +7,11 @@ namespace App\Console\Commands;
 use App\Console\Support\Column;
 use App\Console\Support\TableColumns;
 use Hydra\Console\Commands\MakeClassCommand;
+use Hydra\Console\Contracts\InputInterface;
+use Hydra\Console\Contracts\OutputInterface;
+use Hydra\Console\ExitCode;
+use Hydra\Console\Option;
 use RuntimeException;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Shared base for the generators that write code shaped like a table:
@@ -46,38 +46,28 @@ abstract class MakeFromTableCommand extends MakeClassCommand
         return $this->targetDir . '/' . $class . '.php';
     }
 
-    protected function configure(): void
+    public function options(): array
     {
-        parent::configure();
-
-        $this->addOption(
-            'table',
-            't',
-            InputOption::VALUE_REQUIRED,
-            'The table to read. Defaults to the plural of the name.',
-        );
-        $this->addOption(
-            'columns',
-            'c',
-            InputOption::VALUE_REQUIRED,
-            'A comma-separated column list, instead of reading the database.',
-        );
+        return [
+            ...parent::options(),
+            Option::value('table', 't', 'The table to read. Defaults to the plural of the name.'),
+            Option::value('columns', 'c', 'A comma-separated column list, instead of reading the database.'),
+        ];
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): ExitCode
     {
-        $io = new SymfonyStyle($input, $output);
 
         try {
             $this->columns = $this->resolve($input);
         } catch (RuntimeException $e) {
-            $io->error($e->getMessage());
-            $io->note(
+            $output->error($e->getMessage());
+            $output->note(
                 'Pass --columns=id,name,created_at to write the declaration without a database, '
                 . 'or bring one up and re-run. The generated list is meant to be edited either way.',
             );
 
-            return self::FAILURE;
+            return ExitCode::Failure;
         }
 
         $this->table = $this->tableName($input);
@@ -92,13 +82,13 @@ abstract class MakeFromTableCommand extends MakeClassCommand
      */
     protected function tableName(InputInterface $input): string
     {
-        $given = $input->getOption('table');
+        $given = $input->option('table');
 
-        if (is_string($given) && $given !== '') {
+        if ($given !== '') {
             return $given;
         }
 
-        $base = strtolower(preg_replace('/[^A-Za-z0-9]+/', '_', (string) $input->getArgument('name')) ?? '');
+        $base = strtolower(preg_replace('/[^A-Za-z0-9]+/', '_', $input->argument('name')) ?? '');
         $base = trim($base, '_');
 
         foreach ([$this->suffix(), 'source', 'module', 'repository', 'entity'] as $tail) {
@@ -127,9 +117,9 @@ abstract class MakeFromTableCommand extends MakeClassCommand
      */
     private function resolve(InputInterface $input): array
     {
-        $given = $input->getOption('columns');
+        $given = $input->option('columns');
 
-        if (is_string($given) && trim($given) !== '') {
+        if (trim($given) !== '') {
             // An explicit list carries no types, so every column reads as text.
             // That is the honest result: the generator says what it was told and
             // guesses nothing further.
@@ -178,7 +168,7 @@ abstract class MakeFromTableCommand extends MakeClassCommand
      * secret left out is the one thing about the generated file that is not
      * visible in the generated file.
      */
-    protected function reportSecrets(SymfonyStyle $io): void
+    protected function reportSecrets(OutputInterface $output): void
     {
         $secrets = $this->secretNames();
 
@@ -186,7 +176,7 @@ abstract class MakeFromTableCommand extends MakeClassCommand
             return;
         }
 
-        $io->warning(sprintf(
+        $output->warning(sprintf(
             'Left out of the generated code: %s. A column that looks like a credential is not '
             . 'something to render into a list, a show screen and a CSV export by default. '
             . 'Add it back deliberately if it belongs, and write what happens to it by hand — '

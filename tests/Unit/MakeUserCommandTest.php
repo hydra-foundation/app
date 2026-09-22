@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Tests\Support\CommandRun;
+use App\Tests\Support\Console;
+use Hydra\Console\ExitCode;
 use App\Console\Commands\MakeUserCommand;
 use Hydra\Database\PdoConnection;
 use App\Repositories\UserRepository;
@@ -13,8 +16,6 @@ use PDO;
 use App\Tests\Support\TestSchema;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * make:user wired to a real UserRepository (in-memory sqlite) and the real
@@ -42,21 +43,21 @@ final class MakeUserCommandTest extends TestCase
      * @param array<string, mixed> $arguments
      * @param list<string> $inputs answers fed to the interactive prompts
      */
-    private function makeUser(array $arguments, array $inputs): CommandTester
+    private function makeUser(array $arguments, array $inputs): CommandRun
     {
-        $tester = new CommandTester(new MakeUserCommand($this->repo, $this->hasher));
-        $tester->setInputs($inputs);
-        $tester->execute($arguments);
-
-        return $tester;
+        return Console::run(
+            new MakeUserCommand($this->repo, $this->hasher),
+            $arguments,
+            answers: $inputs,
+        );
     }
 
     public function test_creates_a_user_with_a_verifiable_hash(): void
     {
-        $tester = $this->makeUser(['username' => 'alice'], ['s3cret-password', 's3cret-password']);
+        $run = $this->makeUser(['username' => 'alice'], ['s3cret-password', 's3cret-password']);
 
-        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
-        $this->assertStringContainsString("Created user 'alice'", $tester->getDisplay());
+        $this->assertSame(ExitCode::Success, $run->code);
+        $this->assertStringContainsString("Created user 'alice'", $run->display());
 
         $user = $this->repo->byUsername('alice');
         $this->assertNotNull($user);
@@ -67,36 +68,36 @@ final class MakeUserCommandTest extends TestCase
 
     public function test_creates_an_admin_when_role_option_given(): void
     {
-        $tester = $this->makeUser(['username' => 'root', '--role' => 'admin'], ['longenough', 'longenough']);
+        $run = $this->makeUser(['username' => 'root', '--role' => 'admin'], ['longenough', 'longenough']);
 
-        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame(ExitCode::Success, $run->code);
         $this->assertTrue($this->repo->byUsername('root')->isAdmin());
     }
 
     public function test_rejects_an_unknown_role(): void
     {
-        $tester = $this->makeUser(['username' => 'bob', '--role' => 'superuser'], []);
+        $run = $this->makeUser(['username' => 'bob', '--role' => 'superuser'], []);
 
-        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString('Role must be one of', $tester->getDisplay());
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('Role must be one of', $run->display());
         $this->assertNull($this->repo->byUsername('bob'));
     }
 
     public function test_fails_when_passwords_do_not_match(): void
     {
-        $tester = $this->makeUser(['username' => 'carol'], ['longenough', 'different1']);
+        $run = $this->makeUser(['username' => 'carol'], ['longenough', 'different1']);
 
-        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString('do not match', $tester->getDisplay());
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('do not match', $run->display());
         $this->assertNull($this->repo->byUsername('carol'));
     }
 
     public function test_rejects_a_structurally_invalid_username_argument(): void
     {
-        $tester = $this->makeUser(['username' => 'no'], []); // too short
+        $run = $this->makeUser(['username' => 'no'], []); // too short
 
-        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString('3', $tester->getDisplay());
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('3', $run->display());
         $this->assertNull($this->repo->byUsername('no'));
     }
 
@@ -104,17 +105,17 @@ final class MakeUserCommandTest extends TestCase
     {
         $this->repo->create('will', 'existing-hash');
 
-        $tester = $this->makeUser(['username' => 'will'], []);
+        $run = $this->makeUser(['username' => 'will'], []);
 
-        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString('already taken', $tester->getDisplay());
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('already taken', $run->display());
     }
 
     public function test_prompts_for_username_when_argument_omitted(): void
     {
-        $tester = $this->makeUser([], ['dave', 'longenough', 'longenough']);
+        $run = $this->makeUser([], ['dave', 'longenough', 'longenough']);
 
-        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame(ExitCode::Success, $run->code);
         $this->assertNotNull($this->repo->byUsername('dave'));
     }
 }

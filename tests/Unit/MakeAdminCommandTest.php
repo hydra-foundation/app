@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Tests\Support\CommandRun;
+use App\Tests\Support\Console;
+use Hydra\Console\ExitCode;
 use App\Console\Commands\MakeAdminCommand;
 use App\Console\Commands\MakeEntityCommand;
 use App\Console\Commands\MakeModuleCommand;
@@ -12,8 +15,6 @@ use App\Console\Commands\MakeSourceCommand;
 use App\Console\Commands\MakeSourceTestCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Tester\CommandTester;
 
 #[CoversClass(MakeAdminCommand::class)]
 final class MakeAdminCommandTest extends TestCase
@@ -41,9 +42,9 @@ final class MakeAdminCommandTest extends TestCase
 
     public function test_it_writes_the_source_the_module_and_the_source_test(): void
     {
-        $tester = $this->generate(['name' => 'address']);
+        $run = $this->generate(['name' => 'address']);
 
-        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertSame(ExitCode::Success, $run->code, $run->display());
         $this->assertSame(
             ['modules/AddressesModule.php', 'sources/AddressSource.php', 'tests/AddressSourceTest.php'],
             $this->written(),
@@ -96,10 +97,10 @@ final class MakeAdminCommandTest extends TestCase
         mkdir($this->dir . '/tests');
         file_put_contents($this->dir . '/tests/AddressSourceTest.php', 'hand-written');
 
-        $tester = $this->generate(['name' => 'address']);
+        $run = $this->generate(['name' => 'address']);
 
-        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString('AddressSourceTest.php', $tester->getDisplay());
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('AddressSourceTest.php', $run->display());
         $this->assertSame(['tests/AddressSourceTest.php'], $this->written());
         $this->assertSame('hand-written', $this->body('tests/AddressSourceTest.php'));
     }
@@ -109,28 +110,27 @@ final class MakeAdminCommandTest extends TestCase
         mkdir($this->dir . '/tests');
         file_put_contents($this->dir . '/tests/AddressSourceTest.php', 'hand-written');
 
-        $tester = $this->generate(['name' => 'address', '--force' => true]);
+        $run = $this->generate(['name' => 'address', '--force' => true]);
 
-        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame(ExitCode::Success, $run->code);
         $this->assertStringContainsString('final class AddressSourceTest', $this->body('tests/AddressSourceTest.php'));
     }
 
     public function test_without_a_database_or_a_column_list_nothing_is_written(): void
     {
-        $tester = new CommandTester($this->command());
+        $run = Console::run($this->command(), ['name' => 'address']);
 
-        $this->assertSame(Command::FAILURE, $tester->execute(['name' => 'address']));
-        $this->assertStringContainsString('No database connection', $tester->getDisplay());
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('No database connection', $run->display());
         $this->assertSame([], $this->written());
     }
 
     /** @param array<string, mixed> $input */
-    private function generate(array $input): CommandTester
+    private function generate(array $input): CommandRun
     {
-        $tester = new CommandTester($this->command());
-        $tester->execute([...$input, '--columns' => self::COLUMNS]);
+        $run = Console::run($this->command(), [...$input, '--columns' => self::COLUMNS]);
 
-        return $tester;
+        return $run;
     }
 
     private function command(): MakeAdminCommand

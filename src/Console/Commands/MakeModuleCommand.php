@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Support\Column;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Attributes\AsCommand;
+use Hydra\Console\Contracts\InputInterface;
+use Hydra\Console\Contracts\OutputInterface;
+use Hydra\Console\ExitCode;
+use Hydra\Console\Option;
 
 /**
  * Generates an admin module in App\Admin\Modules: the definition, its fields
@@ -31,22 +31,18 @@ final class MakeModuleCommand extends MakeFromTableCommand
 {
     private ?string $source = null;
 
-    protected function configure(): void
+    public function options(): array
     {
-        parent::configure();
-
-        $this->addOption(
-            'source',
-            's',
-            InputOption::VALUE_REQUIRED,
-            'The source class it reads. Defaults to the singular of the name, e.g. InvoiceSource.',
-        );
+        return [
+            ...parent::options(),
+            Option::value('source', 's', 'The source class it reads. Defaults to the singular of the name, e.g. InvoiceSource.'),
+        ];
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): ExitCode
     {
-        $given = $input->getOption('source');
-        $this->source = is_string($given) && $given !== '' ? $given : null;
+        $given = $input->option('source');
+        $this->source = $given !== '' ? $given : null;
 
         return parent::execute($input, $output);
     }
@@ -221,10 +217,10 @@ final class MakeModuleCommand extends MakeFromTableCommand
         return "'{$first}'";
     }
 
-    protected function afterCreate(SymfonyStyle $io, string $class): void
+    protected function afterCreate(OutputInterface $output, string $class): void
     {
-        $this->reportSecrets($io);
-        $io->note(sprintf(
+        $this->reportSecrets($output);
+        $output->note(sprintf(
             'Two steps left: add %s::class to AppServiceProvider::MODULES in sidebar order, '
             . 'and mirror the table in tests/Support/TestSchema.php or no test can see it. '
             . 'Then: php bin/console admin:check && php bin/console admin:routes',

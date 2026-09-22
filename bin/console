@@ -35,16 +35,15 @@ use App\Providers\AppServiceProvider;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\RouteCache;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\CommandLoader\FactoryCommandLoader;
+use Hydra\SymfonyConsole\ConsoleApplication;
 
 // The console entrypoint
 $app = Bootstrap::application(__DIR__ . '/..');
 $app->boot();
 $container = $app->container();
 
-$application = new Application('Hydra');
-$application->addCommands([
+$application = new ConsoleApplication('Hydra');
+$application->add(
     new KeyGenerateCommand(__DIR__ . '/../.env'),
     new RouteCacheCommand($container->get(RouteCache::class), AppServiceProvider::CONTROLLERS),
     new RouteCacheClearCommand($container->get(RouteCache::class)),
@@ -54,7 +53,7 @@ $application->addCommands([
     new MakeListenerCommand(__DIR__ . '/../src/Listeners'),
     new AdminRoutesCommand($container->get(ModuleRegistry::class), $container->get(ViewInterface::class)),
     new AdminCheckCommand($container->get(ModuleRegistry::class)),
-]);
+);
 
 // The table-shaped generators read the schema to fill in a column list, so
 // they are loaded lazily beside the migrate:* commands rather than eagerly:
@@ -68,24 +67,27 @@ $entity = static fn (): MakeEntityCommand => new MakeEntityCommand(__DIR__ . '/.
 $repository = static fn (): MakeRepositoryCommand => new MakeRepositoryCommand(__DIR__ . '/../src/Repositories', $tables());
 
 // The migrate:* commands need the database connection, so they are loaded lazily
-$application->setCommandLoader(new FactoryCommandLoader([
-    'migrate:run' => static fn () => new MigrateRunCommand($container->get(MigrationRunner::class)),
-    'migrate:fresh' => static fn () => new MigrateFreshCommand(
+// Keyed by class rather than by command name: the name is on each class's
+// #[AsCommand], so writing it out again here would be a second copy free to
+// disagree with the first.
+$application->addLazy([
+    MigrateRunCommand::class => static fn () => new MigrateRunCommand($container->get(MigrationRunner::class)),
+    MigrateFreshCommand::class => static fn () => new MigrateFreshCommand(
         $container->get(MigrationRunner::class),
         $container->get(AppConfig::class)->debug,
     ),
-    'migrate:status' => static fn () => new MigrateStatusCommand($container->get(MigrationRunner::class)),
-    'make:user' => static fn () => new MakeUserCommand(
+    MigrateStatusCommand::class => static fn () => new MigrateStatusCommand($container->get(MigrationRunner::class)),
+    MakeUserCommand::class => static fn () => new MakeUserCommand(
         $container->get(UserRepository::class),
         $container->get(HasherInterface::class),
     ),
 
-    'make:source' => $source,
-    'make:module' => $module,
-    'make:source-test' => $sourceTest,
-    'make:entity' => $entity,
-    'make:repository' => $repository,
-    'make:admin' => static fn () => new MakeAdminCommand($source(), $module(), $sourceTest(), $entity(), $repository()),
-]));
+    MakeSourceCommand::class => $source,
+    MakeModuleCommand::class => $module,
+    MakeSourceTestCommand::class => $sourceTest,
+    MakeEntityCommand::class => $entity,
+    MakeRepositoryCommand::class => $repository,
+    MakeAdminCommand::class => static fn () => new MakeAdminCommand($source(), $module(), $sourceTest(), $entity(), $repository()),
+]);
 
-$application->run();
+exit($application->run());

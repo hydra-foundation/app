@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Hydra\Console\Attributes\AsCommand;
 use Hydra\Console\Commands\MakeClassCommand;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Contracts\InputInterface;
+use Hydra\Console\Contracts\OutputInterface;
+use Hydra\Console\ExitCode;
+use Hydra\Console\Option;
 
 /**
  * Generates an event listener in App\Listeners: one invokable class that hears
@@ -28,22 +28,18 @@ final class MakeListenerCommand extends MakeClassCommand
 {
     private string $event = 'AdminEvent';
 
-    protected function configure(): void
+    public function options(): array
     {
-        parent::configure();
-
-        $this->addOption(
-            'event',
-            'e',
-            InputOption::VALUE_REQUIRED,
-            'The event class it hears, short or fully qualified. Defaults to Hydra\\Admin\\Events\\AdminEvent.',
-        );
+        return [
+            ...parent::options(),
+            Option::value('event', 'e', 'The event class it hears, short or fully qualified. Defaults to Hydra\Admin\Events\AdminEvent.'),
+        ];
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): ExitCode
     {
-        $given = $input->getOption('event');
-        $event = is_string($given) && $given !== '' ? $given : 'Hydra\\Admin\\Events\\AdminEvent';
+        $given = $input->option('event');
+        $event = $given !== '' ? $given : 'Hydra\\Admin\\Events\\AdminEvent';
 
         // A backslash is the shell's escape character as well as PHP's namespace
         // separator, so what arrives here has been doubled, or not, depending on
@@ -113,10 +109,10 @@ final class MakeListenerCommand extends MakeClassCommand
      * The registration is the half a generator cannot write, and the half with
      * the trap in it, so it is printed in full rather than summarised.
      */
-    protected function afterCreate(SymfonyStyle $io, string $class): void
+    protected function afterCreate(OutputInterface $output, string $class): void
     {
-        $io->note("Register it in AppServiceProvider::boot(), as a closure rather than an instance:");
-        $io->writeln(<<<TXT
+        $output->note("Register it in AppServiceProvider::boot(), as a closure rather than an instance:");
+        $output->write(<<<TXT
              \$listeners->listen({$this->shortEvent()}::class, static function ({$this->shortEvent()} \$event) use (\$container): void {
                  (\$container->get({$class}::class))(\$event);
              });

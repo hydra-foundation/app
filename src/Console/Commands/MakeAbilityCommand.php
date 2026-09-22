@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Hydra\Console\Attributes\AsCommand;
 use Hydra\Console\Commands\MakeClassCommand;
-use Symfony\Component\Console\Attribute\AsCommand;
 
 /**
  * Generates an ability class in App\Authorization, the unit the authorization

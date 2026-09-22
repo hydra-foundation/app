@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Support\Column;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Hydra\Console\Attributes\AsCommand;
+use Hydra\Console\Contracts\InputInterface;
+use Hydra\Console\Contracts\OutputInterface;
+use Hydra\Console\ExitCode;
+use Hydra\Console\Option;
 
 /**
  * Generates the contract test for an admin source in tests/Unit: the fixture
@@ -33,21 +33,17 @@ final class MakeSourceTestCommand extends MakeFromTableCommand
 
     private bool $writable = false;
 
-    protected function configure(): void
+    public function options(): array
     {
-        parent::configure();
-
-        $this->addOption(
-            'writable',
-            'w',
-            InputOption::VALUE_NONE,
-            'Hold the source to the write contracts as well, for a source made with make:source --writable.',
-        );
+        return [
+            ...parent::options(),
+            Option::flag('writable', 'w', 'Hold the source to the write contracts as well, for a source made with make:source --writable.'),
+        ];
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): ExitCode
     {
-        $this->writable = (bool) $input->getOption('writable');
+        $this->writable = $input->flag('writable');
 
         return parent::execute($input, $output);
     }
@@ -266,13 +262,13 @@ final class MakeSourceTestCommand extends MakeFromTableCommand
         return "CREATE TABLE {$this->table} (\n" . implode(",\n", $lines) . "\n)";
     }
 
-    protected function afterCreate(SymfonyStyle $io, string $class): void
+    protected function afterCreate(OutputInterface $output, string $class): void
     {
-        $io->note(
+        $output->note(
             "The test reads {$this->table} from tests/Support/TestSchema.php, never the migrations. "
             . 'If it is not mirrored there yet, this is a first draft of the sqlite twin — tighten '
             . 'NOT NULL, defaults and uniqueness to match the migration:',
         );
-        $io->writeln($this->schema());
+        $output->write($this->schema());
     }
 }
