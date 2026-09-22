@@ -75,6 +75,7 @@ final class UserSourceTest extends WritableSourceContractTestCase
         return 'grace';
     }
 
+    /** @return array<string, string> */
     protected function filterValues(): array
     {
         return ['role' => 'admin'];
