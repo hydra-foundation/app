@@ -48,6 +48,12 @@ final class ActivitySourceTest extends RowSourceContractTestCase
         $this->source = new ActivitySource(new PdoConnection($this->pdo));
     }
 
+    protected function filterValues(): array
+    {
+        // Three GETs and two 200s of the five, so neither reads as unfiltered.
+        return ['method' => 'GET', 'status' => '200'];
+    }
+
     protected function source(): SourceInterface
     {
         return $this->source;

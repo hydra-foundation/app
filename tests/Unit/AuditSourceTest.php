@@ -56,6 +56,12 @@ final class AuditSourceTest extends RowSourceContractTestCase
         $this->source = new AuditSource(new PdoConnection($this->pdo));
     }
 
+    protected function filterValues(): array
+    {
+        // Three of the five rows, so a dropped filter reads as five.
+        return ['module' => 'users'];
+    }
+
     protected function source(): SourceInterface
     {
         return $this->source;

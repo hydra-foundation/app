@@ -82,7 +82,11 @@ final class MakeSourceTestCommand extends MakeFromTableCommand
 
         $hooks = implode('', array_map(
             static fn (string $hook): string => "\n\n" . $hook,
-            array_filter([$this->searchHook(), $this->writable ? $this->writeHooks() : null]),
+            array_filter([
+                $this->searchHook(),
+                $this->filterHook(),
+                $this->writable ? $this->writeHooks() : null,
+            ]),
         ));
         $count = self::ROWS;
 
@@ -170,6 +174,39 @@ final class MakeSourceTestCommand extends MakeFromTableCommand
             protected function searchMatchingSomeRows(): string
             {
                 return '{$term}';
+            }
+        PHP;
+    }
+
+    /**
+     * A value per filterable column, since the contract case holds a source to
+     * running every filter it advertises rather than only declaring it.
+     *
+     * The same columns make:source declares filterable, read the same way, so
+     * the pair stays a pair: a source generated here arrives with its filters
+     * already exercised instead of with a hook somebody has to think of.
+     */
+    private function filterHook(): ?string
+    {
+        $filterable = array_values(array_filter(
+            $this->columns,
+            static fn (Column $c): bool => !$c->isSecret() && $c->looksFilterable(),
+        ));
+
+        if ($filterable === []) {
+            return null;
+        }
+
+        $pairs = implode(', ', array_map(
+            fn (Column $c): string => sprintf("'%s' => '%s'", $c->name, trim($this->value($c, 0), "'")),
+            $filterable,
+        ));
+
+        return <<<PHP
+            /** The first row's value in each. The five rows differ there, so each one narrows. */
+            protected function filterValues(): array
+            {
+                return [{$pairs}];
             }
         PHP;
     }

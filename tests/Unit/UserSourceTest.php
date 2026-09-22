@@ -38,9 +38,14 @@ final class UserSourceTest extends WritableSourceContractTestCase
         // No name carries a %, a _ or a !, which is what lets the wildcard
         // cases read a match for one of those as the search term reaching the
         // LIKE unescaped rather than as the data really holding it.
-        foreach (['ada', 'grace', 'alan', 'edsger', 'barbara'] as $username) {
+        // Two roles rather than one: role is the column the source filters by,
+        // and a fixture where every row holds the same value cannot tell a
+        // filter that ran from a filter that was dropped.
+        $users = ['ada' => 'admin', 'grace' => 'admin', 'alan' => 'user', 'edsger' => 'user', 'barbara' => 'user'];
+
+        foreach ($users as $username => $role) {
             $this->pdo->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
-                ->execute([$username, 'hashed-secret', 'user']);
+                ->execute([$username, 'hashed-secret', $role]);
         }
 
         $this->source = new UserSource(
@@ -68,6 +73,11 @@ final class UserSourceTest extends WritableSourceContractTestCase
     protected function searchMatchingSomeRows(): string
     {
         return 'grace';
+    }
+
+    protected function filterValues(): array
+    {
+        return ['role' => 'admin'];
     }
 
     protected function newRow(): array

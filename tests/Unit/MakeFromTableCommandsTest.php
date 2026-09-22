@@ -169,6 +169,28 @@ final class MakeFromTableCommandsTest extends TestCase
         $this->assertStringContainsString('INSERT INTO invoices (invoice_number, status, password_hash, created_at)', $test);
     }
 
+    public function test_a_source_test_runs_every_filter_the_source_declares(): void
+    {
+        // The pair admin:check cannot close: it reconciles the module against
+        // the source's declaration, and both are declarations. A value per
+        // filterable column is what makes the generated test run one.
+        $source = $this->generate(new MakeSourceCommand($this->dir), 'invoice', 'InvoiceSource');
+        $test = $this->generate(new MakeSourceTestCommand($this->dir), 'invoice', 'InvoiceSourceTest');
+
+        $this->assertStringContainsString("filterable: ['status'],", $source);
+        $this->assertStringContainsString("return ['status' => 'value one'];", $test);
+    }
+
+    public function test_a_table_with_nothing_to_filter_leaves_filters_to_the_contract_default(): void
+    {
+        $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $pdo->exec('CREATE TABLE tallies (id INTEGER PRIMARY KEY, n INTEGER NOT NULL)');
+
+        $run = Console::run(new MakeSourceTestCommand($this->dir, new TableColumns(new PdoConnection($pdo))), ['name' => 'tally']);
+
+        $this->assertStringNotContainsString('filterValues', $this->body('TallySourceTest'));
+    }
+
     public function test_a_read_only_source_test_stops_at_the_row_case(): void
     {
         $test = $this->generate(new MakeSourceTestCommand($this->dir), 'invoice', 'InvoiceSourceTest');
