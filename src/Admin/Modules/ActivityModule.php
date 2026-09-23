@@ -50,7 +50,6 @@ final class ActivityModule implements ModuleInterface
             ->defaultSort('id', 'desc')
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
-                Field::datetime('created_at')->labelled('Created at')->sortable()->relative(),
                 Field::text('username')->labelled('User')->sortable()->searchable()->emptyAs('guest'),
                 Field::select('method', self::METHODS)->sortable()->filterable(),
                 Field::text('path')->labelled('URI')->sortable()->searchable()
@@ -63,6 +62,7 @@ final class ActivityModule implements ModuleInterface
                 Field::text('ip')->labelled('IP')->sortable()->searchable(),
                 Field::text('user_agent')->labelled('Agent')->truncate(32),
                 Field::text('referer')->truncate(32),
+                Field::datetime('created_at')->labelled('Created')->sortable()->relative(),
             )
             ->screens(
                 ShowScreen::make()->title('Request'),

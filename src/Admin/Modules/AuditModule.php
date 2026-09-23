@@ -36,13 +36,13 @@ final class AuditModule implements ModuleInterface
             ->defaultSort('id', 'desc')
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
-                Field::datetime('created_at')->labelled('Changed at')->sortable()->relative(),
                 Field::text('username')->labelled('User')->sortable()->searchable()->emptyAs('system'),
                 Field::select('module', self::MODULES)->labelled('Module')->sortable()->filterable(),
                 Field::text('table_id')->labelled('Row')->sortable()->searchable(),
                 Field::text('message')->searchable(),
                 Field::text('old_value')->labelled('Before')->truncate(32),
                 Field::text('new_value')->labelled('After')->truncate(32),
+                Field::datetime('created_at')->labelled('Changed')->sortable()->relative(),
             )
             ->screens(
                 ShowScreen::make()->title('Change'),
