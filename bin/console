@@ -35,6 +35,9 @@ use App\Providers\AppServiceProvider;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\RouteCache;
+use Hydra\Queue\Console\QueueFailedCommand;
+use Hydra\Queue\Console\QueueRetryCommand;
+use Hydra\Queue\DatabaseQueue;
 use Hydra\Scheduler\Console\ScheduleRunCommand;
 use Hydra\Scheduler\Runner;
 use Hydra\SymfonyConsole\ConsoleApplication;
@@ -91,6 +94,8 @@ $application->addLazy([
     MakeRepositoryCommand::class => $repository,
     MakeAdminCommand::class => static fn () => new MakeAdminCommand($source(), $module(), $sourceTest(), $entity(), $repository()),
     ScheduleRunCommand::class => static fn () => new ScheduleRunCommand($container->get(Runner::class)),
+    QueueFailedCommand::class => static fn () => new QueueFailedCommand($container->get(DatabaseQueue::class)),
+    QueueRetryCommand::class => static fn () => new QueueRetryCommand($container->get(DatabaseQueue::class)),
 ]);
 
 exit($application->run());
