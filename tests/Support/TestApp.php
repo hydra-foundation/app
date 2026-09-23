@@ -107,6 +107,7 @@ final class TestApp
         $container->instance(AuthConfig::class, new AuthConfig(hashCost: 4));
 
         $pdo = TestSchema::connect();
+        $container->instance(PDO::class, $pdo);
         $container->instance(ConnectionInterface::class, new PdoConnection($pdo));
 
         return new self($application, $container, $log, $pdo);

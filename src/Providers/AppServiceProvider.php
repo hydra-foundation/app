@@ -44,11 +44,15 @@ use Hydra\Http\{
     TrustedProxies,
 };
 use Hydra\Log\StreamLogger;
+use Hydra\Queue\Contracts\QueueInterface;
+use Hydra\Queue\{DatabaseQueue, Worker};
+use Hydra\Scheduler\Schedule;
 use Hydra\Session\StartSessionMiddleware;
 use Hydra\Throttle\RateLimitMiddleware;
 use Hydra\View\Contracts\ViewInterface;
 use Hydra\View\PhpView;
 use PDO;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -147,6 +151,27 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(PDO::class),
                 dirname(__DIR__, 2) . '/database/migrations',
                 $container->get(DbConfig::class)->driver,
+            );
+        });
+
+        // PDO's own driver name rather than DB_DRIVER, which may say mariadb.
+        $container->singleton(DatabaseQueue::class, function () use ($container) {
+            return new DatabaseQueue(
+                $container->get(ConnectionInterface::class),
+                $container->get(ClockInterface::class),
+                $container->get(PDO::class)->getAttribute(PDO::ATTR_DRIVER_NAME),
+            );
+        });
+
+        $container->singleton(QueueInterface::class, function () use ($container) {
+            return $container->get(DatabaseQueue::class);
+        });
+
+        $container->singleton(Worker::class, function () use ($container) {
+            return new Worker(
+                $container->get(DatabaseQueue::class),
+                $container,
+                $container->get(LoggerInterface::class),
             );
         });
 
@@ -291,10 +316,12 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the application event listeners
+     * Register the application event listeners and the schedule
      */
     public function boot(ContainerInterface $container): void
     {
+        $container->get(Schedule::class)->drain(Worker::class)->everyMinute()->for(5);
+
         $listeners = $container->get(ListenerProvider::class);
         $audit = new LogAuthEventsListener($container->get(LoggerInterface::class));
 

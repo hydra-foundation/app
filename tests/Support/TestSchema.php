@@ -79,5 +79,28 @@ final class TestSchema
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )'
         );
+
+        $pdo->exec(
+            'CREATE TABLE jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                attempts INTEGER NOT NULL DEFAULT 0,
+                available_at INTEGER NOT NULL,
+                reserved_at INTEGER NULL,
+                reservation TEXT NULL,
+                created_at INTEGER NOT NULL
+            )'
+        );
+
+        $pdo->exec(
+            'CREATE TABLE failed_jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                exception TEXT NOT NULL,
+                failed_at INTEGER NOT NULL
+            )'
+        );
     }
 }
