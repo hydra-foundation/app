@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Admin\Sources\UserSource;
+use App\Repositories\UserRepository;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Testing\WritableSourceContractTestCase;
@@ -49,11 +50,8 @@ final class UserSourceTest extends WritableSourceContractTestCase
                 ->execute([$username, "{$username}@example.com", 'hashed-secret', $role]);
         }
 
-        $this->source = new UserSource(
-            new PdoConnection($this->pdo),
-            $this->guard(),
-            new FakeHasher,
-        );
+        $db = new PdoConnection($this->pdo);
+        $this->source = new UserSource($db, $this->guard(), new FakeHasher, new UserRepository($db));
     }
 
     protected function source(): SourceInterface

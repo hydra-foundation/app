@@ -11,6 +11,8 @@ use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Auth\AuthServiceProvider;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Contracts\UserProviderInterface;
+use Hydra\Auth\SessionGuard;
 use Hydra\Authorization\AuthorizationServiceProvider;
 use Hydra\Cache\Testing\ArrayCacheServiceProvider;
 use Hydra\Core\Application;
@@ -31,6 +33,7 @@ use Hydra\Mail\Testing\FakeMailer;
 use Hydra\Mail\Testing\FakeMailServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
+use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Session\Testing\ArraySessionServiceProvider;
 use Hydra\Throttle\ThrottleServiceProvider;
 use PDO;
@@ -141,6 +144,22 @@ final class TestApp
     public function mailer(): FakeMailer
     {
         return $this->container->get(FakeMailer::class);
+    }
+
+    /**
+     * The guard the next request would build over this session. The container's
+     * own caches the user for the whole test, so it never re-checks a session.
+     */
+    public function nextGuard(): SessionGuard
+    {
+        $session = $this->container->get(SessionInterface::class);
+        $session->start();
+
+        return new SessionGuard(
+            $session,
+            $this->container->get(UserProviderInterface::class),
+            $this->container->get(HasherInterface::class),
+        );
     }
 
     /** A client whose unsafe requests carry the session's CSRF token. */

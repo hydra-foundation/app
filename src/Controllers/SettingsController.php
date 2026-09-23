@@ -23,7 +23,6 @@ use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\Exceptions\NotFoundException;
 use Hydra\Http\ParsedBody;
 use Hydra\Http\Status;
-use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Throttle\Exceptions\TooManyRequestsException;
 use Hydra\Throttle\RateLimiter;
 use Hydra\Throttle\RateLimitPolicy;
@@ -64,7 +63,6 @@ final class SettingsController
         private readonly AccountPresenter $accountPresenter,
         private readonly UserRepository $users,
         private readonly HasherInterface $hasher,
-        private readonly SessionInterface $session,
         private readonly RateLimiter $limiter,
         private readonly Validator $validator,
         private readonly AuditRepository $audit,
@@ -121,7 +119,7 @@ final class SettingsController
         }
 
         $this->users->updatePassword($user->id, $this->hasher->hash($data['password']));
-        $this->session->regenerate();
+        $this->guard->refresh($this->users->byIdentifier($user->id) ?? throw new NotFoundException);
         $this->auditPasswordChange($user);
 
         return $this->account($request, notice: Notice::saved());

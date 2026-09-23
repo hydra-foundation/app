@@ -194,6 +194,7 @@ final class RecordActivityMiddlewareTest extends TestCase
                 return false;
             }
             public function login(AuthenticatableInterface $user): void {}
+            public function refresh(AuthenticatableInterface $user): void {}
             public function logout(): void {}
         };
     }

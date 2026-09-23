@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Sources;
 
 use App\Entities\Role;
+use App\Repositories\UserRepository;
 use Hydra\Admin\Contracts\CreateSourceInterface;
 use Hydra\Admin\Contracts\DeleteSourceInterface;
 use Hydra\Admin\Contracts\UpdateSourceInterface;
@@ -26,6 +27,7 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
         ConnectionInterface $db,
         private readonly GuardInterface $guard,
         private readonly HasherInterface $hasher,
+        private readonly UserRepository $users,
     ) {
         parent::__construct(
             $db,
@@ -100,6 +102,16 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             SET %s
             WHERE id=?', $this->table, implode(', ', $columns));
         $this->db->execute($sql, $params);
+
+        // A new password ends every session the account has, the one making
+        // this edit included when it is the admin's own row.
+        if (($data['password'] ?? '') !== '' && (string) $this->guard->id() === (string) $key) {
+            $self = $this->users->byIdentifier($key);
+
+            if ($self !== null) {
+                $this->guard->refresh($self);
+            }
+        }
     }
 
     public function delete(string $id): void
