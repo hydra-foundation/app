@@ -105,6 +105,7 @@ final class EmailVerificationFlowTest extends TestCase
             $this->http->post('/verify-email');
         }
 
+        $this->app->work();
         $this->app->mailer()->assertSent(times: 3);
         $this->admin()->assertSee('A link was sent recently.');
     }
@@ -114,7 +115,7 @@ final class EmailVerificationFlowTest extends TestCase
         $this->http->post('/logout');
 
         $this->http->post('/verify-email')->assertRedirect('/login');
-        $this->app->mailer()->assertNothingSent();
+        $this->assertSame(0, $this->app->queued());
     }
 
     public function test_a_verified_user_is_sent_nothing(): void
@@ -125,7 +126,7 @@ final class EmailVerificationFlowTest extends TestCase
 
         $this->http->post('/verify-email');
 
-        $this->app->mailer()->assertNothingSent();
+        $this->assertSame(0, $this->app->queued());
     }
 
     public function test_the_token_never_reaches_the_activity_log(): void
@@ -152,6 +153,7 @@ final class EmailVerificationFlowTest extends TestCase
     private function requestLink(): string
     {
         $this->http->post('/verify-email');
+        $this->app->work();
 
         $text = (string) $this->app->mailer()->sent()[0]->getText();
 

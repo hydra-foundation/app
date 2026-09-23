@@ -50,6 +50,11 @@ final class PasswordResetFlowTest extends TestCase
 
         $this->assertSame($known->status(), $unknown->status());
         $this->assertSame($this->withoutCsrf($known->body()), $this->withoutCsrf($unknown->body()));
+        // Both queue a job, so neither request does work the other skips.
+        $this->assertSame(2, $this->app->queued());
+        $this->app->mailer()->assertNothingSent();
+
+        $this->assertSame(2, $this->app->work());
         $this->app->mailer()->assertSent(times: 1);
         $this->app->mailer()->assertSentTo('clerk@example.com');
     }
@@ -131,6 +136,7 @@ final class PasswordResetFlowTest extends TestCase
             $answers[] = $this->withoutCsrf($this->http->post('/forgot-password', ['email' => 'clerk@example.com'])->body());
         }
 
+        $this->app->work();
         $this->app->mailer()->assertSent(times: 3);
         $this->assertCount(1, array_unique($answers));
     }
@@ -144,9 +150,8 @@ final class PasswordResetFlowTest extends TestCase
         $this->http->post('/forgot-password', ['email' => 'someone6@example.com'])->assertStatus(429);
     }
 
-    public function test_a_mail_failure_gives_the_same_answer(): void
+    public function test_a_mail_failure_is_retried_by_the_worker_and_never_reaches_the_answer(): void
     {
-        // Otherwise a 500 would tell a caller the address has an account.
         $this->app->container()->instance(MailerInterface::class, new class implements MailerInterface {
             public function send(Message $message): void
             {
@@ -157,6 +162,23 @@ final class PasswordResetFlowTest extends TestCase
         $this->http->post('/forgot-password', ['email' => 'clerk@example.com'])
             ->assertOk()
             ->assertSee('a reset link is on its way');
+
+        $this->app->work();
+
+        $this->assertTrue($this->app->log()->has(
+            'Queued job App\Jobs\SendPasswordResetLink failed on attempt 1 of 3 and will be tried again in 10 seconds: SMTP is down',
+        ));
+        $this->assertSame(1, $this->app->queued());
+    }
+
+    public function test_the_queued_job_holds_the_address_and_never_a_link(): void
+    {
+        $this->http->post('/forgot-password', ['email' => 'clerk@example.com']);
+
+        $this->assertSame(
+            [['job' => 'App\Jobs\SendPasswordResetLink', 'payload' => '{"email":"clerk@example.com"}']],
+            $this->app->db()->select('SELECT job, payload FROM jobs'),
+        );
     }
 
     public function test_a_malformed_address_is_sent_back(): void
@@ -165,13 +187,14 @@ final class PasswordResetFlowTest extends TestCase
             ->assertStatus(422)
             ->assertSee('Enter a valid email address.');
 
-        $this->app->mailer()->assertNothingSent();
+        $this->assertSame(0, $this->app->queued());
     }
 
     /** Asks for a link for the seeded account and returns its path. */
     private function requestLink(): string
     {
         $this->http->post('/forgot-password', ['email' => 'clerk@example.com']);
+        $this->app->work();
 
         $text = (string) $this->app->mailer()->sent()[0]->getText();
 

@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Config\AppConfig;
 use App\Entities\User;
 use App\Http\Middleware\RedirectAuthenticatedMiddleware;
-use App\Mail\PasswordResetMail;
+use App\Jobs\SendPasswordResetLink;
 use App\Repositories\UserRepository;
 use App\ViewModels\ForgotPasswordViewModel;
 use App\ViewModels\ResetPasswordViewModel;
-use Hydra\Auth\AuthConfig;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Auth\PasswordResetTokens;
 use Hydra\Http\Attributes\Route;
 use Hydra\Http\ParsedBody;
 use Hydra\Http\Responder;
 use Hydra\Http\Status;
-use Hydra\Mail\Contracts\MailerInterface;
+use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Throttle\RateLimiter;
 use Hydra\Throttle\RateLimitPolicy;
@@ -31,8 +29,6 @@ use Hydra\Validation\Validator;
 use Hydra\View\Contracts\ViewInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Log\LoggerInterface;
-use Throwable;
 
 /**
  * Forgotten passwords. The emailed link carries the token only as far as the
@@ -71,12 +67,9 @@ final class PasswordResetController extends Controller
         private readonly PasswordResetTokens $tokens,
         private readonly HasherInterface $hasher,
         private readonly SessionInterface $session,
-        private readonly MailerInterface $mailer,
+        private readonly QueueInterface $queue,
         private readonly RateLimiter $limiter,
         private readonly Validator $validator,
-        private readonly AppConfig $app,
-        private readonly AuthConfig $auth,
-        private readonly LoggerInterface $logger,
     ) {
         parent::__construct($respond, $view);
     }
@@ -108,12 +101,10 @@ final class PasswordResetController extends Controller
 
         $perAddress = new RateLimitPolicy('password-reset-address', self::PER_ADDRESS, self::WINDOW);
 
+        // Queued whether or not the address has an account, which the job
+        // finds out: looking it up here is what made a known address slower.
         if ($this->limiter->hit(strtolower($email), $perAddress)->allowed) {
-            $user = $this->users->byEmail($email);
-
-            if ($user !== null) {
-                $this->send($user);
-            }
+            $this->queue->push(SendPasswordResetLink::class, ['email' => $email]);
         }
 
         return $this->render('auth/forgot/index', ['vm' => new ForgotPasswordViewModel(status: self::SENT)]);
@@ -184,23 +175,5 @@ final class PasswordResetController extends Controller
         $user = is_string($token) ? $this->tokens->resolve($token) : null;
 
         return $user instanceof User ? $user : null;
-    }
-
-    /**
-     * A transport failure is logged and swallowed. Surfacing it would answer
-     * "does this address have an account" with a 500.
-     */
-    private function send(User $user): void
-    {
-        $link = rtrim($this->app->url, '/') . '/reset-password/' . $this->tokens->create($user);
-
-        try {
-            $this->mailer->send(PasswordResetMail::to($user, $link, $this->auth->resetTtl, $this->app->name));
-        } catch (Throwable $e) {
-            $this->logger->error('Could not send a password reset link: ' . $e->getMessage(), [
-                'user_id' => $user->id,
-                'exception' => $e,
-            ]);
-        }
     }
 }

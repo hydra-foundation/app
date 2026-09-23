@@ -33,6 +33,7 @@ use Hydra\Mail\Testing\FakeMailer;
 use Hydra\Mail\Testing\FakeMailServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
+use Hydra\Queue\Worker;
 use Hydra\Scheduler\SchedulerServiceProvider;
 use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Session\Testing\ArraySessionServiceProvider;
@@ -147,6 +148,24 @@ final class TestApp
     public function mailer(): FakeMailer
     {
         return $this->container->get(FakeMailer::class);
+    }
+
+    /** Drains the queue as the scheduler would, and says how many jobs it took. */
+    public function work(): int
+    {
+        $worker = $this->container->get(Worker::class);
+        $total = 0;
+
+        while (($handled = $worker->batch()) > 0) {
+            $total += $handled;
+        }
+
+        return $total;
+    }
+
+    public function queued(): int
+    {
+        return count($this->db()->select('SELECT id FROM jobs'));
     }
 
     /**

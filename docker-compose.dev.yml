@@ -32,3 +32,12 @@ services:
   nginx:
     ports:
       - "${APP_PORT:-8080}:80"
+
+  # Catches every message sent to mailpit:1025 and delivers none of them. The
+  # inbox is on localhost only: it holds working reset links.
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
+    networks:
+      - net

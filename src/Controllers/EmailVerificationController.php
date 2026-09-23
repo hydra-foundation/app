@@ -4,26 +4,22 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Config\AppConfig;
 use App\Entities\User;
-use App\Mail\VerifyEmailMail;
+use App\Jobs\SendVerificationLink;
 use App\Repositories\UserRepository;
 use App\View\VerificationBanner;
-use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\EmailVerificationTokens;
 use Hydra\Http\Attributes\Route;
 use Hydra\Http\Responder;
 use Hydra\Http\Status;
-use Hydra\Mail\Contracts\MailerInterface;
+use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Throttle\RateLimiter;
 use Hydra\Throttle\RateLimitPolicy;
 use Hydra\View\Contracts\ViewInterface;
 use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Log\LoggerInterface;
-use Throwable;
 
 /**
  * Proving an account's address. The link moves its token into the session
@@ -48,11 +44,8 @@ final class EmailVerificationController extends Controller
         private readonly EmailVerificationTokens $tokens,
         private readonly GuardInterface $guard,
         private readonly SessionInterface $session,
-        private readonly MailerInterface $mailer,
+        private readonly QueueInterface $queue,
         private readonly RateLimiter $limiter,
-        private readonly AppConfig $app,
-        private readonly AuthConfig $auth,
-        private readonly LoggerInterface $logger,
     ) {
         parent::__construct($respond, $view);
     }
@@ -106,18 +99,7 @@ final class EmailVerificationController extends Controller
             return 'A link was sent recently. Check your inbox, or try again in an hour.';
         }
 
-        $link = rtrim($this->app->url, '/') . '/verify-email/' . $this->tokens->create($user);
-
-        try {
-            $this->mailer->send(VerifyEmailMail::to($user, $link, $this->auth->verifyTtl, $this->app->name));
-        } catch (Throwable $e) {
-            $this->logger->error('Could not send an email verification link: ' . $e->getMessage(), [
-                'user_id' => $user->id,
-                'exception' => $e,
-            ]);
-
-            return 'The link could not be sent. Try again in a few minutes.';
-        }
+        $this->queue->push(SendVerificationLink::class, ['user' => $user->id]);
 
         return "A verification link is on its way to {$user->email}.";
     }
