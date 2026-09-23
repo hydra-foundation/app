@@ -17,6 +17,7 @@
 # and ./bin/dev applies it for you.
 #
 #   ./bin/dev up -d --build         # base + dev (xdebug, dev.ini), recommended
+#   ./bin/dev logs -f scheduler     # what schedule:run did each minute
 #   docker compose up -d            # base only, production-shaped
 
 services:
@@ -30,6 +31,29 @@ services:
       - ../:/var/www/html
       # prod.ini by default; dev.yml swaps in dev.ini at the same target.
       - ./docker/php/prod.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
+    networks:
+      - net
+
+  # cron for schedule:run, without cron: the same image, ticking once a minute.
+  # Each run is started in the background the way cron would start it, so a
+  # long drain does not hold up the minutes after it; "(… &)" hands the run to
+  # PID 1, which init: true makes tini, so finished runs are reaped rather than
+  # left as zombies. Root, like `docker exec`: www-data cannot write into the
+  # bind-mounted bootstrap/cache, and the web never reads the locks.
+  scheduler:
+    build:
+      context: ./docker/php
+      args:
+        BUILD_MODE: ${BUILD_MODE:-prod}
+    init: true
+    working_dir: /var/www/html/app
+    command: ["sh", "-c", "while :; do (php bin/console schedule:run &); sleep $$((60 - $$(date +%s) % 60)); done"]
+    volumes:
+      - ../:/var/www/html
+      - ./docker/php/prod.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
+    depends_on:
+      - db
+      - redis
     networks:
       - net
 

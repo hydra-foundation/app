@@ -33,6 +33,7 @@ use Hydra\Mail\Testing\FakeMailer;
 use Hydra\Mail\Testing\FakeMailServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
+use Hydra\Scheduler\SchedulerServiceProvider;
 use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Session\Testing\ArraySessionServiceProvider;
 use Hydra\Throttle\ThrottleServiceProvider;
@@ -86,6 +87,7 @@ final class TestApp
                 routeCacheEnabled: false,
                 routeCachePath: '/dev/null',
             ))
+            ->register(new SchedulerServiceProvider(lockPath: sys_get_temp_dir() . '/hydra-app-locks-' . getmypid()))
             ->register(new AppServiceProvider)
             ->register(new AdminServiceProvider(
                 modules: AppServiceProvider::MODULES,

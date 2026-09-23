@@ -35,6 +35,8 @@ use App\Providers\AppServiceProvider;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\RouteCache;
+use Hydra\Scheduler\Console\ScheduleRunCommand;
+use Hydra\Scheduler\Runner;
 use Hydra\SymfonyConsole\ConsoleApplication;
 
 // The console entrypoint
@@ -88,6 +90,7 @@ $application->addLazy([
     MakeEntityCommand::class => $entity,
     MakeRepositoryCommand::class => $repository,
     MakeAdminCommand::class => static fn () => new MakeAdminCommand($source(), $module(), $sourceTest(), $entity(), $repository()),
+    ScheduleRunCommand::class => static fn () => new ScheduleRunCommand($container->get(Runner::class)),
 ]);
 
 exit($application->run());

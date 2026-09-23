@@ -17,6 +17,7 @@ use Hydra\Kernel\Kernel;
 use Hydra\Mail\MailServiceProvider;
 use Hydra\Nyholm\NyholmServiceProvider;
 use Hydra\PhpDi\Container;
+use Hydra\Scheduler\SchedulerServiceProvider;
 use Hydra\Throttle\ThrottleServiceProvider;
 
 /**
@@ -43,6 +44,7 @@ final class Bootstrap
                 routeCacheEnabled: $routeCacheEnabled,
                 routeCachePath: $basePath . '/bootstrap/cache/routes.php',
             ))
+            ->register(new SchedulerServiceProvider(lockPath: $basePath . '/bootstrap/cache/scheduler'))
             ->register(new AppServiceProvider)
             ->register(new AdminServiceProvider(
                 modules: AppServiceProvider::MODULES,

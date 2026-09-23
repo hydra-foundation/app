@@ -26,6 +26,7 @@
         "hydrakit/cache": "^0.9",
         "hydrakit/http": "^0.9",
         "hydrakit/validation": "^0.9",
+        "hydrakit/scheduler": "^0.9",
         "hydrakit/session": "^0.9",
         "hydrakit/throttle": "^0.9",
         "hydrakit/csrf": "^0.9",

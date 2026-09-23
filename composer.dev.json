@@ -35,6 +35,7 @@
         "hydrakit/cache": "*",
         "hydrakit/http": "*",
         "hydrakit/validation": "*",
+        "hydrakit/scheduler": "*",
         "hydrakit/session": "*",
         "hydrakit/throttle": "*",
         "hydrakit/csrf": "*",
