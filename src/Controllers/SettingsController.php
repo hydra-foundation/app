@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Admin\Presenters\AccountPresenter;
 use App\Admin\Presenters\AppearancePresenter;
 use App\Admin\Presenters\RegionalPresenter;
+use App\Entities\Audit;
+use App\Entities\User;
+use App\Repositories\AuditRepository;
 use App\Repositories\PreferenceRepository;
+use App\Repositories\UserRepository;
 use App\View\Themes;
 use App\View\Timezones;
 use Hydra\Admin\Chrome;
@@ -14,11 +19,23 @@ use Hydra\Admin\ModuleRegistry;
 use Hydra\Admin\Notice;
 use Hydra\Admin\Renderer;
 use Hydra\Auth\Contracts\GuardInterface;
+use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\Exceptions\NotFoundException;
 use Hydra\Http\ParsedBody;
 use Hydra\Http\Status;
+use Hydra\Session\Contracts\SessionInterface;
+use Hydra\Throttle\Exceptions\TooManyRequestsException;
+use Hydra\Throttle\RateLimiter;
+use Hydra\Throttle\RateLimitPolicy;
+use Hydra\Validation\Rules\Confirmed;
+use Hydra\Validation\Rules\MaxLength;
+use Hydra\Validation\Rules\MinLength;
+use Hydra\Validation\Rules\Required;
+use Hydra\Validation\Validator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * The write half of the settings module. Its screens are declared there and
@@ -27,6 +44,13 @@ use Psr\Http\Message\ServerRequestInterface as Request;
  */
 final class SettingsController
 {
+    /** The same ceiling the login form holds a password to. */
+    private const MAX_PASSWORD = 4096;
+
+    private const PASSWORD_CHECKS = 5;
+
+    private const PASSWORD_WINDOW = 3600;
+
     public function __construct(
         private readonly ModuleRegistry $registry,
         private readonly Chrome $chrome,
@@ -37,7 +61,93 @@ final class SettingsController
         private readonly Timezones $timezones,
         private readonly AppearancePresenter $presenter,
         private readonly RegionalPresenter $regionalPresenter,
+        private readonly AccountPresenter $accountPresenter,
+        private readonly UserRepository $users,
+        private readonly HasherInterface $hasher,
+        private readonly SessionInterface $session,
+        private readonly RateLimiter $limiter,
+        private readonly Validator $validator,
+        private readonly AuditRepository $audit,
+        private readonly LoggerInterface $logger,
     ) {}
+
+    public function saveAccount(Request $request): Response
+    {
+        $user = $this->guard->user();
+
+        if (!$user instanceof User) {
+            throw new NotFoundException;
+        }
+
+        $input = ParsedBody::fromRequest($request);
+        $data = [
+            'current_password' => $input->string('current_password'),
+            'password' => $input->string('password'),
+            'password_confirmation' => $input->string('password_confirmation'),
+        ];
+
+        $result = $this->validator->validate($data, [
+            'current_password' => [
+                new Required('Enter your current password.'),
+                new MaxLength(self::MAX_PASSWORD),
+            ],
+            'password' => [
+                new Required('Choose a new password.'),
+                new MinLength(8),
+                new MaxLength(self::MAX_PASSWORD),
+                new Confirmed(message: 'The passwords do not match.'),
+            ],
+        ]);
+
+        if (!$result->passes()) {
+            return $this->account($request, $result->errors(), status: Status::UnprocessableEntity);
+        }
+
+        // Counted before the check, not after a miss: once the budget is
+        // spent, a right guess has to be refused the same as a wrong one.
+        $policy = new RateLimitPolicy('account-password', self::PASSWORD_CHECKS, self::PASSWORD_WINDOW);
+        $status = $this->limiter->hit((string) $user->id, $policy);
+
+        if (!$status->allowed) {
+            throw new TooManyRequestsException($status->retryAfter);
+        }
+
+        if (!$this->hasher->verify($data['current_password'], $user->passwordHash)) {
+            return $this->account(
+                $request,
+                ['current_password' => 'That is not your current password.'],
+                status: Status::UnprocessableEntity,
+            );
+        }
+
+        $this->users->updatePassword($user->id, $this->hasher->hash($data['password']));
+        $this->session->regenerate();
+        $this->auditPasswordChange($user);
+
+        return $this->account($request, notice: Notice::saved());
+    }
+
+    /**
+     * Filed under the users module and the row's id, beside the rows an admin's
+     * edits leave, so one account's history reads the same whoever changed it.
+     * Swallowed like the listener's write: the password has already changed.
+     */
+    private function auditPasswordChange(User $user): void
+    {
+        try {
+            $this->audit->record(new Audit(
+                'users',
+                (string) $user->id,
+                null,
+                null,
+                $user->id,
+                $user->username,
+                'account.password_changed',
+            ));
+        } catch (Throwable $e) {
+            $this->logger->warning('Could not record audit: ' . $e->getMessage(), ['exception' => $e]);
+        }
+    }
 
     public function saveAppearance(Request $request): Response
     {
@@ -91,6 +201,24 @@ final class SettingsController
             $this->chrome->screen($blueprint, 'Appearance', notice: $notice),
             'admin/settings/appearance',
             $this->presenter->present(),
+            status: $status,
+        );
+    }
+
+    /** @param array<string, string> $errors */
+    private function account(
+        Request $request,
+        array $errors = [],
+        ?Notice $notice = null,
+        int|Status $status = Status::Ok,
+    ): Response {
+        $blueprint = $this->registry->find('settings') ?? throw new NotFoundException;
+
+        return $this->renderer->screen(
+            $request,
+            $this->chrome->screen($blueprint, 'Account', notice: $notice),
+            'admin/settings/account',
+            $this->accountPresenter->present($errors),
             status: $status,
         );
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Modules;
 
+use App\Admin\Presenters\AccountPresenter;
 use App\Admin\Presenters\AppearancePresenter;
 use App\Admin\Presenters\GeneralSettingsPresenter;
 use App\Admin\Presenters\RegionalPresenter;
@@ -29,6 +30,11 @@ final class SettingsModule implements ModuleInterface
                 PageScreen::make('general', 'admin/settings/general')
                     ->title('Settings')
                     ->presentedBy(GeneralSettingsPresenter::class),
+                PageScreen::make('account', 'admin/settings/account')
+                    ->at('account')
+                    ->title('Account')
+                    ->presentedBy(AccountPresenter::class)
+                    ->submittedTo([SettingsController::class, 'saveAccount']),
                 PageScreen::make('appearance', 'admin/settings/appearance')
                     ->at('appearance')
                     ->title('Appearance')
