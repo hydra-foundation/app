@@ -16,6 +16,7 @@ use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\FormScreen;
 use Hydra\Admin\Screens\ShowScreen;
+use Hydra\Validation\Rules\Email;
 use Hydra\Validation\Rules\MaxLength;
 use Hydra\Validation\Rules\MinLength;
 
@@ -38,14 +39,17 @@ final class UsersModule implements ModuleInterface
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
                 Field::text('username')->sortable()->searchable(),
+                Field::text('email')->sortable()->searchable(),
                 Field::select('role', Role::options())->sortable(),
-                Field::date('created_at')->sortable(),
+                Field::datetime('created_at')->labelled("Created")->sortable()->relative(),
             )
             ->screens(
                 ShowScreen::make()->title('User'),
                 FormScreen::create()->title('New user')->inputs(
                     Input::text('username')->required('Enter a username.')
                         ->rules(new MinLength(3), new MaxLength(64)),
+                    Input::email('email')->required('Enter an email address.')
+                        ->rules(new Email, new MaxLength(255)),
                     Input::select('role', Role::options()),
                     Input::password('password')->required('Set a password.')
                         ->rules(new MinLength(8)),
@@ -53,6 +57,8 @@ final class UsersModule implements ModuleInterface
                 FormScreen::edit()->title('Edit user')->inputs(
                     Input::text('username')->required('Enter a username.')
                         ->rules(new MinLength(3), new MaxLength(64)),
+                    Input::email('email')->required('Enter an email address.')
+                        ->rules(new Email, new MaxLength(255)),
                     Input::select('role', Role::options()),
                     Input::password('password')
                         ->rules(new MinLength(8))

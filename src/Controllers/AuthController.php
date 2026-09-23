@@ -16,6 +16,7 @@ use Hydra\Http\Responder;
 use Hydra\Http\Status;
 use Hydra\Validation\Rules\MaxLength;
 use Hydra\Validation\Rules\Required;
+use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Validation\Validator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -41,6 +42,7 @@ final class AuthController extends Controller
         ViewInterface $view,
         private readonly GuardInterface $guard,
         private readonly Validator $validator,
+        private readonly SessionInterface $session,
     ) {
         parent::__construct($respond, $view);
     }
@@ -48,7 +50,11 @@ final class AuthController extends Controller
     #[Route('/login', middleware: [RedirectAuthenticatedMiddleware::class])]
     public function showLogin(): Response
     {
-        return $this->render('auth/login/index', ['vm' => new LoginViewModel]);
+        $status = $this->session->flashed('status');
+
+        return $this->render('auth/login/index', [
+            'vm' => new LoginViewModel(status: is_string($status) ? $status : null),
+        ]);
     }
 
     #[Route('/login', methods: ['POST'], middleware: [LoginThrottleMiddleware::class, RedirectAuthenticatedMiddleware::class])]

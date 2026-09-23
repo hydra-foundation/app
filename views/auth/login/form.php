@@ -22,4 +22,6 @@
     </div>
 
     <button type="submit" id="login-submit" class="btn btn-primary w-100">Sign in</button>
+
+    <p class="mt-3 mb-0"><a href="/forgot-password">Forgot your password?</a></p>
 </form>

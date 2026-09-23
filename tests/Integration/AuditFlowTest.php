@@ -154,6 +154,7 @@ final class AuditFlowTest extends TestCase
         $this->login('boss');
         $this->http->post('/admin/users/new', [
             'username' => 'newcomer',
+            'email' => 'newcomer@example.com',
             'role' => 'user',
             'password' => 'correct-horse',
         ]);
@@ -176,11 +177,13 @@ final class AuditFlowTest extends TestCase
         $this->login('boss');
         $this->http->post('/admin/users/new', [
             'username' => 'newcomer',
+            'email' => 'newcomer@example.com',
             'role' => 'user',
             'password' => 'correct-horse',
         ]);
         $this->http->post('/admin/users/3/edit', [
             'username' => 'newcomer',
+            'email' => 'newcomer@example.com',
             'role' => 'user',
             'password' => 'a-brand-new-secret',
         ]);
@@ -196,6 +199,7 @@ final class AuditFlowTest extends TestCase
         $this->login('boss');
         $this->http->post('/admin/users/2/edit', [
             'username' => 'clerk',
+            'email' => 'clerk@example.com',
             'role' => 'admin',
             'password' => '',
         ]);
@@ -218,6 +222,7 @@ final class AuditFlowTest extends TestCase
         $this->login('boss');
         $this->http->post('/admin/users/2/edit', [
             'username' => 'clerical',
+            'email' => 'clerk@example.com',
             'role' => 'user',
             'password' => '',
         ]);
@@ -230,6 +235,7 @@ final class AuditFlowTest extends TestCase
         $this->login('boss');
         $this->http->post('/admin/users/2/edit', [
             'username' => 'clerk',
+            'email' => 'clerk@example.com',
             'role' => 'user',
             'password' => '',
         ])->assertStatus(302);
@@ -242,6 +248,7 @@ final class AuditFlowTest extends TestCase
         $this->login('boss');
         $this->http->post('/admin/users/2/edit', [
             'username' => 'clerk',
+            'email' => 'clerk@example.com',
             'role' => 'user',
             'password' => 'a-brand-new-secret',
         ]);
@@ -276,6 +283,7 @@ final class AuditFlowTest extends TestCase
         // attempt the source refused must not be recorded as the deed.
         $this->http->post('/admin/users/new', [
             'username' => 'clerk',
+            'email' => 'clerk@example.com',
             'role' => 'user',
             'password' => 'correct-horse',
         ])->assertStatus(422);
@@ -313,6 +321,7 @@ final class AuditFlowTest extends TestCase
         $this->login('boss');
         $this->http->post('/admin/users/2/edit', [
             'username' => 'clerical',
+            'email' => 'clerk@example.com',
             'role' => 'user',
             'password' => '',
         ]);

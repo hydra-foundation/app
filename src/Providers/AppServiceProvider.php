@@ -6,12 +6,12 @@ namespace App\Providers;
 
 use App\Admin\Modules\{ActivityModule, AuditModule, DashboardModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
-use App\Controllers\{AdminController, AuthController, HomeController};
+use App\Controllers\{AdminController, AuthController, EmailVerificationController, HomeController, PasswordResetController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Http\NegotiatingErrorRenderer;
 use App\Listeners\AuditAdminEventsListener;
 use App\Repositories\{ActivityRepository, UserRepository};
-use App\View\{ThemeResolver, Themes, TimezoneResolver, Timezones};
+use App\View\{ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
@@ -64,6 +64,8 @@ final class AppServiceProvider extends ServiceProvider
     public const CONTROLLERS = [
         HomeController::class,
         AuthController::class,
+        PasswordResetController::class,
+        EmailVerificationController::class,
         AdminController::class,
     ];
 
@@ -201,6 +203,7 @@ final class AppServiceProvider extends ServiceProvider
                     // breaks more than it rules out.
                     'csp' => $container->get(CspConfig::class),
                     'versions' => $container->get(Versions::class),
+                    'verification' => $container->get(VerificationBanner::class),
                 ],
             );
         });

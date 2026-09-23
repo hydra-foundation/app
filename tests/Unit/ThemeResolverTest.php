@@ -32,7 +32,7 @@ final class ThemeResolverTest extends TestCase
     protected function setUp(): void
     {
         $pdo = TestSchema::connect();
-        $pdo->exec("INSERT INTO users (username, password_hash) VALUES ('will', 'x')");
+        $pdo->exec("INSERT INTO users (username, email, password_hash) VALUES ('will', 'will@example.com', 'x')");
 
         $this->preferences = new PreferenceRepository(new PdoConnection($pdo));
         $this->clock = new FrozenClock;
@@ -99,7 +99,7 @@ final class ThemeResolverTest extends TestCase
 
     private function resolver(bool $signedIn = true): ThemeResolver
     {
-        $guard = new FakeGuard($signedIn ? new User(1, 'will', 'x', Role::User, '2026-01-01 00:00:00') : null);
+        $guard = new FakeGuard($signedIn ? new User(1, 'will', 'will@example.com', 'x', Role::User, '2026-01-01 00:00:00') : null);
 
         return new ThemeResolver(
             $guard,

@@ -14,6 +14,8 @@ use Hydra\Console\Contracts\InputInterface;
 use Hydra\Console\Contracts\OutputInterface;
 use Hydra\Console\ExitCode;
 use Hydra\Console\Option;
+use Hydra\Validation\Context;
+use Hydra\Validation\Rules\Email;
 
 /**
  * Creates an account from the terminal, which is how the first admin comes to
@@ -34,7 +36,10 @@ final class MakeUserCommand extends Command
 
     public function arguments(): array
     {
-        return [Argument::optional('username', 'The login username')];
+        return [
+            Argument::optional('username', 'The login username'),
+            Argument::optional('email', 'Where password reset links are sent'),
+        ];
     }
 
     public function options(): array
@@ -73,6 +78,17 @@ final class MakeUserCommand extends Command
             }
         }
 
+        if (!$input->hasArgument('email')) {
+            $email = (string) $output->ask('Email', null, $this->checkEmail(...));
+        } else {
+            try {
+                $email = $this->checkEmail(trim($input->argument('email')));
+            } catch (\RuntimeException $e) {
+                $output->error($e->getMessage());
+                return ExitCode::Failure;
+            }
+        }
+
         $password = $output->askHidden('Password (min 8 characters)', $this->checkPassword(...));
         $confirm = $output->askHidden('Confirm password', $this->checkPassword(...));
 
@@ -81,7 +97,7 @@ final class MakeUserCommand extends Command
             return ExitCode::Failure;
         }
 
-        $id = $this->users->create($username, $this->hasher->hash($password), $role);
+        $id = $this->users->create($username, $email, $this->hasher->hash($password), $role);
 
         $output->success("Created {$role->value} '{$username}' (id {$id}).");
 
@@ -103,6 +119,22 @@ final class MakeUserCommand extends Command
         }
 
         return $username;
+    }
+
+    private function checkEmail(?string $email): string
+    {
+        $email = trim((string) $email);
+        $invalid = (new Email)->validate($email, new Context(['email' => $email], 'email'));
+
+        if ($invalid !== null) {
+            throw new \RuntimeException($invalid);
+        }
+
+        if ($this->users->byEmail($email) !== null) {
+            throw new \RuntimeException('That email address is already in use.');
+        }
+
+        return $email;
     }
 
     private function checkPassword(?string $password): string

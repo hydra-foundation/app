@@ -6,9 +6,11 @@
 
 <div class="auth">
     <div class="auth-inner">
-        <div class="auth-brand">Hydra</div>
         <div class="auth-panel">
             <h1 class="auth-title">Sign in</h1>
+            <?php if ($vm->status !== null): ?>
+                <div class="alert alert-success" role="status"><?= $this->e($vm->status) ?></div>
+            <?php endif ?>
             <?= $this->partial('auth/login/form', ['vm' => $vm]) ?>
         </div>
         <?php if (($version = trim($this->partial('partials/version'))) !== ''): ?>

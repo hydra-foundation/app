@@ -54,7 +54,7 @@ final class MakeUserCommandTest extends TestCase
 
     public function test_creates_a_user_with_a_verifiable_hash(): void
     {
-        $run = $this->makeUser(['username' => 'alice'], ['s3cret-password', 's3cret-password']);
+        $run = $this->makeUser(['username' => 'alice', 'email' => 'alice@example.com'], ['s3cret-password', 's3cret-password']);
 
         $this->assertSame(ExitCode::Success, $run->code);
         $this->assertStringContainsString("Created user 'alice'", $run->display());
@@ -68,7 +68,7 @@ final class MakeUserCommandTest extends TestCase
 
     public function test_creates_an_admin_when_role_option_given(): void
     {
-        $run = $this->makeUser(['username' => 'root', '--role' => 'admin'], ['longenough', 'longenough']);
+        $run = $this->makeUser(['username' => 'root', 'email' => 'root@example.com', '--role' => 'admin'], ['longenough', 'longenough']);
 
         $this->assertSame(ExitCode::Success, $run->code);
         $this->assertTrue($this->repo->byUsername('root')->isAdmin());
@@ -76,7 +76,7 @@ final class MakeUserCommandTest extends TestCase
 
     public function test_rejects_an_unknown_role(): void
     {
-        $run = $this->makeUser(['username' => 'bob', '--role' => 'superuser'], []);
+        $run = $this->makeUser(['username' => 'bob', 'email' => 'bob@example.com', '--role' => 'superuser'], []);
 
         $this->assertSame(ExitCode::Failure, $run->code);
         $this->assertStringContainsString('Role must be one of', $run->display());
@@ -85,7 +85,7 @@ final class MakeUserCommandTest extends TestCase
 
     public function test_fails_when_passwords_do_not_match(): void
     {
-        $run = $this->makeUser(['username' => 'carol'], ['longenough', 'different1']);
+        $run = $this->makeUser(['username' => 'carol', 'email' => 'carol@example.com'], ['longenough', 'different1']);
 
         $this->assertSame(ExitCode::Failure, $run->code);
         $this->assertStringContainsString('do not match', $run->display());
@@ -94,7 +94,7 @@ final class MakeUserCommandTest extends TestCase
 
     public function test_rejects_a_structurally_invalid_username_argument(): void
     {
-        $run = $this->makeUser(['username' => 'no'], []); // too short
+        $run = $this->makeUser(['username' => 'no', 'email' => 'no@example.com'], []); // too short
 
         $this->assertSame(ExitCode::Failure, $run->code);
         $this->assertStringContainsString('3', $run->display());
@@ -103,9 +103,9 @@ final class MakeUserCommandTest extends TestCase
 
     public function test_rejects_a_duplicate_username_argument(): void
     {
-        $this->repo->create('will', 'existing-hash');
+        $this->repo->create('will', 'will@example.com', 'existing-hash');
 
-        $run = $this->makeUser(['username' => 'will'], []);
+        $run = $this->makeUser(['username' => 'will', 'email' => 'will@example.com'], []);
 
         $this->assertSame(ExitCode::Failure, $run->code);
         $this->assertStringContainsString('already taken', $run->display());
@@ -113,9 +113,36 @@ final class MakeUserCommandTest extends TestCase
 
     public function test_prompts_for_username_when_argument_omitted(): void
     {
-        $run = $this->makeUser([], ['dave', 'longenough', 'longenough']);
+        $run = $this->makeUser([], ['dave', 'dave@example.com', 'longenough', 'longenough']);
 
         $this->assertSame(ExitCode::Success, $run->code);
         $this->assertNotNull($this->repo->byUsername('dave'));
+    }
+
+    public function test_rejects_an_invalid_email_argument(): void
+    {
+        $run = $this->makeUser(['username' => 'erin', 'email' => 'not-an-address'], []);
+
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('valid email address', $run->display());
+        $this->assertNull($this->repo->byUsername('erin'));
+    }
+
+    public function test_rejects_an_email_in_use_whatever_the_case(): void
+    {
+        $this->repo->create('will', 'will@example.com', 'existing-hash');
+
+        $run = $this->makeUser(['username' => 'erin', 'email' => 'WILL@example.com'], []);
+
+        $this->assertSame(ExitCode::Failure, $run->code);
+        $this->assertStringContainsString('already in use', $run->display());
+    }
+
+    public function test_prompts_for_email_when_argument_omitted(): void
+    {
+        $run = $this->makeUser(['username' => 'frank'], ['frank@example.com', 'longenough', 'longenough']);
+
+        $this->assertSame(ExitCode::Success, $run->code);
+        $this->assertSame('frank@example.com', $this->repo->byUsername('frank')?->email);
     }
 }

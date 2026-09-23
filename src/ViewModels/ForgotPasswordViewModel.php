@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
-/**
- * View model for the login form: the submitted username (to refill the field on
- * a failed attempt) and any errors to show
- */
-final readonly class LoginViewModel
+/** The "send me a reset link" form, and the one answer it gives once sent. */
+final readonly class ForgotPasswordViewModel
 {
     use FormErrors;
 
     /** @param array<string, string> $errors */
     public function __construct(
-        public string $username = '',
+        public string $email = '',
         public array $errors = [],
         public ?string $status = null,
     ) {}
@@ -22,6 +19,6 @@ final readonly class LoginViewModel
     /** @return list<string> */
     private function fields(): array
     {
-        return ['username', 'password'];
+        return ['email'];
     }
 }

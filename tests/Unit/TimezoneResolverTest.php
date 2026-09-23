@@ -32,7 +32,7 @@ final class TimezoneResolverTest extends TestCase
     protected function setUp(): void
     {
         $this->pdo = TestSchema::connect();
-        $this->pdo->exec("INSERT INTO users (username, password_hash) VALUES ('will', 'x')");
+        $this->pdo->exec("INSERT INTO users (username, email, password_hash) VALUES ('will', 'will@example.com', 'x')");
 
         $this->preferences = new PreferenceRepository(new PdoConnection($this->pdo));
     }
@@ -110,6 +110,6 @@ final class TimezoneResolverTest extends TestCase
 
     private function user(): User
     {
-        return new User(1, 'will', 'x', Role::User, '2026-01-01 00:00:00');
+        return new User(1, 'will', 'will@example.com', 'x', Role::User, '2026-01-01 00:00:00');
     }
 }

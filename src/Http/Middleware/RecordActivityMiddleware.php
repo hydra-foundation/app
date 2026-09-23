@@ -47,6 +47,10 @@ final class RecordActivityMiddleware implements MiddlewareInterface
      */
     private const IGNORED = [
         '/admin/*/w/*',
+        // The emailed link's token is live until spent, and every signed-in
+        // user can read this table.
+        '/reset-password/*',
+        '/verify-email/*',
     ];
 
     public function __construct(

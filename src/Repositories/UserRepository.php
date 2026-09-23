@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Entities\Role;
 use App\Entities\User;
+use Hydra\Auth\Contracts\EmailUserProviderInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 
@@ -15,9 +16,9 @@ use Hydra\Database\Contracts\ConnectionInterface;
  * interface promises, so code that knows about roles does not have to ask what
  * it just received.
  */
-final class UserRepository implements UserProviderInterface
+final class UserRepository implements UserProviderInterface, EmailUserProviderInterface
 {
-    private const COLUMNS = 'id, username, password_hash, role, created_at';
+    private const COLUMNS = 'id, username, email, email_verified_at, password_hash, role, created_at';
 
     public function __construct(private readonly ConnectionInterface $db) {}
 
@@ -41,14 +42,47 @@ final class UserRepository implements UserProviderInterface
         return $row === null ? null : User::fromRow($row);
     }
 
+    /** Case-insensitive under the column's collation, the same as the unique key. */
+    public function byEmail(string $email): ?User
+    {
+        if ($email === '') {
+            return null;
+        }
+
+        $row = $this->db->selectOne(
+            'SELECT ' . self::COLUMNS . ' FROM users WHERE email = ?',
+            [$email],
+        );
+
+        return $row === null ? null : User::fromRow($row);
+    }
+
     /** Returns the id of the inserted row. */
-    public function create(string $username, string $passwordHash, Role $role = Role::DEFAULT): int
+    public function create(string $username, string $email, string $passwordHash, Role $role = Role::DEFAULT): int
     {
         $this->db->execute(
-            'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)',
-            [$username, $passwordHash, $role->value],
+            'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
+            [$username, $email, $passwordHash, $role->value],
         );
 
         return (int) $this->db->lastInsertId();
+    }
+
+    /** Spends every outstanding reset token for this user, since each is bound to the old hash. */
+    public function updatePassword(int $id, string $passwordHash): void
+    {
+        $this->db->execute('UPDATE users SET password_hash = ? WHERE id = ?', [$passwordHash, $id]);
+    }
+
+    /**
+     * Only while the address is still the one the link was sent to, so an
+     * address changed between opening the link and this write stays unverified.
+     */
+    public function markVerified(int $id, string $email): bool
+    {
+        return $this->db->execute(
+            'UPDATE users SET email_verified_at = CURRENT_TIMESTAMP WHERE id = ? AND email = ? AND email_verified_at IS NULL',
+            [$id, $email],
+        ) > 0;
     }
 }

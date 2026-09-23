@@ -30,9 +30,9 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
         parent::__construct(
             $db,
             table: 'users',
-            columns: ['id', 'username', 'role', 'created_at'],
-            sortable: ['id', 'username', 'role', 'created_at'],
-            searchable: ['username'],
+            columns: ['id', 'username', 'email', 'role', 'created_at'],
+            sortable: ['id', 'username', 'email', 'role', 'created_at'],
+            searchable: ['username', 'email'],
             filterable: ['role'],
         );
     }
@@ -40,17 +40,23 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
     public function create(array $data): string
     {
         $username = trim((string) ($data['username'] ?? ''));
+        $email = trim((string) ($data['email'] ?? ''));
 
-        if ($this->isTaken($username)) {
+        if ($this->isTaken('username', $username)) {
             throw WriteRejected::on('username', 'That username is already taken.');
         }
 
-        $sql = sprintf('INSERT INTO %s (username, role, password_hash)
-            VALUES (?, ?, ?)', $this->table);
+        if ($this->isTaken('email', $email)) {
+            throw WriteRejected::on('email', 'That email address is already in use.');
+        }
+
+        $sql = sprintf('INSERT INTO %s (username, email, role, password_hash)
+            VALUES (?, ?, ?, ?)', $this->table);
         $this->db->execute(
             $sql,
             [
                 $username,
+                $email,
                 $this->role($data),
                 $this->hasher->hash((string) ($data['password'] ?? '')),
             ],
@@ -63,13 +69,25 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
     {
         $key = RowId::int($id) ?? throw WriteRejected::on('id', 'No user has that id.');
         $username = trim((string) ($data['username'] ?? ''));
+        $email = trim((string) ($data['email'] ?? ''));
 
-        if ($this->isTaken($username, $key)) {
+        if ($this->isTaken('username', $username, $key)) {
             throw WriteRejected::on('username', 'That username is already taken.');
         }
 
-        $columns = ['username = ?', 'role = ?'];
-        $params = [$username, $this->role($data)];
+        if ($this->isTaken('email', $email, $key)) {
+            throw WriteRejected::on('email', 'That email address is already in use.');
+        }
+
+        // Ahead of the email assignment: MariaDB reads an already-assigned
+        // column's new value in later assignments, SQLite the old one.
+        $columns = [
+            'email_verified_at = CASE WHEN email = ? THEN email_verified_at ELSE NULL END',
+            'email = ?',
+            'username = ?',
+            'role = ?',
+        ];
+        $params = [$email, $email, $username, $this->role($data)];
 
         if (($data['password'] ?? '') !== '') {
             $columns[] = 'password_hash = ?';
@@ -116,18 +134,22 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
         return (Role::tryFrom($role) ?? throw WriteRejected::on('role', 'Choose a role from the list.'))->value;
     }
 
-    /** Whether the name is in use, ignoring the row that already holds it. */
-    private function isTaken(string $username, ?int $except = null): bool
+    /**
+     * Whether the value is in use, ignoring the row that already holds it.
+     *
+     * @param 'username'|'email' $column
+     */
+    private function isTaken(string $column, string $value, ?int $except = null): bool
     {
         $sql = $except === null
             ? sprintf('SELECT id
                 FROM %s
-                WHERE username=?', $this->table)
+                WHERE %s=?', $this->table, $column)
             : sprintf('SELECT id
                 FROM %s
-                WHERE username=?
-                AND id<>?', $this->table);
-        $params = $except === null ? [$username] : [$username, $except];
+                WHERE %s=?
+                AND id<>?', $this->table, $column);
+        $params = $except === null ? [$value] : [$value, $except];
 
         return $this->db->selectOne($sql, $params) !== null;
     }

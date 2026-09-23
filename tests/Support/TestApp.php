@@ -152,9 +152,10 @@ final class TestApp
     /** Returns the id of the seeded user. */
     public function seed(string $username, Role $role = Role::DEFAULT): int
     {
-        $this->pdo->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+        $this->pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)')
             ->execute([
                 $username,
+                "{$username}@example.com",
                 $this->container->get(HasherInterface::class)->hash(self::PASSWORD),
                 $role->value,
             ]);

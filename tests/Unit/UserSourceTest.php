@@ -8,6 +8,7 @@ use App\Admin\Sources\UserSource;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Testing\WritableSourceContractTestCase;
+use Hydra\Admin\Exceptions\WriteRejected;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Testing\FakeGuard;
 use Hydra\Auth\Testing\FakeHasher;
@@ -44,8 +45,8 @@ final class UserSourceTest extends WritableSourceContractTestCase
         $users = ['ada' => 'admin', 'grace' => 'admin', 'alan' => 'user', 'edsger' => 'user', 'barbara' => 'user'];
 
         foreach ($users as $username => $role) {
-            $this->pdo->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
-                ->execute([$username, 'hashed-secret', $role]);
+            $this->pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)')
+                ->execute([$username, "{$username}@example.com", 'hashed-secret', $role]);
         }
 
         $this->source = new UserSource(
@@ -83,12 +84,12 @@ final class UserSourceTest extends WritableSourceContractTestCase
 
     protected function newRow(): array
     {
-        return ['username' => 'linus', 'role' => 'user', 'password' => 'a-long-enough-secret'];
+        return ['username' => 'linus', 'email' => 'linus@example.com', 'role' => 'user', 'password' => 'a-long-enough-secret'];
     }
 
     protected function editedRow(): array
     {
-        return ['username' => 'ada-the-second', 'role' => 'admin'];
+        return ['username' => 'ada-the-second', 'email' => 'ada2@example.com', 'role' => 'admin'];
     }
 
     protected function readBack(array $data): array
@@ -99,6 +100,47 @@ final class UserSourceTest extends WritableSourceContractTestCase
         unset($data['password']);
 
         return $data;
+    }
+
+    public function test_create_rejects_an_address_in_use_whatever_the_case(): void
+    {
+        $this->expectExceptionObject(WriteRejected::on('email', 'That email address is already in use.'));
+
+        $this->source->create(['username' => 'linus', 'email' => 'ADA@example.com', 'password' => 'secret-enough']);
+    }
+
+    public function test_update_rejects_another_accounts_address(): void
+    {
+        $this->expectExceptionObject(WriteRejected::on('email', 'That email address is already in use.'));
+
+        $this->source->update('1', ['username' => 'ada', 'email' => 'grace@example.com']);
+    }
+
+    public function test_an_unchanged_address_stays_verified(): void
+    {
+        $this->pdo->exec("UPDATE users SET email_verified_at = '2026-01-01 00:00:00' WHERE id = 1");
+
+        $this->source->update('1', ['username' => 'ada-renamed', 'email' => 'ada@example.com', 'role' => 'admin']);
+
+        $this->assertSame('2026-01-01 00:00:00', $this->verifiedAt(1));
+    }
+
+    public function test_a_changed_address_must_be_verified_again(): void
+    {
+        // Verification proved a mailbox, and this is a different one.
+        $this->pdo->exec("UPDATE users SET email_verified_at = '2026-01-01 00:00:00' WHERE id = 1");
+
+        $this->source->update('1', ['username' => 'ada', 'email' => 'ada@elsewhere.test', 'role' => 'admin']);
+
+        $this->assertNull($this->verifiedAt(1));
+    }
+
+    private function verifiedAt(int $id): ?string
+    {
+        $statement = $this->pdo->prepare('SELECT email_verified_at FROM users WHERE id = ?');
+        $statement->execute([$id]);
+
+        return $statement->fetchColumn() ?: null;
     }
 
     /** Signed in as an id the fixture does not hold, so no row here is protected. */

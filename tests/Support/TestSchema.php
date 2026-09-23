@@ -32,6 +32,8 @@ final class TestSchema
             'CREATE TABLE users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
+                email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                email_verified_at TEXT NULL,
                 password_hash TEXT NOT NULL,
                 role TEXT NOT NULL DEFAULT \'user\',
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP

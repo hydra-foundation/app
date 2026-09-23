@@ -178,7 +178,7 @@ final class RecordActivityMiddlewareTest extends TestCase
                     throw new RuntimeException('no session');
                 }
 
-                return new User(7, 'boss', 'hash', Role::Admin, '2026-09-09 00:00:00');
+                return new User(7, 'boss', 'boss@example.com', 'hash', Role::Admin, '2026-09-09 00:00:00');
             }
 
             public function check(): bool

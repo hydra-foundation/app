@@ -4,24 +4,20 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
-/**
- * View model for the login form: the submitted username (to refill the field on
- * a failed attempt) and any errors to show
- */
-final readonly class LoginViewModel
+/** The "choose a new password" form, named for the account it will change. */
+final readonly class ResetPasswordViewModel
 {
     use FormErrors;
 
     /** @param array<string, string> $errors */
     public function __construct(
-        public string $username = '',
+        public string $username,
         public array $errors = [],
-        public ?string $status = null,
     ) {}
 
     /** @return list<string> */
     private function fields(): array
     {
-        return ['username', 'password'];
+        return ['password', 'password_confirmation'];
     }
 }

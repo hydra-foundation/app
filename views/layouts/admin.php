@@ -12,4 +12,5 @@
     'screen' => $screen,
     'content' => $this->section('content'),
     'footer' => trim($this->partial('partials/version')),
+    'banner' => trim($this->partial('partials/verify_email_banner')),
 ]) ?>
