@@ -19,6 +19,8 @@ use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Auth\Contracts\{GuardInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent};
 use Hydra\Auth\LogAuthEventsListener;
+use Hydra\Cache\CacheHealthCheck;
+use Hydra\Cache\Contracts\StoreInterface;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Contracts\ExceptionReporterInterface;
 use Hydra\Core\Environment;
@@ -26,7 +28,7 @@ use Hydra\Core\Providers\ServiceProvider;
 use Hydra\Core\Versions;
 use Hydra\Csrf\{CsrfGuard, VerifyCsrfTokenMiddleware};
 use Hydra\Database\Contracts\ConnectionInterface;
-use Hydra\Database\{MigrationRunner, PdoConnection};
+use Hydra\Database\{DatabaseHealthCheck, MigrationRunner, PdoConnection};
 use Hydra\Event\ListenerProvider;
 use Hydra\Http\Contracts\ErrorRendererInterface;
 use Hydra\Http\{
@@ -36,6 +38,7 @@ use Hydra\Http\{
     CspNonce,
     ErrorHandlerMiddleware,
     ForceHttpsMiddleware,
+    HealthMiddleware,
     HtmxRedirectMiddleware,
     NegotiatingErrorRenderer,
     ParseBodyMiddleware,
@@ -94,6 +97,9 @@ final class AppServiceProvider extends ServiceProvider
      */
     public const MIDDLEWARE = [
         RequestIdMiddleware::class,
+        // Ahead of the https redirect, which would answer a load balancer's
+        // plain-http probe with a 301, and of the access log it would flood.
+        HealthMiddleware::class,
         RequestLoggingMiddleware::class,
         SecurityHeadersMiddleware::class,
         CspMiddleware::class,
@@ -299,6 +305,17 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(RequestId::class),
                 trustIncoming: true,
                 clients: $container->get(ClientIpResolver::class),
+            );
+        });
+
+        $container->singleton(HealthMiddleware::class, function () use ($container) {
+            return new HealthMiddleware(
+                $container->get(Responder::class),
+                [
+                    new DatabaseHealthCheck($container->get(ConnectionInterface::class)),
+                    new CacheHealthCheck($container->get(StoreInterface::class)),
+                ],
+                $container->get(LoggerInterface::class),
             );
         });
 
