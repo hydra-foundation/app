@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Jobs\SendAddressChangedNotice;
 use App\Jobs\SendVerificationLink;
 use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\Events\RowCreated;
@@ -14,8 +15,10 @@ use Throwable;
 
 /**
  * Sends a verification link when the users module creates an account or moves
- * its address. Here rather than in UserSource, which writes rows and should not
- * know that a row is somebody's inbox.
+ * its address, and a warning to the address it moved from: changing the address
+ * and then asking for a reset is how an account is taken over. Here rather than
+ * in UserSource, which writes rows and should not know that a row is somebody's
+ * inbox.
  */
 final class MailAddressChangesListener
 {
@@ -43,8 +46,24 @@ final class MailAddressChangesListener
 
     private function mail(AdminEvent $event): void
     {
-        if ($event instanceof RowCreated || ($event instanceof RowUpdated && in_array('email', $event->changed(), true))) {
+        if ($event instanceof RowCreated) {
             $this->queue->push(SendVerificationLink::class, ['user' => (int) $event->id]);
+        }
+
+        if ($event instanceof RowUpdated && in_array('email', $event->changed(), true)) {
+            $this->moved($event);
+        }
+    }
+
+    private function moved(RowUpdated $event): void
+    {
+        $this->queue->push(SendVerificationLink::class, ['user' => (int) $event->id]);
+
+        $previous = (string) ($event->before['email'] ?? '');
+
+        // A change of case moves no mail anywhere, so there is nobody to warn.
+        if ($previous !== '' && strcasecmp($previous, (string) $event->values['email']) !== 0) {
+            $this->queue->push(SendAddressChangedNotice::class, ['user' => (int) $event->id, 'previous' => $previous]);
         }
     }
 }

@@ -8,6 +8,7 @@ use App\Entities\Role;
 use App\Tests\Support\TestApp;
 use Hydra\Http\Testing\Client;
 use Hydra\Http\Testing\TestResponse;
+use Hydra\Mail\Message;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
@@ -46,13 +47,28 @@ final class AddressMailFlowTest extends TestCase
         $this->app->mailer()->assertSentTo('newcomer@example.com');
     }
 
-    public function test_a_moved_address_is_sent_a_link(): void
+    public function test_a_moved_address_is_sent_a_link_and_the_old_one_a_warning(): void
     {
         $this->edit('clerk@elsewhere.example');
 
         $this->app->work();
-        $this->app->mailer()->assertSent(times: 1);
+        $this->app->mailer()->assertSent(times: 2);
         $this->app->mailer()->assertSentTo('clerk@elsewhere.example');
+        $this->app->mailer()->assertSentTo('clerk@example.com');
+
+        $warning = $this->app->mailer()->sent(static fn (Message $m): bool => $m->isFor('clerk@example.com'))[0];
+        $this->assertStringContainsString('changed from', (string) $warning->getText());
+        $this->assertStringContainsString('clerk@elsewhere.example', (string) $warning->getText());
+    }
+
+    public function test_a_change_of_case_is_not_warned_about(): void
+    {
+        $this->edit('Clerk@Example.com');
+
+        $this->assertSame(
+            ['App\\Jobs\\SendVerificationLink'],
+            array_column($this->app->db()->select('SELECT job FROM jobs'), 'job'),
+        );
     }
 
     public function test_an_edit_that_keeps_the_address_sends_nothing(): void
