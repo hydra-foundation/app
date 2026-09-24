@@ -29,8 +29,11 @@ use Hydra\Database\Console\MigrateRunCommand;
 use Hydra\Database\Console\MigrateStatusCommand;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\MigrationRunner;
+use Hydra\Http\Console\DownCommand;
 use Hydra\Http\Console\RouteCacheClearCommand;
 use Hydra\Http\Console\RouteCacheCommand;
+use Hydra\Http\Console\UpCommand;
+use Hydra\Http\Maintenance;
 use App\Providers\AppServiceProvider;
 use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;
@@ -52,6 +55,8 @@ $application->add(
     new KeyGenerateCommand(__DIR__ . '/../.env'),
     new RouteCacheCommand($container->get(RouteCache::class), AppServiceProvider::CONTROLLERS),
     new RouteCacheClearCommand($container->get(RouteCache::class)),
+    new DownCommand($container->get(Maintenance::class)),
+    new UpCommand($container->get(Maintenance::class)),
     new MakeMigrationCommand(__DIR__ . '/../database/migrations'),
     new MakeControllerCommand(__DIR__ . '/../src/Controllers'),
     new MakeAbilityCommand(__DIR__ . '/../src/Authorization'),

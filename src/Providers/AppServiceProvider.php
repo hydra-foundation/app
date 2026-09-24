@@ -39,6 +39,8 @@ use Hydra\Http\{
     ErrorHandlerMiddleware,
     ForceHttpsMiddleware,
     HealthMiddleware,
+    Maintenance,
+    MaintenanceMiddleware,
     HtmxRedirectMiddleware,
     NegotiatingErrorRenderer,
     ParseBodyMiddleware,
@@ -105,6 +107,9 @@ final class AppServiceProvider extends ServiceProvider
         CspMiddleware::class,
         ForceHttpsMiddleware::class,
         ErrorHandlerMiddleware::class,
+        // Ahead of everything a maintenance window is for: the store, the
+        // session, the database. Health sits above, so /up still answers.
+        MaintenanceMiddleware::class,
         // Inside the error handler, not above it: an unreachable counter store
         // raises, and above the handler that raise has no response to render.
         // Ahead of everything that costs anything, so a refused request never
@@ -305,6 +310,17 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(RequestId::class),
                 trustIncoming: true,
                 clients: $container->get(ClientIpResolver::class),
+            );
+        });
+
+        $container->singleton(Maintenance::class, function () {
+            return new Maintenance(dirname(__DIR__, 2) . '/bootstrap/cache/maintenance.json');
+        });
+
+        $container->singleton(MaintenanceMiddleware::class, function () use ($container) {
+            return new MaintenanceMiddleware(
+                $container->get(Maintenance::class),
+                $container->get(ErrorRendererInterface::class),
             );
         });
 

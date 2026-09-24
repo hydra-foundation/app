@@ -24,6 +24,7 @@ use Hydra\Csrf\Testing\CarriesCsrfToken;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\Event\EventServiceProvider;
+use Hydra\Http\Maintenance;
 use Hydra\Http\Testing\Client;
 use Hydra\Http\Testing\TestResponse;
 use Hydra\Kernel\HttpServiceProvider;
@@ -106,6 +107,12 @@ final class TestApp
 
         // Every flow that signs in pays the hash cost, and none is about bcrypt.
         $container->instance(AuthConfig::class, new AuthConfig(hashCost: 4));
+
+        // A flag of its own: `down` on the machine running the suite would
+        // otherwise answer every flow in it with a 503.
+        $container->instance(Maintenance::class, new Maintenance(
+            sys_get_temp_dir() . '/hydra-app-maintenance-' . getmypid() . '-' . bin2hex(random_bytes(4)) . '.json',
+        ));
 
         $pdo = TestSchema::connect();
         $container->instance(PDO::class, $pdo);
