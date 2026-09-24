@@ -8,7 +8,6 @@ use App\Admin\Modules\{ActivityModule, AuditModule, DashboardModule, SettingsMod
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
-use App\Http\NegotiatingErrorRenderer;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Repositories\{ActivityRepository, UserRepository};
@@ -37,8 +36,8 @@ use Hydra\Http\{
     ErrorHandlerMiddleware,
     ForceHttpsMiddleware,
     HtmxRedirectMiddleware,
+    NegotiatingErrorRenderer,
     ParseBodyMiddleware,
-    PlainTextErrorRenderer,
     RequestLoggingMiddleware,
     Responder,
     SecurityHeadersMiddleware,
@@ -293,10 +292,7 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         $container->singleton(ErrorRendererInterface::class, function () use ($container) {
-            return new NegotiatingErrorRenderer(
-                $container->get(Responder::class),
-                new PlainTextErrorRenderer($container->get(Responder::class)),
-            );
+            return new NegotiatingErrorRenderer($container->get(Responder::class), '#app-error');
         });
 
         $container->singleton(RecordActivityMiddleware::class, function () use ($container) {
