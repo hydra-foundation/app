@@ -9,9 +9,11 @@ use App\Entities\User;
 use App\Mail\PasswordResetMail;
 use App\Repositories\UserRepository;
 use Hydra\Auth\AuthConfig;
+use Hydra\Auth\Events\PasswordResetLinkSent;
 use Hydra\Auth\PasswordResetTokens;
 use Hydra\Mail\Contracts\MailerInterface;
 use Hydra\Queue\Contracts\JobInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Queued for every address the form accepts, known or not, so the request
@@ -27,6 +29,7 @@ final class SendPasswordResetLink implements JobInterface
         private readonly MailerInterface $mailer,
         private readonly AppConfig $app,
         private readonly AuthConfig $auth,
+        private readonly EventDispatcherInterface $events,
     ) {}
 
     public function handle(array $payload): void
@@ -40,5 +43,6 @@ final class SendPasswordResetLink implements JobInterface
         $link = rtrim($this->app->url, '/') . '/reset-password/' . $this->tokens->create($user);
 
         $this->mailer->send(PasswordResetMail::to($user, $link, $this->auth->resetTtl, $this->app->name));
+        $this->events->dispatch(new PasswordResetLinkSent($user));
     }
 }

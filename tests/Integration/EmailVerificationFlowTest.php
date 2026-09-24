@@ -71,6 +71,22 @@ final class EmailVerificationFlowTest extends TestCase
         $this->http->get('/verify-email')->assertOk()->assertSee('Email verified');
     }
 
+    public function test_only_the_first_click_is_logged(): void
+    {
+        $link = $this->requestLink();
+
+        $this->http->get($link);
+        $this->http->get('/verify-email');
+        $this->http->get($link);
+        $this->http->get('/verify-email');
+
+        $this->assertSame(['auth.email_verified'], array_values(array_filter(
+            $this->app->log()->messages(),
+            static fn (string $message): bool => $message === 'auth.email_verified',
+        )));
+        $this->assertSame(['user' => $this->id], $this->app->log()->firstWith('auth.email_verified')['context']);
+    }
+
     public function test_changing_the_address_spends_the_link(): void
     {
         $link = $this->requestLink();

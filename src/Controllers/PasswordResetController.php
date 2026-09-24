@@ -11,6 +11,7 @@ use App\Repositories\UserRepository;
 use App\ViewModels\ForgotPasswordViewModel;
 use App\ViewModels\ResetPasswordViewModel;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Events\PasswordReset;
 use Hydra\Auth\PasswordResetTokens;
 use Hydra\Http\Attributes\Route;
 use Hydra\Http\ParsedBody;
@@ -27,6 +28,7 @@ use Hydra\Validation\Rules\MinLength;
 use Hydra\Validation\Rules\Required;
 use Hydra\Validation\Validator;
 use Hydra\View\Contracts\ViewInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -70,6 +72,7 @@ final class PasswordResetController extends Controller
         private readonly QueueInterface $queue,
         private readonly RateLimiter $limiter,
         private readonly Validator $validator,
+        private readonly EventDispatcherInterface $events,
     ) {
         parent::__construct($respond, $view);
     }
@@ -164,6 +167,7 @@ final class PasswordResetController extends Controller
 
         $this->users->updatePassword($user->id, $this->hasher->hash($data['password']));
         $this->session->remove(self::SESSION_KEY);
+        $this->events->dispatch(new PasswordReset($user));
         $this->session->flash('status', 'Your password has been reset. Sign in with the new one.');
 
         return $this->respond->redirect('/login');

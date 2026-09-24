@@ -11,6 +11,7 @@ use App\View\VerificationBanner;
 use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\EmailVerificationTokens;
+use Hydra\Auth\Events\EmailVerified;
 use Hydra\Http\Attributes\Route;
 use Hydra\Http\Responder;
 use Hydra\Http\Status;
@@ -19,6 +20,7 @@ use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Throttle\RateLimiter;
 use Hydra\Throttle\RateLimitPolicy;
 use Hydra\View\Contracts\ViewInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
@@ -46,6 +48,7 @@ final class EmailVerificationController extends Controller
         private readonly SessionInterface $session,
         private readonly QueueInterface $queue,
         private readonly RateLimiter $limiter,
+        private readonly EventDispatcherInterface $events,
     ) {
         parent::__construct($respond, $view);
     }
@@ -84,7 +87,13 @@ final class EmailVerificationController extends Controller
 
         // Checked first so a second click on the same link reads as done
         // rather than as a failure: markVerified() keeps the first stamp.
-        if ($user->hasVerifiedEmail() || $this->users->markVerified($user->id, $user->email)) {
+        if ($user->hasVerifiedEmail()) {
+            return $this->render('auth/verify/done', ['email' => $user->email]);
+        }
+
+        if ($this->users->markVerified($user->id, $user->email)) {
+            $this->events->dispatch(new EmailVerified($user));
+
             return $this->render('auth/verify/done', ['email' => $user->email]);
         }
 

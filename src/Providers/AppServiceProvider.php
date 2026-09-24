@@ -17,7 +17,7 @@ use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Auth\Contracts\{GuardInterface, UserProviderInterface};
-use Hydra\Auth\Events\{Attempting, LoggedIn, LoggedOut, LoginFailed};
+use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent};
 use Hydra\Auth\LogAuthEventsListener;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Environment;
@@ -329,6 +329,9 @@ final class AppServiceProvider extends ServiceProvider
         $listeners->listen(LoginFailed::class, [$audit, 'onFailed']);
         $listeners->listen(LoggedIn::class, [$audit, 'onLoggedIn']);
         $listeners->listen(LoggedOut::class, [$audit, 'onLoggedOut']);
+        $listeners->listen(PasswordResetLinkSent::class, [$audit, 'onPasswordResetLinkSent']);
+        $listeners->listen(PasswordReset::class, [$audit, 'onPasswordReset']);
+        $listeners->listen(EmailVerified::class, [$audit, 'onEmailVerified']);
 
         // One registration against the base class, because the provider matches
         // an event's subtypes: this hears every admin write and every export,

@@ -31,10 +31,12 @@ final class PasswordResetFlowTest extends TestCase
 
     private FrozenClock $clock;
 
+    private int $id;
+
     protected function setUp(): void
     {
         $this->app = TestApp::boot();
-        $this->app->seed('clerk', Role::User);
+        $this->id = $this->app->seed('clerk', Role::User);
 
         // Before anything resolves the token service, which holds the clock.
         $this->clock = new FrozenClock;
@@ -79,6 +81,35 @@ final class PasswordResetFlowTest extends TestCase
         $this->http->get('/reset-password')->assertStatus(404)->assertSee('Link expired');
     }
 
+    public function test_only_a_link_that_was_sent_is_logged(): void
+    {
+        $this->http->post('/forgot-password', ['email' => 'clerk@example.com']);
+        $this->http->post('/forgot-password', ['email' => 'nobody@example.com']);
+        $this->app->work();
+
+        $sent = array_values(array_filter(
+            $this->app->log()->records(),
+            static fn (array $record): bool => $record['message'] === 'auth.reset_link_sent',
+        ));
+
+        $this->assertCount(1, $sent);
+        $this->assertSame(['user' => $this->id], $sent[0]['context']);
+    }
+
+    public function test_a_reset_is_logged(): void
+    {
+        $this->http->get($this->requestLink());
+        $this->http->post('/reset-password', [
+            'password' => self::NEW_PASSWORD,
+            'password_confirmation' => self::NEW_PASSWORD,
+        ]);
+
+        $this->assertSame(
+            ['level' => 'notice', 'message' => 'auth.password_reset', 'context' => ['user' => $this->id]],
+            $this->app->log()->firstWith('auth.password_reset'),
+        );
+    }
+
     public function test_a_mismatched_confirmation_changes_nothing(): void
     {
         $this->http->get($this->requestLink());
@@ -89,6 +120,7 @@ final class PasswordResetFlowTest extends TestCase
         ])->assertStatus(422)->assertSee('The passwords do not match.');
 
         $this->app->login('clerk')->assertRedirect('/admin');
+        $this->assertFalse($this->app->log()->has('auth.password_reset'));
     }
 
     public function test_an_expired_link_is_refused(): void
