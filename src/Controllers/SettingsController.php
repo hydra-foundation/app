@@ -9,6 +9,7 @@ use App\Admin\Presenters\AppearancePresenter;
 use App\Admin\Presenters\RegionalPresenter;
 use App\Entities\Audit;
 use App\Entities\User;
+use App\Jobs\SendEmailChangeLink;
 use App\Repositories\AuditRepository;
 use App\Repositories\PreferenceRepository;
 use App\Repositories\UserRepository;
@@ -23,10 +24,12 @@ use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\Exceptions\NotFoundException;
 use Hydra\Http\ParsedBody;
 use Hydra\Http\Status;
+use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Throttle\Exceptions\TooManyRequestsException;
 use Hydra\Throttle\RateLimiter;
 use Hydra\Throttle\RateLimitPolicy;
 use Hydra\Validation\Rules\Confirmed;
+use Hydra\Validation\Rules\Email;
 use Hydra\Validation\Rules\MaxLength;
 use Hydra\Validation\Rules\MinLength;
 use Hydra\Validation\Rules\Required;
@@ -50,6 +53,11 @@ final class SettingsController
 
     private const PASSWORD_WINDOW = 3600;
 
+    /** The column's width. */
+    private const MAX_EMAIL = 255;
+
+    private const EMAIL_FORM = 'email';
+
     public function __construct(
         private readonly ModuleRegistry $registry,
         private readonly Chrome $chrome,
@@ -66,6 +74,7 @@ final class SettingsController
         private readonly RateLimiter $limiter,
         private readonly Validator $validator,
         private readonly AuditRepository $audit,
+        private readonly QueueInterface $queue,
         private readonly LoggerInterface $logger,
     ) {}
 
@@ -77,7 +86,16 @@ final class SettingsController
             throw new NotFoundException;
         }
 
+        // Two forms on one screen, and a screen submits to one handler.
         $input = ParsedBody::fromRequest($request);
+
+        return $input->string('form') === self::EMAIL_FORM
+            ? $this->changeEmail($request, $user, $input)
+            : $this->changePassword($request, $user, $input);
+    }
+
+    private function changePassword(Request $request, User $user, ParsedBody $input): Response
+    {
         $data = [
             'current_password' => $input->string('current_password'),
             'password' => $input->string('password'),
@@ -101,16 +119,7 @@ final class SettingsController
             return $this->account($request, $result->errors(), status: Status::UnprocessableEntity);
         }
 
-        // Counted before the check, not after a miss: once the budget is
-        // spent, a right guess has to be refused the same as a wrong one.
-        $policy = new RateLimitPolicy('account-password', self::PASSWORD_CHECKS, self::PASSWORD_WINDOW);
-        $status = $this->limiter->hit((string) $user->id, $policy);
-
-        if (!$status->allowed) {
-            throw new TooManyRequestsException($status->retryAfter);
-        }
-
-        if (!$this->hasher->verify($data['current_password'], $user->passwordHash)) {
+        if (!$this->isCurrentPassword($user, $data['current_password'])) {
             return $this->account(
                 $request,
                 ['current_password' => 'That is not your current password.'],
@@ -123,6 +132,71 @@ final class SettingsController
         $this->auditPasswordChange($user);
 
         return $this->account($request, notice: Notice::saved());
+    }
+
+    /**
+     * Asks, and does not apply: the address moves only when the link sent to
+     * it is opened, so a typo or an address that is not theirs changes nothing.
+     */
+    private function changeEmail(Request $request, User $user, ParsedBody $input): Response
+    {
+        $data = [
+            'email' => trim($input->string('email')),
+            'current_password' => $input->string('current_password'),
+        ];
+
+        $result = $this->validator->validate($data, [
+            'email' => [
+                new Required('Enter the new address.'),
+                new Email,
+                new MaxLength(self::MAX_EMAIL),
+            ],
+            'current_password' => [
+                new Required('Enter your current password.'),
+                new MaxLength(self::MAX_PASSWORD),
+            ],
+        ]);
+
+        if (!$result->passes()) {
+            return $this->account($request, $result->errors(), self::EMAIL_FORM, status: Status::UnprocessableEntity);
+        }
+
+        $errors = match (true) {
+            strcasecmp($data['email'], $user->email) === 0 => ['email' => 'That is already your address.'],
+            $this->users->byEmail($data['email']) !== null => ['email' => 'That email address is already in use.'],
+            default => [],
+        };
+
+        if ($errors === [] && !$this->isCurrentPassword($user, $data['current_password'])) {
+            $errors = ['current_password' => 'That is not your current password.'];
+        }
+
+        if ($errors !== []) {
+            return $this->account($request, $errors, self::EMAIL_FORM, status: Status::UnprocessableEntity);
+        }
+
+        $this->queue->push(SendEmailChangeLink::class, ['user' => $user->id, 'email' => $data['email']]);
+
+        return $this->account($request, notice: Notice::success(
+            "A link is on its way to {$data['email']}. Your address changes when you open it.",
+        ));
+    }
+
+    /**
+     * Both forms spend one budget, since both guess the same secret. Counted
+     * before the check, not after a miss: once the budget is spent, a right
+     * guess has to be refused the same as a wrong one.
+     */
+    private function isCurrentPassword(User $user, string $password): bool
+    {
+        $policy = new RateLimitPolicy('account-password', self::PASSWORD_CHECKS, self::PASSWORD_WINDOW);
+        $status = $this->limiter->hit((string) $user->id, $policy);
+
+        if (!$status->allowed) {
+            throw new TooManyRequestsException($status->retryAfter);
+        }
+
+        return $this->hasher->verify($password, $user->passwordHash);
     }
 
     /**
@@ -207,6 +281,7 @@ final class SettingsController
     private function account(
         Request $request,
         array $errors = [],
+        string $form = 'password',
         ?Notice $notice = null,
         int|Status $status = Status::Ok,
     ): Response {
@@ -216,7 +291,7 @@ final class SettingsController
             $request,
             $this->chrome->screen($blueprint, 'Account', notice: $notice),
             'admin/settings/account',
-            $this->accountPresenter->present($errors),
+            $this->accountPresenter->present($errors, $form),
             status: $status,
         );
     }

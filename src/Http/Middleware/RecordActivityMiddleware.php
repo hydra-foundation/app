@@ -51,6 +51,7 @@ final class RecordActivityMiddleware implements MiddlewareInterface
         // user can read this table.
         '/reset-password/*',
         '/verify-email/*',
+        '/change-email/*',
     ];
 
     public function __construct(

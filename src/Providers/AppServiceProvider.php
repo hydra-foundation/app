@@ -6,7 +6,7 @@ namespace App\Providers;
 
 use App\Admin\Modules\{ActivityModule, AuditModule, DashboardModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
-use App\Controllers\{AdminController, AuthController, EmailVerificationController, HomeController, PasswordResetController};
+use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Http\NegotiatingErrorRenderer;
 use App\Listeners\AuditAdminEventsListener;
@@ -71,6 +71,7 @@ final class AppServiceProvider extends ServiceProvider
         AuthController::class,
         PasswordResetController::class,
         EmailVerificationController::class,
+        EmailChangeController::class,
         AdminController::class,
     ];
 

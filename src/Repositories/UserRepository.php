@@ -75,6 +75,18 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
     }
 
     /**
+     * Only while the account still holds $from, so one link cannot apply twice.
+     * The new address counts as verified: the link that got here was sent to it.
+     */
+    public function changeEmail(int $id, string $from, string $to): bool
+    {
+        return $this->db->execute(
+            'UPDATE users SET email = ?, email_verified_at = CURRENT_TIMESTAMP WHERE id = ? AND email = ?',
+            [$to, $id, $from],
+        ) > 0;
+    }
+
+    /**
      * Only while the address is still the one the link was sent to, so an
      * address changed between opening the link and this write stays unverified.
      */
