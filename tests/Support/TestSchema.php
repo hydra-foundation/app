@@ -36,7 +36,18 @@ final class TestSchema
                 email_verified_at TEXT NULL,
                 password_hash TEXT NOT NULL,
                 role TEXT NOT NULL DEFAULT \'user\',
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                two_factor_secret TEXT NULL,
+                two_factor_enabled_at TEXT NULL,
+                two_factor_step INTEGER NULL
+            )'
+        );
+
+        $pdo->exec(
+            'CREATE TABLE user_recovery_codes (
+                user_id INTEGER NOT NULL,
+                hash TEXT NOT NULL,
+                PRIMARY KEY (user_id, hash)
             )'
         );
 

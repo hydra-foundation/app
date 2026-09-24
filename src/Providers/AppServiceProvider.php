@@ -6,18 +6,18 @@ namespace App\Providers;
 
 use App\Admin\Modules\{ActivityModule, AuditModule, DashboardModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
-use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController};
+use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController, TwoFactorChallengeController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
-use App\Repositories\{ActivityRepository, UserRepository};
+use App\Repositories\{ActivityRepository, TwoFactorRepository, UserRepository};
 use App\View\{ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
-use Hydra\Auth\Contracts\{GuardInterface, UserProviderInterface};
-use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent};
+use Hydra\Auth\Contracts\{GuardInterface, TwoFactorStoreInterface, UserProviderInterface};
+use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
 use Hydra\Cache\CacheHealthCheck;
 use Hydra\Cache\Contracts\StoreInterface;
@@ -76,6 +76,7 @@ final class AppServiceProvider extends ServiceProvider
     public const CONTROLLERS = [
         HomeController::class,
         AuthController::class,
+        TwoFactorChallengeController::class,
         PasswordResetController::class,
         EmailVerificationController::class,
         EmailChangeController::class,
@@ -194,6 +195,10 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(UserProviderInterface::class, function () use ($container) {
             return new UserRepository($container->get(ConnectionInterface::class));
+        });
+
+        $container->singleton(TwoFactorStoreInterface::class, function () use ($container) {
+            return $container->get(TwoFactorRepository::class);
         });
 
         $container->singleton(LoggerInterface::class, function () use ($container) {
@@ -385,6 +390,9 @@ final class AppServiceProvider extends ServiceProvider
         $listeners->listen(PasswordResetLinkSent::class, [$audit, 'onPasswordResetLinkSent']);
         $listeners->listen(PasswordReset::class, [$audit, 'onPasswordReset']);
         $listeners->listen(EmailVerified::class, [$audit, 'onEmailVerified']);
+        $listeners->listen(TwoFactorChallenged::class, [$audit, 'onTwoFactorChallenged']);
+        $listeners->listen(TwoFactorFailed::class, [$audit, 'onTwoFactorFailed']);
+        $listeners->listen(RecoveryCodeUsed::class, [$audit, 'onRecoveryCodeUsed']);
 
         // One registration against the base class, because the provider matches
         // an event's subtypes: this hears every admin write and every export,

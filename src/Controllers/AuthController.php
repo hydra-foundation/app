@@ -9,7 +9,8 @@ use App\Http\Middleware\LoginThrottleMiddleware;
 use App\Http\Middleware\RedirectAuthenticatedMiddleware;
 use Hydra\View\Contracts\ViewInterface;
 use App\ViewModels\LoginViewModel;
-use Hydra\Auth\Contracts\GuardInterface;
+use Hydra\Auth\SessionGuard;
+use Hydra\Auth\TwoFactorChallenge;
 use Hydra\Http\Attributes\Route;
 use Hydra\Http\Htmx;
 use Hydra\Http\Responder;
@@ -40,7 +41,8 @@ final class AuthController extends Controller
     public function __construct(
         Responder $respond,
         ViewInterface $view,
-        private readonly GuardInterface $guard,
+        private readonly SessionGuard $guard,
+        private readonly TwoFactorChallenge $challenge,
         private readonly Validator $validator,
         private readonly SessionInterface $session,
     ) {
@@ -86,7 +88,17 @@ final class AuthController extends Controller
             ],
         );
 
-        if ($result->passes() && $this->guard->attempt($username, $password)) {
+        $user = $result->passes() ? $this->guard->validate($username, $password) : null;
+
+        if ($user !== null && $this->challenge->required($user)) {
+            $this->challenge->begin($user);
+
+            return $this->respond->redirect('/two-factor');
+        }
+
+        if ($user !== null) {
+            $this->guard->login($user);
+
             return $this->respond->redirect('/admin');
         }
 
