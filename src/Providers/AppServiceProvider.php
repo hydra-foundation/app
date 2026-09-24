@@ -20,6 +20,7 @@ use Hydra\Auth\Contracts\{GuardInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent};
 use Hydra\Auth\LogAuthEventsListener;
 use Hydra\Core\Contracts\ContainerInterface;
+use Hydra\Core\Contracts\ExceptionReporterInterface;
 use Hydra\Core\Environment;
 use Hydra\Core\Providers\ServiceProvider;
 use Hydra\Core\Versions;
@@ -176,6 +177,7 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(DatabaseQueue::class),
                 $container,
                 $container->get(LoggerInterface::class),
+                reporter: $this->reporter($container),
             );
         });
 
@@ -328,6 +330,7 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(ErrorRendererInterface::class),
                 $container->get(AppConfig::class)->debug,
                 $container->get(LoggerInterface::class),
+                $this->reporter($container),
             );
         });
     }
@@ -368,5 +371,16 @@ final class AppServiceProvider extends ServiceProvider
         $listeners->listen(AdminEvent::class, static function (AdminEvent $event) use ($container): void {
             ($container->get(MailAddressChangesListener::class))($event);
         });
+    }
+
+    /**
+     * Error tracking is opt-in: bind an ExceptionReporterInterface in a
+     * provider and every fault the log records is reported to it as well.
+     */
+    private function reporter(ContainerInterface $container): ?ExceptionReporterInterface
+    {
+        return $container->bound(ExceptionReporterInterface::class)
+            ? $container->get(ExceptionReporterInterface::class)
+            : null;
     }
 }
