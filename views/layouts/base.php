@@ -55,6 +55,7 @@
     <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/htmx.min.js" defer></script>
     <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/hx-csp.js" defer></script>
     <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/app.js" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/qr.js" defer></script>
     <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/bootstrap.bundle.min.js" defer></script>
 </head>
 <body hx-nonce="<?= $this->e($this->cspNonce()) ?>" hx-headers:inherited='{"X-CSRF-Token": "<?= $this->e($this->csrfToken()) ?>"}'>

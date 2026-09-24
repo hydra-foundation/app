@@ -10,6 +10,7 @@ use App\Controllers\{AdminController, AuthController, EmailChangeController, Ema
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
+use App\Listeners\MailRecoveryCodeUseListener;
 use App\Repositories\{ActivityRepository, TwoFactorRepository, UserRepository};
 use App\View\{ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
@@ -284,7 +285,10 @@ final class AppServiceProvider extends ServiceProvider
                 // Google Fonts answers from two hosts: the @font-face sheet
                 // comes from one and the files it names from the other.
                 ->with('style-src', "'self'", 'https://fonts.googleapis.com')
-                ->with('font-src', "'self'", 'https://fonts.gstatic.com');
+                ->with('font-src', "'self'", 'https://fonts.gstatic.com')
+                // public/js/qr.js loads the QR library from here, held to one
+                // file by its integrity hash.
+                ->with('script-src', "'self'", Csp::NONCE, 'https://cdnjs.cloudflare.com');
 
             if ($config->reportUri !== '') {
                 $policy = $policy->with('report-uri', $config->reportUri);
@@ -411,6 +415,10 @@ final class AppServiceProvider extends ServiceProvider
 
         $listeners->listen(AdminEvent::class, static function (AdminEvent $event) use ($container): void {
             ($container->get(MailAddressChangesListener::class))($event);
+        });
+
+        $listeners->listen(RecoveryCodeUsed::class, static function (RecoveryCodeUsed $event) use ($container): void {
+            ($container->get(MailRecoveryCodeUseListener::class))($event);
         });
     }
 

@@ -8,7 +8,9 @@ use App\Admin\Presenters\AccountPresenter;
 use App\Admin\Presenters\AppearancePresenter;
 use App\Admin\Presenters\GeneralSettingsPresenter;
 use App\Admin\Presenters\RegionalPresenter;
+use App\Admin\Presenters\SecurityPresenter;
 use App\Controllers\SettingsController;
+use App\Controllers\TwoFactorSettingsController;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Screens\PageScreen;
@@ -35,6 +37,11 @@ final class SettingsModule implements ModuleInterface
                     ->title('Account')
                     ->presentedBy(AccountPresenter::class)
                     ->submittedTo([SettingsController::class, 'saveAccount']),
+                PageScreen::make('security', 'admin/settings/security')
+                    ->at('security')
+                    ->title('Security')
+                    ->presentedBy(SecurityPresenter::class)
+                    ->submittedTo([TwoFactorSettingsController::class, 'save']),
                 PageScreen::make('appearance', 'admin/settings/appearance')
                     ->at('appearance')
                     ->title('Appearance')

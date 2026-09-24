@@ -92,6 +92,9 @@ final class TwoFactorLoginFlowTest extends TestCase
 
         $this->http->post('/two-factor', ['method' => 'recovery', 'code' => strtoupper($this->codes[3])])
             ->assertRedirect('/admin');
+        $this->app->work();
+        $this->app->mailer()->assertSentTo('clerk@example.com');
+        $this->assertStringContainsString('9 recovery codes left', (string) $this->app->mailer()->sent()[0]->getText());
         $this->http->post('/logout');
 
         $this->app->login('clerk');

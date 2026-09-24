@@ -153,3 +153,35 @@
 .theme-swatch-pair .theme-swatch-dot {
     width: 0.5rem;
 }
+
+#two-factor-submit {
+    margin-top: var(--s-2);
+}
+
+/* The SVG brings its own white field and quiet zone, whatever the theme. */
+.two-factor-qr {
+    width: 12rem;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--r-2);
+}
+
+.two-factor-qr:empty {
+    display: none;
+}
+
+.two-factor-key,
+.recovery-codes {
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+}
+
+.recovery-codes {
+    columns: 2;
+    max-width: 22rem;
+    padding: var(--s-3) var(--s-3) var(--s-3) var(--s-6);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2);
+}

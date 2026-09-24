@@ -13,6 +13,7 @@ use App\Jobs\SendEmailChangeLink;
 use App\Repositories\AuditRepository;
 use App\Repositories\PreferenceRepository;
 use App\Repositories\UserRepository;
+use App\Security\CurrentPassword;
 use App\View\Themes;
 use App\View\Timezones;
 use Hydra\Admin\Chrome;
@@ -25,9 +26,6 @@ use Hydra\Http\Exceptions\NotFoundException;
 use Hydra\Http\ParsedBody;
 use Hydra\Http\Status;
 use Hydra\Queue\Contracts\QueueInterface;
-use Hydra\Throttle\Exceptions\TooManyRequestsException;
-use Hydra\Throttle\RateLimiter;
-use Hydra\Throttle\RateLimitPolicy;
 use Hydra\Validation\Rules\Confirmed;
 use Hydra\Validation\Rules\Email;
 use Hydra\Validation\Rules\MaxLength;
@@ -49,10 +47,6 @@ final class SettingsController
     /** The same ceiling the login form holds a password to. */
     private const MAX_PASSWORD = 4096;
 
-    private const PASSWORD_CHECKS = 5;
-
-    private const PASSWORD_WINDOW = 3600;
-
     /** The column's width. */
     private const MAX_EMAIL = 255;
 
@@ -71,7 +65,7 @@ final class SettingsController
         private readonly AccountPresenter $accountPresenter,
         private readonly UserRepository $users,
         private readonly HasherInterface $hasher,
-        private readonly RateLimiter $limiter,
+        private readonly CurrentPassword $currentPassword,
         private readonly Validator $validator,
         private readonly AuditRepository $audit,
         private readonly QueueInterface $queue,
@@ -119,7 +113,7 @@ final class SettingsController
             return $this->account($request, $result->errors(), status: Status::UnprocessableEntity);
         }
 
-        if (!$this->isCurrentPassword($user, $data['current_password'])) {
+        if (!$this->currentPassword->matches($user, $data['current_password'])) {
             return $this->account(
                 $request,
                 ['current_password' => 'That is not your current password.'],
@@ -167,7 +161,7 @@ final class SettingsController
             default => [],
         };
 
-        if ($errors === [] && !$this->isCurrentPassword($user, $data['current_password'])) {
+        if ($errors === [] && !$this->currentPassword->matches($user, $data['current_password'])) {
             $errors = ['current_password' => 'That is not your current password.'];
         }
 
@@ -180,23 +174,6 @@ final class SettingsController
         return $this->account($request, notice: Notice::success(
             "A link is on its way to {$data['email']}. Your address changes when you open it.",
         ));
-    }
-
-    /**
-     * Both forms spend one budget, since both guess the same secret. Counted
-     * before the check, not after a miss: once the budget is spent, a right
-     * guess has to be refused the same as a wrong one.
-     */
-    private function isCurrentPassword(User $user, string $password): bool
-    {
-        $policy = new RateLimitPolicy('account-password', self::PASSWORD_CHECKS, self::PASSWORD_WINDOW);
-        $status = $this->limiter->hit((string) $user->id, $policy);
-
-        if (!$status->allowed) {
-            throw new TooManyRequestsException($status->retryAfter);
-        }
-
-        return $this->hasher->verify($password, $user->passwordHash);
     }
 
     /**
