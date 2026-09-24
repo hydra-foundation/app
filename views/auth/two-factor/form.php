@@ -3,7 +3,7 @@
 <div id="two-factor">
 <form id="two-factor-form" method="post" action="/two-factor" hx-nonce="<?= $this->e($this->cspNonce()) ?>" hx-post="/two-factor" hx-target="#two-factor" hx-swap="outerHTML">
     <?= $this->csrf() ?>
-    <input type="hidden" name="method" value="<?= $vm->recovery ? 'recovery' : 'code' ?>">
+    <input type="hidden" name="code_type" value="<?= $vm->recovery ? 'recovery' : 'code' ?>">
 
     <?= $this->partial('partials/form_errors', ['errors' => $vm->formErrors()]) ?>
 

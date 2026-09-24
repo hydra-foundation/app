@@ -43,7 +43,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
     {
         $this->http->get(self::URL)->assertOk()->assertSee('Two-factor sign in is off');
 
-        $response = $this->http->post(self::URL, ['form' => 'start'])->assertOk();
+        $response = $this->http->post(self::URL, ['intent' => 'start'])->assertOk();
 
         $secret = $this->setupSecret();
         $response->assertSee('data-qr="otpauth://totp/Hydra:clerk?secret=' . $secret);
@@ -53,9 +53,9 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
     public function test_confirming_takes_the_password(): void
     {
-        $this->http->post(self::URL, ['form' => 'start']);
+        $this->http->post(self::URL, ['intent' => 'start']);
 
-        $this->http->post(self::URL, ['form' => 'confirm', 'code' => $this->code(), 'current_password' => 'wrong'])
+        $this->http->post(self::URL, ['intent' => 'confirm', 'code' => $this->code(), 'current_password' => 'wrong'])
             ->assertStatus(422)
             ->assertSee('That is not your current password.');
         $this->assertNull($this->stored());
@@ -63,7 +63,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
     public function test_confirming_takes_a_code_from_the_key_shown(): void
     {
-        $this->http->post(self::URL, ['form' => 'start']);
+        $this->http->post(self::URL, ['intent' => 'start']);
 
         $this->confirm('000000')->assertStatus(422)->assertSee('That code does not match');
         $this->assertNull($this->stored());
@@ -71,7 +71,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
     public function test_a_right_code_turns_it_on_and_shows_ten_recovery_codes_once(): void
     {
-        $this->http->post(self::URL, ['form' => 'start']);
+        $this->http->post(self::URL, ['intent' => 'start']);
 
         $response = $this->confirm($this->code())->assertOk()->assertSee('Two-factor sign in is on.');
 
@@ -109,7 +109,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
     {
         $old = $this->enable()['codes'];
 
-        $response = $this->http->post(self::URL, ['form' => 'regenerate', 'code' => $this->nextCode(), 'current_password' => TestApp::PASSWORD])
+        $response = $this->http->post(self::URL, ['intent' => 'regenerate', 'code' => $this->nextCode(), 'current_password' => TestApp::PASSWORD])
             ->assertOk()
             ->assertSee('The old ones no longer work.');
 
@@ -117,7 +117,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
         $this->assertCount(10, $new);
         $this->assertSame([], array_intersect($old, $new));
 
-        $this->http->post(self::URL, ['form' => 'disable', 'code' => $old[0], 'current_password' => TestApp::PASSWORD])
+        $this->http->post(self::URL, ['intent' => 'disable', 'code' => $old[0], 'current_password' => TestApp::PASSWORD])
             ->assertStatus(422)
             ->assertSee('That code is not valid, or has been used.');
         $this->assertContains('account.recovery_codes_regenerated', $this->auditMessages());
@@ -128,7 +128,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
         $codes = $this->enable()['codes'];
         $this->app->work();
 
-        $this->http->post(self::URL, ['form' => 'disable', 'code' => $codes[0], 'current_password' => TestApp::PASSWORD])
+        $this->http->post(self::URL, ['intent' => 'disable', 'code' => $codes[0], 'current_password' => TestApp::PASSWORD])
             ->assertOk()
             ->assertSee('Two-factor sign in is off.');
 
@@ -149,9 +149,9 @@ final class TwoFactorSettingsFlowTest extends TestCase
     {
         $this->enable();
 
-        $this->http->post(self::URL, ['form' => 'disable', 'code' => $this->nextCode(), 'current_password' => 'wrong'])
+        $this->http->post(self::URL, ['intent' => 'disable', 'code' => $this->nextCode(), 'current_password' => 'wrong'])
             ->assertStatus(422);
-        $this->http->post(self::URL, ['form' => 'disable', 'code' => '', 'current_password' => TestApp::PASSWORD])
+        $this->http->post(self::URL, ['intent' => 'disable', 'code' => '', 'current_password' => TestApp::PASSWORD])
             ->assertStatus(422)
             ->assertSee('Enter a code from your app, or a recovery code.');
 
@@ -160,20 +160,20 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
     public function test_a_form_that_no_longer_applies_changes_nothing(): void
     {
-        $this->http->post(self::URL, ['form' => 'disable', 'code' => '123456', 'current_password' => TestApp::PASSWORD])
+        $this->http->post(self::URL, ['intent' => 'disable', 'code' => '123456', 'current_password' => TestApp::PASSWORD])
             ->assertOk()
             ->assertSee('That form is out of date.');
 
-        $this->http->post(self::URL, ['form' => 'confirm', 'code' => '123456', 'current_password' => TestApp::PASSWORD])
+        $this->http->post(self::URL, ['intent' => 'confirm', 'code' => '123456', 'current_password' => TestApp::PASSWORD])
             ->assertOk()
             ->assertSee('That setup has expired.');
     }
 
     public function test_cancelling_setup_forgets_the_key(): void
     {
-        $this->http->post(self::URL, ['form' => 'start']);
+        $this->http->post(self::URL, ['intent' => 'start']);
 
-        $this->http->post(self::URL, ['form' => 'cancel'])->assertOk()->assertSee('Two-factor sign in is off');
+        $this->http->post(self::URL, ['intent' => 'cancel'])->assertOk()->assertSee('Two-factor sign in is off');
 
         $this->assertNull($this->setupKey());
     }
@@ -188,7 +188,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
     /** @return array{code: string, codes: list<string>} */
     private function enable(): array
     {
-        $this->http->post(self::URL, ['form' => 'start']);
+        $this->http->post(self::URL, ['intent' => 'start']);
         $code = $this->code();
 
         return ['code' => $code, 'codes' => $this->recoveryCodes($this->confirm($code)->assertOk())];
@@ -196,7 +196,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
     private function confirm(string $code): TestResponse
     {
-        return $this->http->post(self::URL, ['form' => 'confirm', 'code' => $code, 'current_password' => TestApp::PASSWORD]);
+        return $this->http->post(self::URL, ['intent' => 'confirm', 'code' => $code, 'current_password' => TestApp::PASSWORD]);
     }
 
     /** @return list<string> */

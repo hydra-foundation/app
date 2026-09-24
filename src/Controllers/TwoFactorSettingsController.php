@@ -74,7 +74,7 @@ final class TwoFactorSettingsController
         $input = ParsedBody::fromRequest($request);
         $enabled = $this->store->secret($user) !== null;
 
-        return match ([$input->string('form'), $enabled]) {
+        return match ([$input->string('intent'), $enabled]) {
             ['start', false] => $this->start($request),
             ['cancel', false] => $this->cancel($request),
             ['confirm', false] => $this->confirm($request, $user, $input),

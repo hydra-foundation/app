@@ -34,7 +34,7 @@
       hx-post="/admin/settings/security"
       hx-target="#admin-frame">
     <?= $this->csrf() ?>
-    <input type="hidden" name="form" value="<?= $form ?>">
+    <input type="hidden" name="intent" value="<?= $form ?>">
     <h2 class="h5"><?= $this->e($title) ?></h2>
     <p class="form-text"><?= $this->e($lead) ?></p>
     <?= $this->partial('admin/settings/security_proof', ['vm' => $vm, 'form' => $form, 'codeLabel' => 'Code from your app, or a recovery code']) ?>
@@ -53,7 +53,7 @@
       hx-post="/admin/settings/security"
       hx-target="#admin-frame">
     <?= $this->csrf() ?>
-    <input type="hidden" name="form" value="confirm">
+    <input type="hidden" name="intent" value="confirm">
     <p>Scan this with an authenticator app, or type the key into it.</p>
     <div class="two-factor-qr mb-3" data-qr="<?= $this->e((string) $vm->setupUri) ?>" role="img" aria-label="QR code for your authenticator app"></div>
     <p>Key: <code class="two-factor-key"><?= $this->e($vm->groupedSecret()) ?></code></p>
@@ -70,7 +70,7 @@
       hx-post="/admin/settings/security"
       hx-target="#admin-frame">
     <?= $this->csrf() ?>
-    <input type="hidden" name="form" value="cancel">
+    <input type="hidden" name="intent" value="cancel">
     <button class="btn btn-link p-0" type="submit">Cancel</button>
 </form>
 
@@ -83,7 +83,7 @@
       hx-post="/admin/settings/security"
       hx-target="#admin-frame">
     <?= $this->csrf() ?>
-    <input type="hidden" name="form" value="start">
+    <input type="hidden" name="intent" value="start">
     <p>Two-factor sign in is off. With it on, signing in takes a code from an authenticator app on your phone as well as your password.</p>
     <div class="admin-form-actions">
         <button class="btn btn-primary" type="submit">Set up two-factor sign in</button>

@@ -90,7 +90,7 @@ final class TwoFactorLoginFlowTest extends TestCase
         $this->app->login('clerk');
         $this->http->get('/two-factor?recovery=1')->assertOk()->assertSee('Recovery code');
 
-        $this->http->post('/two-factor', ['method' => 'recovery', 'code' => strtoupper($this->codes[3])])
+        $this->http->post('/two-factor', ['code_type' => 'recovery', 'code' => strtoupper($this->codes[3])])
             ->assertRedirect('/admin');
         $this->app->work();
         $this->app->mailer()->assertSentTo('clerk@example.com');
@@ -98,7 +98,7 @@ final class TwoFactorLoginFlowTest extends TestCase
         $this->http->post('/logout');
 
         $this->app->login('clerk');
-        $this->http->post('/two-factor', ['method' => 'recovery', 'code' => $this->codes[3]])
+        $this->http->post('/two-factor', ['code_type' => 'recovery', 'code' => $this->codes[3]])
             ->assertStatus(422)
             ->assertSee('has been used');
     }
@@ -107,7 +107,7 @@ final class TwoFactorLoginFlowTest extends TestCase
     {
         $this->app->login('clerk');
         $this->http->post('/two-factor', ['code' => '000000']);
-        $this->http->post('/two-factor', ['method' => 'recovery', 'code' => $this->codes[0]]);
+        $this->http->post('/two-factor', ['code_type' => 'recovery', 'code' => $this->codes[0]]);
 
         $messages = $this->app->log()->messages();
 

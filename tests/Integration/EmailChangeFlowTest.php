@@ -154,7 +154,7 @@ final class EmailChangeFlowTest extends TestCase
     private function ask(string $email = self::NEW_EMAIL, string $current = TestApp::PASSWORD): TestResponse
     {
         return $this->http->post('/admin/settings/account', [
-            'form' => 'email',
+            'intent' => 'email',
             'email' => $email,
             'current_password' => $current,
         ]);

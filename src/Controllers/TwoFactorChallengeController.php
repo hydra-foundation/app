@@ -55,7 +55,7 @@ final class TwoFactorChallengeController extends Controller
         }
 
         $input = ParsedBody::fromRequest($request);
-        $recovery = $input->string('method') === 'recovery';
+        $recovery = $input->string('code_type') === 'recovery';
         $code = substr(trim($input->string('code')), 0, self::MAX_CODE);
 
         $passed = $code !== '' && ($recovery ? $this->challenge->recover($code) : $this->challenge->verify($code));

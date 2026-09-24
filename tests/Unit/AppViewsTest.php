@@ -97,6 +97,27 @@ final class AppViewsTest extends TestCase
      * `content='extensions:"hx-csp"'` meta tag is configuration for htmx, not
      * an element htmx will ever initialise.
      */
+    /**
+     * A control named after a form property replaces it: in a form holding
+     * name="form", form.form is that input. htmx 4 finds a POST's form with
+     * elt.form, so it handed the input to new FormData() and the submit threw.
+     */
+    public function test_no_field_is_named_after_a_form_property(): void
+    {
+        $shadowing = ['form', 'action', 'method', 'target', 'elements', 'length', 'name', 'id', 'submit', 'reset', 'enctype', 'encoding', 'acceptCharset', 'autocomplete', 'noValidate', 'checkValidity', 'reportValidity', 'requestSubmit', 'nodeName', 'attributes', 'children', 'style'];
+        $found = [];
+
+        foreach ($this->openingTags() as [$file, $tag, $attributes]) {
+            if (in_array($tag, ['input', 'select', 'textarea', 'button'], true)
+                && preg_match('~\bname="([^"]*)"~', $attributes, $m) === 1
+                && in_array($m[1], $shadowing, true)) {
+                $found[] = "{$file}: <{$tag} name=\"{$m[1]}\">";
+            }
+        }
+
+        $this->assertSame([], $found);
+    }
+
     private function names(string $attributes): string
     {
         return (string) preg_replace('~=\s*("[^"]*"|\'[^\']*\'|[^\s"\'<>`]+)~', '=', $attributes);

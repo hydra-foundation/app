@@ -52,7 +52,7 @@
       hx-post="/admin/settings/account"
       hx-target="#admin-frame">
     <?= $this->csrf() ?>
-    <input type="hidden" name="form" value="email">
+    <input type="hidden" name="intent" value="email">
 
     <?= $this->partial('admin/partials/errors', ['errors' => $emailVm->formErrors()]) ?>
 

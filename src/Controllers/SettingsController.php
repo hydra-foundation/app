@@ -83,7 +83,7 @@ final class SettingsController
         // Two forms on one screen, and a screen submits to one handler.
         $input = ParsedBody::fromRequest($request);
 
-        return $input->string('form') === self::EMAIL_FORM
+        return $input->string('intent') === self::EMAIL_FORM
             ? $this->changeEmail($request, $user, $input)
             : $this->changePassword($request, $user, $input);
     }
