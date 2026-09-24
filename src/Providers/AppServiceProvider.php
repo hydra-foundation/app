@@ -10,6 +10,7 @@ use App\Controllers\{AdminController, AuthController, EmailVerificationControlle
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Http\NegotiatingErrorRenderer;
 use App\Listeners\AuditAdminEventsListener;
+use App\Listeners\MailAddressChangesListener;
 use App\Repositories\{ActivityRepository, UserRepository};
 use App\View\{ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
@@ -346,6 +347,10 @@ final class AppServiceProvider extends ServiceProvider
         // was bound at boot.
         $listeners->listen(AdminEvent::class, static function (AdminEvent $event) use ($container): void {
             ($container->get(AuditAdminEventsListener::class))($event);
+        });
+
+        $listeners->listen(AdminEvent::class, static function (AdminEvent $event) use ($container): void {
+            ($container->get(MailAddressChangesListener::class))($event);
         });
     }
 }
