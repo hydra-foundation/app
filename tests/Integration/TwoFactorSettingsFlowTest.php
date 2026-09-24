@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
+use App\Config\AppConfig;
 use App\Entities\Role;
 use App\Repositories\TwoFactorRepository;
 use App\Repositories\UserRepository;
@@ -46,7 +47,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
         $response = $this->http->post(self::URL, ['intent' => 'start'])->assertOk();
 
         $secret = $this->setupSecret();
-        $response->assertSee('data-qr="otpauth://totp/Hydra:clerk?secret=' . $secret);
+        $response->assertSee('data-qr="otpauth://totp/' . rawurlencode($this->appName()) . ':clerk?secret=' . $secret);
         $response->assertSee(implode(' ', str_split($secret, 4)));
         $this->assertNull($this->stored(), 'nothing is saved before a code confirms it');
     }
@@ -91,7 +92,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
         $this->app->work();
         $this->app->mailer()->assertSentTo('clerk@example.com');
         $this->assertSame(
-            ['Two-factor sign in is on for your Hydra account'],
+            ["Two-factor sign in is on for your {$this->appName()} account"],
             array_map(static fn (Message $m): string => (string) $m->getSubject(), $this->app->mailer()->sent()),
         );
     }
@@ -138,8 +139,8 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
         $this->app->work();
         $subjects = array_map(static fn (Message $m): string => (string) $m->getSubject(), $this->app->mailer()->sent());
-        $this->assertContains('A recovery code was used on your Hydra account', $subjects);
-        $this->assertContains('Two-factor sign in is off for your Hydra account', $subjects);
+        $this->assertContains("A recovery code was used on your {$this->appName()} account", $subjects);
+        $this->assertContains("Two-factor sign in is off for your {$this->appName()} account", $subjects);
 
         $this->http->post('/logout');
         $this->app->login('clerk')->assertRedirect('/admin');
@@ -183,6 +184,12 @@ final class TwoFactorSettingsFlowTest extends TestCase
         $response = $this->http->get(self::URL)->assertOk()->assertSee('/js/qr.js');
 
         $this->assertStringContainsString('https://cdnjs.cloudflare.com', $response->header('Content-Security-Policy'));
+    }
+
+    /** Whatever the environment named the app: CI's config tests leave APP_NAME=x behind. */
+    private function appName(): string
+    {
+        return $this->app->get(AppConfig::class)->name;
     }
 
     /** @return array{code: string, codes: list<string>} */
