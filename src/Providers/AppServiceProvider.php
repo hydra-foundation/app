@@ -38,12 +38,14 @@ use Hydra\Http\{
     HtmxRedirectMiddleware,
     NegotiatingErrorRenderer,
     ParseBodyMiddleware,
+    RequestId,
+    RequestIdMiddleware,
     RequestLoggingMiddleware,
     Responder,
     SecurityHeadersMiddleware,
     TrustedProxies,
 };
-use Hydra\Log\StreamLogger;
+use Hydra\Log\{ContextualLogger, RedactingLogger, StreamLogger};
 use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Queue\{DatabaseQueue, Worker};
 use Hydra\Scheduler\Schedule;
@@ -90,6 +92,7 @@ final class AppServiceProvider extends ServiceProvider
      * The app's middleware stack, outermost first
      */
     public const MIDDLEWARE = [
+        RequestIdMiddleware::class,
         RequestLoggingMiddleware::class,
         SecurityHeadersMiddleware::class,
         CspMiddleware::class,
@@ -183,8 +186,15 @@ final class AppServiceProvider extends ServiceProvider
         $container->singleton(LoggerInterface::class, function () use ($container) {
             $path = $container->get(LogConfig::class)->path;
             $stream = @fopen($path, 'a') ?: fopen('php://stderr', 'w');
-            return new StreamLogger($stream);
+            $requestId = $container->get(RequestId::class);
+
+            return new RedactingLogger(new ContextualLogger(
+                new StreamLogger($stream),
+                fn (): array => array_filter(['request_id' => $requestId->get()]),
+            ));
         });
+
+        $container->singleton(RequestId::class, fn () => new RequestId);
 
         $container->singleton(Themes::class, function (): Themes {
             return new Themes(dirname(__DIR__, 2) . '/public/css/themes');
@@ -279,6 +289,15 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(ClientIpResolver::class, function () use ($container) {
             return new ClientIpResolver($container->get(TrustedProxies::class));
+        });
+
+        // docker/nginx/default.conf overwrites X-Request-Id with its own $request_id.
+        $container->singleton(RequestIdMiddleware::class, function () use ($container) {
+            return new RequestIdMiddleware(
+                $container->get(RequestId::class),
+                trustIncoming: true,
+                clients: $container->get(ClientIpResolver::class),
+            );
         });
 
         $container->singleton(ForceHttpsMiddleware::class, function () use ($container) {
