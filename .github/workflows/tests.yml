@@ -24,7 +24,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo, pdo_sqlite
+          extensions: pdo, pdo_sqlite, sodium
           coverage: none
 
       # Strict, and with the lock: an application commits its lock, so a lock
@@ -53,7 +53,7 @@ jobs:
           # pins its own analysis range in phpstan.neon.dist, so neither tool's
           # verdict depends on the runtime here.
           php-version: '8.4'
-          extensions: pdo, pdo_sqlite
+          extensions: pdo, pdo_sqlite, sodium
           coverage: none
 
       - uses: ramsey/composer-install@v3
@@ -102,7 +102,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: pdo, pdo_sqlite
+          extensions: pdo, pdo_sqlite, sodium
           coverage: none
 
       # update, not install: the committed lock holds released packages, and
