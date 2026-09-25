@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Admin\Modules;
 
 use App\Admin\Presenters\AccountPresenter;
+use App\Admin\Presenters\ApiTokensPresenter;
 use App\Admin\Presenters\AppearancePresenter;
 use App\Admin\Presenters\GeneralSettingsPresenter;
 use App\Admin\Presenters\RegionalPresenter;
 use App\Admin\Presenters\SecurityPresenter;
+use App\Controllers\ApiTokenSettingsController;
 use App\Controllers\SettingsController;
 use App\Controllers\TwoFactorSettingsController;
 use Hydra\Admin\Contracts\ModuleInterface;
@@ -42,6 +44,11 @@ final class SettingsModule implements ModuleInterface
                     ->title('Security')
                     ->presentedBy(SecurityPresenter::class)
                     ->submittedTo([TwoFactorSettingsController::class, 'save']),
+                PageScreen::make('tokens', 'admin/settings/tokens')
+                    ->at('tokens')
+                    ->title('API tokens')
+                    ->presentedBy(ApiTokensPresenter::class)
+                    ->submittedTo([ApiTokenSettingsController::class, 'save']),
                 PageScreen::make('appearance', 'admin/settings/appearance')
                     ->at('appearance')
                     ->title('Appearance')
