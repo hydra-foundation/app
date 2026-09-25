@@ -74,6 +74,17 @@ final class ApiFlowTest extends TestCase
             ->assertHeader('WWW-Authenticate', 'Bearer error="invalid_token"');
     }
 
+    public function test_a_deleted_users_token_stops_working(): void
+    {
+        $token = $this->token();
+        $this->app->pdo()->exec("DELETE FROM users WHERE username = 'ada'");
+
+        $this->app->http()->unprepared()
+            ->get('/api/v1/me', ['Authorization' => "Bearer {$token}", 'Accept' => 'application/json'])
+            ->assertStatus(401)
+            ->assertHeader('WWW-Authenticate', 'Bearer error="invalid_token"');
+    }
+
     public function test_a_bad_token_on_a_browser_page_is_a_401_too(): void
     {
         $this->app->http()->unprepared()
