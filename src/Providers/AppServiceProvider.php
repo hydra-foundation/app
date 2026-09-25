@@ -38,6 +38,8 @@ use Hydra\Http\Contracts\ErrorRendererInterface;
 use Hydra\Http\Contracts\PathRedactorInterface;
 use Hydra\Http\{
     ClientIpResolver,
+    CorsConfig,
+    CorsMiddleware,
     Csp,
     CspMiddleware,
     CspNonce,
@@ -113,6 +115,9 @@ final class AppServiceProvider extends ServiceProvider
         SecurityHeadersMiddleware::class,
         CspMiddleware::class,
         ForceHttpsMiddleware::class,
+        // Above the error handler, so a 401 or a 500 stays readable to the page
+        // that caused it, and above the limiter, which a preflight never costs.
+        CorsMiddleware::class,
         ErrorHandlerMiddleware::class,
         // Ahead of everything a maintenance window is for: the store, the
         // session, the database. Health sits above, so /up still answers.
@@ -320,6 +325,10 @@ final class AppServiceProvider extends ServiceProvider
         // later counts requests per caller.
         $container->singleton(TrustedProxies::class, function () use ($container) {
             return new TrustedProxies($container->get(AppConfig::class)->trustedProxies);
+        });
+
+        $container->singleton(CorsConfig::class, function () use ($container) {
+            return CorsConfig::fromEnvironment($container->get(Environment::class));
         });
 
         $container->singleton(ClientIpResolver::class, function () use ($container) {
