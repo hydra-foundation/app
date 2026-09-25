@@ -11,14 +11,14 @@ use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddle
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
-use App\Repositories\{ActivityRepository, TwoFactorRepository, UserRepository};
+use App\Repositories\{ActivityRepository, ApiTokenRepository, TwoFactorRepository, UserRepository};
 use App\View\{ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Admin\Updates\UpdateCheck;
-use Hydra\Auth\Contracts\{GuardInterface, TwoFactorStoreInterface, UserProviderInterface};
+use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
 use Hydra\Cache\CacheHealthCheck;
@@ -202,6 +202,10 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(TwoFactorStoreInterface::class, function () use ($container) {
             return $container->get(TwoFactorRepository::class);
+        });
+
+        $container->singleton(ApiTokenStoreInterface::class, function () use ($container) {
+            return $container->get(ApiTokenRepository::class);
         });
 
         $container->singleton(LoggerInterface::class, function () use ($container) {

@@ -52,6 +52,18 @@ final class TestSchema
         );
 
         $pdo->exec(
+            'CREATE TABLE api_tokens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                token_hash TEXT NOT NULL UNIQUE,
+                created_at INTEGER NOT NULL,
+                expires_at INTEGER NULL,
+                last_used_at INTEGER NULL
+            )'
+        );
+
+        $pdo->exec(
             'CREATE TABLE user_preferences (
                 user_id INTEGER NOT NULL,
                 name TEXT NOT NULL,
