@@ -77,7 +77,6 @@ services:
       MARIADB_DATABASE: ${DB_NAME}
       MARIADB_USER: ${DB_USERNAME}
       MARIADB_PASSWORD: ${DB_PASSWORD}
-      TZ: ${APP_TIMEZONE:-UTC}
     volumes:
       - ./docker/db_data:/var/lib/mysql
     networks:
