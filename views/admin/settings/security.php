@@ -5,7 +5,7 @@
 <?= $this->partial('admin/settings/nav', ['current' => 'security']) ?>
 
 <?php if ($vm->codes !== null): ?>
-<section class="col-12 col-xl-6 mb-4" aria-labelledby="recovery-codes-title">
+<section class="settings-panel" aria-labelledby="recovery-codes-title">
     <h2 id="recovery-codes-title" class="h5">Your recovery codes</h2>
     <p>Each one signs you in once if you lose your phone. Keep them somewhere safe: this is the only time they are shown.</p>
     <ol class="recovery-codes">
@@ -17,32 +17,33 @@
 <?php endif ?>
 
 <?php if ($vm->enabled): ?>
-<dl class="admin-show" hx-nonce="<?= $nonce ?>">
-    <dt>Two-factor sign in</dt>
-    <dd class="type-text">On since <?= $this->e((string) $vm->enabledAt) ?></dd>
+<div class="settings-rows" hx-nonce="<?= $nonce ?>">
+    <?php foreach (['disable' => ['Two-factor', 'On', 'Since ' . $vm->enabledAt, 'Turn off', 'Your password alone will sign you in.', 'Turn off two-factor sign in', 'btn-outline-danger'], 'regenerate' => ['Recovery codes', $vm->remaining . ' left', 'Each signs you in once if you lose your phone.', 'Replace', 'Replaces every recovery code, used or not.', 'Replace recovery codes', 'btn-primary']] as $form => [$label, $value, $note, $action, $lead, $submit, $button]): ?>
+    <details class="settings-row<?= $form === 'disable' ? ' is-danger' : '' ?>" name="security"<?= $vm->form === $form && $vm->hasErrors() ? ' open' : '' ?>>
+        <summary>
+            <span class="settings-row-label"><?= $this->e($label) ?></span>
+            <span class="settings-row-value"><?php if ($form === 'disable'): ?><span class="settings-state is-on"><?= $this->e($value) ?></span><?php else: ?><?= $this->e($value) ?><?php endif ?><small><?= $this->e($note) ?></small></span>
+            <span class="settings-row-action"><span class="when-closed"><?= $this->e($action) ?></span><span class="when-open">Cancel</span></span>
+        </summary>
 
-    <dt>Recovery codes</dt>
-    <dd class="type-text"><?= $vm->remaining ?> left</dd>
-</dl>
-
-<?php foreach (['regenerate' => ['New recovery codes', 'Replaces every recovery code, used or not.', 'btn-primary'], 'disable' => ['Turn off two-factor sign in', 'Your password alone will sign you in.', 'btn-outline-danger']] as $form => [$title, $lead, $button]): ?>
-<form id="<?= $form ?>-form"
-      class="col-12 col-xl-6 mt-4"
-      method="post"
-      action="/admin/settings/security"
-      hx-nonce="<?= $nonce ?>"
-      hx-post="/admin/settings/security"
-      hx-target="#admin-frame">
-    <?= $this->csrf() ?>
-    <input type="hidden" name="intent" value="<?= $form ?>">
-    <h2 class="h5"><?= $this->e($title) ?></h2>
-    <p class="form-text"><?= $this->e($lead) ?></p>
-    <?= $this->partial('admin/settings/security_proof', ['vm' => $vm, 'form' => $form, 'codeLabel' => 'Code from your app, or a recovery code']) ?>
-    <div class="admin-form-actions">
-        <button class="btn <?= $button ?>" type="submit"><?= $this->e($title) ?></button>
-    </div>
-</form>
-<?php endforeach ?>
+        <form id="<?= $form ?>-form"
+              class="settings-row-form"
+              method="post"
+              action="/admin/settings/security"
+              hx-nonce="<?= $nonce ?>"
+              hx-post="/admin/settings/security"
+              hx-target="#admin-frame">
+            <?= $this->csrf() ?>
+            <input type="hidden" name="intent" value="<?= $form ?>">
+            <?= $this->partial('admin/settings/security_proof', ['vm' => $vm, 'form' => $form, 'codeLabel' => 'Code from your app, or a recovery code']) ?>
+            <p class="form-text"><?= $this->e($lead) ?></p>
+            <div class="admin-form-actions">
+                <button class="btn <?= $button ?>" type="submit"><?= $this->e($submit) ?></button>
+            </div>
+        </form>
+    </details>
+    <?php endforeach ?>
+</div>
 
 <?php elseif ($vm->settingUp()): ?>
 <form id="confirm-form"
@@ -75,18 +76,22 @@
 </form>
 
 <?php else: ?>
-<form id="start-form"
-      class="col-12 col-xl-6"
-      method="post"
-      action="/admin/settings/security"
-      hx-nonce="<?= $nonce ?>"
-      hx-post="/admin/settings/security"
-      hx-target="#admin-frame">
-    <?= $this->csrf() ?>
-    <input type="hidden" name="intent" value="start">
-    <p>Two-factor sign in is off. With it on, signing in takes a code from an authenticator app on your phone as well as your password.</p>
-    <div class="admin-form-actions">
-        <button class="btn btn-primary" type="submit">Set up two-factor sign in</button>
+<div class="settings-rows" hx-nonce="<?= $nonce ?>">
+    <div class="settings-row">
+        <div class="settings-row-static">
+            <span class="settings-row-label">Two-factor</span>
+            <span class="settings-row-value"><span class="settings-state">Off</span><small>With it on, signing in also takes a code from an authenticator app on your phone.</small></span>
+            <form id="start-form"
+                  method="post"
+                  action="/admin/settings/security"
+                  hx-nonce="<?= $nonce ?>"
+                  hx-post="/admin/settings/security"
+                  hx-target="#admin-frame">
+                <?= $this->csrf() ?>
+                <input type="hidden" name="intent" value="start">
+                <button class="btn btn-sm btn-outline-primary" type="submit">Set up</button>
+            </form>
+        </div>
     </div>
-</form>
+</div>
 <?php endif ?>

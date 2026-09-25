@@ -108,7 +108,9 @@ final class EmailChangeFlowTest extends TestCase
 
     public function test_a_wrong_current_password_queues_nothing(): void
     {
-        $this->ask(current: 'not-it')->assertStatus(422)->assertSee('That is not your current password.');
+        $response = $this->ask(current: 'not-it')->assertStatus(422)->assertSee('That is not your current password.');
+
+        $this->assertSame(['Email'], $this->openRows($response->body()));
 
         $this->assertSame(0, $this->app->queued());
     }
@@ -175,5 +177,13 @@ final class EmailChangeFlowTest extends TestCase
     private function email(): string
     {
         return (string) $this->app->db()->selectOne("SELECT email FROM users WHERE username = 'clerk'")['email'];
+    }
+
+    /** @return list<string> */
+    private function openRows(string $body): array
+    {
+        preg_match_all('~<details[^>]*\sopen>\s*<summary>\s*<span class="settings-row-label">([^<]+)~', $body, $m);
+
+        return $m[1];
     }
 }

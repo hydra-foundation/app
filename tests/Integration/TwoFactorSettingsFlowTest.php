@@ -42,7 +42,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
     public function test_it_starts_off_and_setup_shows_a_qr_code_and_the_key(): void
     {
-        $this->http->get(self::URL)->assertOk()->assertSee('Two-factor sign in is off');
+        $this->http->get(self::URL)->assertOk()->assertSee('name="intent" value="start"');
 
         $response = $this->http->post(self::URL, ['intent' => 'start'])->assertOk();
 
@@ -152,9 +152,11 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
         $this->http->post(self::URL, ['intent' => 'disable', 'code' => $this->nextCode(), 'current_password' => 'wrong'])
             ->assertStatus(422);
-        $this->http->post(self::URL, ['intent' => 'disable', 'code' => '', 'current_password' => TestApp::PASSWORD])
+        $response = $this->http->post(self::URL, ['intent' => 'disable', 'code' => '', 'current_password' => TestApp::PASSWORD])
             ->assertStatus(422)
             ->assertSee('Enter a code from your app, or a recovery code.');
+
+        $this->assertSame(['Two-factor'], $this->openRows($response->body()));
 
         $this->assertNotNull($this->stored());
     }
@@ -174,7 +176,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
     {
         $this->http->post(self::URL, ['intent' => 'start']);
 
-        $this->http->post(self::URL, ['intent' => 'cancel'])->assertOk()->assertSee('Two-factor sign in is off');
+        $this->http->post(self::URL, ['intent' => 'cancel'])->assertOk()->assertSee('name="intent" value="start"');
 
         $this->assertNull($this->setupKey());
     }
@@ -255,5 +257,13 @@ final class TwoFactorSettingsFlowTest extends TestCase
     private function auditMessages(): array
     {
         return array_column($this->app->db()->select('SELECT message FROM audit ORDER BY id'), 'message');
+    }
+
+    /** @return list<string> */
+    private function openRows(string $body): array
+    {
+        preg_match_all('~<details[^>]*\sopen>\s*<summary>\s*<span class="settings-row-label">([^<]+)~', $body, $m);
+
+        return $m[1];
     }
 }

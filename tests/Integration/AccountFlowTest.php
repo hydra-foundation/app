@@ -34,7 +34,7 @@ final class AccountFlowTest extends TestCase
         $this->http->get('/admin/settings/account')
             ->assertOk()
             ->assertSee('clerk@example.com')
-            ->assertSee('not verified')
+            ->assertSee('Not verified')
             ->assertSee('class="settings-tab active"');
     }
 
@@ -76,9 +76,11 @@ final class AccountFlowTest extends TestCase
     {
         $before = $this->hash();
 
-        $this->change(current: 'not-it')
+        $response = $this->change(current: 'not-it')
             ->assertStatus(422)
             ->assertSee('That is not your current password.');
+
+        $this->assertSame(['Password'], $this->openRows($response->body()));
 
         $this->assertSame($before, $this->hash());
     }
@@ -126,5 +128,13 @@ final class AccountFlowTest extends TestCase
         $row = $this->app->db()->selectOne("SELECT password_hash FROM users WHERE username = 'clerk'");
 
         return (string) $row['password_hash'];
+    }
+
+    /** @return list<string> */
+    private function openRows(string $body): array
+    {
+        preg_match_all('~<details[^>]*\sopen>\s*<summary>\s*<span class="settings-row-label">([^<]+)~', $body, $m);
+
+        return $m[1];
     }
 }
