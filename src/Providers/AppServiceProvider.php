@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Admin\Modules\{ActivityModule, AuditModule, DashboardModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
+use App\Controllers\Api\MeController;
 use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController, TwoFactorChallengeController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Listeners\AuditAdminEventsListener;
@@ -18,6 +19,7 @@ use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Admin\Updates\UpdateCheck;
+use Hydra\Auth\AuthenticateBearerMiddleware;
 use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
@@ -84,6 +86,7 @@ final class AppServiceProvider extends ServiceProvider
         EmailVerificationController::class,
         EmailChangeController::class,
         AdminController::class,
+        MeController::class,
     ];
 
     /**
@@ -122,6 +125,9 @@ final class AppServiceProvider extends ServiceProvider
         HtmxRedirectMiddleware::class,
         ParseBodyMiddleware::class,
         StartSessionMiddleware::class,
+        // After the session, which a bearer request skips; ahead of everything
+        // that asks the guard who this is.
+        AuthenticateBearerMiddleware::class,
         RecordActivityMiddleware::class,
         RedirectUnauthenticatedMiddleware::class,
         VerifyCsrfTokenMiddleware::class,

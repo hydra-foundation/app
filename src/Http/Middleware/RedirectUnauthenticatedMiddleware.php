@@ -21,6 +21,8 @@ final class RedirectUnauthenticatedMiddleware implements MiddlewareInterface
     /** Where an unauthenticated visitor is sent: the app's own login route. */
     private const LOGIN_PATH = '/login';
 
+    private const API_PREFIX = '/api/';
+
     public function __construct(
         private readonly Responder $respond,
         private readonly CsrfGuard $csrf,
@@ -30,7 +32,12 @@ final class RedirectUnauthenticatedMiddleware implements MiddlewareInterface
     {
         try {
             return $handler->handle($request);
-        } catch (AuthenticationException) {
+        } catch (AuthenticationException $e) {
+            // A client with no browser to send anywhere: the 401 is the answer.
+            if ($request->hasHeader('Authorization') || str_starts_with($request->getUri()->getPath(), self::API_PREFIX)) {
+                throw $e;
+            }
+
             return $this->redirectToLogin();
         } catch (TokenMismatchException $e) {
             if ($this->csrf->issued()) {
