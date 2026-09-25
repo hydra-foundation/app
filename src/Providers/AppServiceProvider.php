@@ -17,6 +17,7 @@ use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
+use Hydra\Admin\Updates\UpdateCheck;
 use Hydra\Auth\Contracts\{GuardInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
@@ -258,6 +259,7 @@ final class AppServiceProvider extends ServiceProvider
                     // breaks more than it rules out.
                     'csp' => $container->get(CspConfig::class),
                     'versions' => $container->get(Versions::class),
+                    'updates' => $container->get(UpdateCheck::class),
                     'verification' => $container->get(VerificationBanner::class),
                 ],
             );

@@ -12,6 +12,7 @@ use Hydra\Admin\Shape;
 use Hydra\Admin\Widget;
 use Hydra\Admin\Widgets\CacheWidget;
 use Hydra\Admin\Widgets\ResourcesWidget;
+use Hydra\Admin\Widgets\UpdatesWidget;
 use Hydra\Admin\Widgets\UptimeWidget;
 
 /**
@@ -57,6 +58,13 @@ final class SystemHealthModule implements ModuleInterface
                             ->shaped(Shape::Lines)
                             ->refreshEvery(self::REFRESH)
                             ->from(CacheWidget::class),
+                        Widget::make('updates', 'admin/partials/widget-health')
+                            ->titled('Updates')
+                            ->withIcon('arrow-up-circle')
+                            ->spanning(4)
+                            ->reserving(3)
+                            ->shaped(Shape::Lines)
+                            ->from(UpdatesWidget::class),
                         Widget::make('resources', 'admin/partials/widget-gauges')
                             ->titled('Disk and memory')
                             ->withIcon('hdd')

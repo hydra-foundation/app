@@ -1,5 +1,6 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var \Hydra\Admin\ViewModels\ScreenViewModel $screen */ ?>
+<?php /** @var \Hydra\Admin\Updates\UpdateCheck $updates */ ?>
 <?php $this->extends('layouts/base') ?>
 
 <?php /* The admin's own sheet and script, loaded only on admin screens. Both
@@ -11,6 +12,6 @@
 <?= $this->partial('admin/partials/shell', [
     'screen' => $screen,
     'content' => $this->section('content'),
-    'footer' => trim($this->partial('partials/version')),
+    'footer' => trim($this->partial('partials/version')) . rtrim($this->partial('admin/partials/update-notice', ['update' => $updates->update()])),
     'banner' => trim($this->partial('partials/verify_email_banner')),
 ]) ?>

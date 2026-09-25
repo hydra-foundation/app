@@ -7,6 +7,8 @@ namespace App\Tests\Support;
 use App\Entities\Role;
 use App\Providers\AppServiceProvider;
 use Hydra\Admin\AdminServiceProvider;
+use Hydra\Admin\Testing\FakeReleaseFeed;
+use Hydra\Admin\Updates\UpdateCheck;
 use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Auth\AuthServiceProvider;
@@ -14,6 +16,7 @@ use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Auth\SessionGuard;
 use Hydra\Authorization\AuthorizationServiceProvider;
+use Hydra\Cache\ArrayStore;
 use Hydra\Cache\Testing\ArrayCacheServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Clock\ClockServiceProvider;
@@ -113,6 +116,9 @@ final class TestApp
         $container->instance(Maintenance::class, new Maintenance(
             sys_get_temp_dir() . '/hydra-app-maintenance-' . getmypid() . '-' . bin2hex(random_bytes(4)) . '.json',
         ));
+
+        // The admin footer asks the release feed, and a suite must not.
+        $container->instance(UpdateCheck::class, new UpdateCheck(new FakeReleaseFeed, new ArrayStore, '0.0.0'));
 
         $pdo = TestSchema::connect();
         $container->instance(PDO::class, $pdo);
