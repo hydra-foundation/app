@@ -66,7 +66,7 @@ final class EmailVerificationController extends Controller
     }
 
     #[Route('/verify-email/{token}')]
-    public function acceptLink(string $token): Response
+    public function acceptLink(#[\SensitiveParameter] string $token): Response
     {
         $this->session->set(self::SESSION_KEY, $token);
 

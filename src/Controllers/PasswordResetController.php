@@ -114,7 +114,7 @@ final class PasswordResetController extends Controller
     }
 
     #[Route('/reset-password/{token}')]
-    public function acceptLink(string $token): Response
+    public function acceptLink(#[\SensitiveParameter] string $token): Response
     {
         $this->session->set(self::SESSION_KEY, $token);
 

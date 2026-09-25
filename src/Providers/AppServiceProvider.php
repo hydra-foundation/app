@@ -33,6 +33,7 @@ use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\{DatabaseHealthCheck, MigrationRunner, PdoConnection};
 use Hydra\Event\ListenerProvider;
 use Hydra\Http\Contracts\ErrorRendererInterface;
+use Hydra\Http\Contracts\PathRedactorInterface;
 use Hydra\Http\{
     ClientIpResolver,
     Csp,
@@ -324,6 +325,13 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
+        $container->singleton(RequestLoggingMiddleware::class, function () use ($container) {
+            return new RequestLoggingMiddleware(
+                $container->get(LoggerInterface::class),
+                $container->get(PathRedactorInterface::class),
+            );
+        });
+
         $container->singleton(Maintenance::class, function () {
             return new Maintenance(dirname(__DIR__, 2) . '/bootstrap/cache/maintenance.json');
         });
@@ -375,6 +383,7 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(AppConfig::class)->debug,
                 $container->get(LoggerInterface::class),
                 $this->reporter($container),
+                $container->get(PathRedactorInterface::class),
             );
         });
     }
