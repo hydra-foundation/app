@@ -10,6 +10,7 @@ use App\Jobs\SendPasswordResetLink;
 use App\Repositories\UserRepository;
 use App\ViewModels\ForgotPasswordViewModel;
 use App\ViewModels\ResetPasswordViewModel;
+use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Auth\Events\PasswordReset;
 use Hydra\Auth\PasswordResetTokens;
@@ -73,6 +74,7 @@ final class PasswordResetController extends Controller
         private readonly RateLimiter $limiter,
         private readonly Validator $validator,
         private readonly EventDispatcherInterface $events,
+        private readonly ApiTokenStoreInterface $apiTokens,
     ) {
         parent::__construct($respond, $view);
     }
@@ -166,6 +168,9 @@ final class PasswordResetController extends Controller
         }
 
         $this->users->updatePassword($user->id, $this->hasher->hash($data['password']));
+        // A reset is how someone locked out, or broken into, gets the account
+        // back; a token minted by whoever got in must not outlive it.
+        $this->apiTokens->revokeAll($user);
         $this->session->remove(self::SESSION_KEY);
         $this->events->dispatch(new PasswordReset($user));
         $this->session->flash('status', 'Your password has been reset. Sign in with the new one.');

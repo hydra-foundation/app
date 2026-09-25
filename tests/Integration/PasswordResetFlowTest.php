@@ -6,6 +6,9 @@ namespace App\Tests\Integration;
 
 use App\Entities\Role;
 use App\Tests\Support\TestApp;
+use Hydra\Auth\ApiTokens;
+use Hydra\Auth\Contracts\ApiTokenStoreInterface;
+use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Core\Testing\FrozenClock;
 use Hydra\Http\Testing\Client;
 use Hydra\Mail\Contracts\MailerInterface;
@@ -108,6 +111,25 @@ final class PasswordResetFlowTest extends TestCase
             ['level' => 'notice', 'message' => 'auth.password_reset', 'context' => ['user' => $this->id]],
             $this->app->log()->firstWith('auth.password_reset'),
         );
+    }
+
+    public function test_a_reset_revokes_every_api_token_of_the_account(): void
+    {
+        $users = $this->app->get(UserProviderInterface::class);
+        $tokens = $this->app->get(ApiTokenStoreInterface::class);
+        $clerk = $users->byIdentifier($this->id) ?? throw new \RuntimeException('not seeded');
+        $other = $users->byIdentifier($this->app->seed('other')) ?? throw new \RuntimeException('not seeded');
+        $this->app->get(ApiTokens::class)->issue($clerk, 'phone');
+        $this->app->get(ApiTokens::class)->issue($other, 'laptop');
+
+        $this->http->get($this->requestLink());
+        $this->http->post('/reset-password', [
+            'password' => self::NEW_PASSWORD,
+            'password_confirmation' => self::NEW_PASSWORD,
+        ])->assertRedirect('/login');
+
+        $this->assertSame([], $tokens->forUser($clerk));
+        $this->assertCount(1, $tokens->forUser($other));
     }
 
     public function test_a_mismatched_confirmation_changes_nothing(): void

@@ -79,16 +79,23 @@ final class ApiFlowTest extends TestCase
         $this->app->http()->unprepared()
             ->get('/login', ['Authorization' => 'Bearer nope', 'Accept' => 'text/html'])
             ->assertStatus(401)
-            ->assertHeader('WWW-Authenticate', 'Bearer error="invalid_token"');
+            ->assertHeader('WWW-Authenticate', 'Bearer error="invalid_request"');
     }
 
-    public function test_a_token_cannot_be_spent_on_a_session_sign_out(): void
+    public function test_a_live_token_opens_nothing_outside_the_api(): void
     {
         $token = $this->token();
 
+        foreach (['/', '/admin', '/admin/settings/account', '/admin/settings/security'] as $path) {
+            $this->app->http()->unprepared()
+                ->get($path, ['Authorization' => "Bearer {$token}", 'Accept' => 'text/html'])
+                ->assertStatus(401)
+                ->assertHeader('WWW-Authenticate', 'Bearer error="invalid_request"');
+        }
+
         $this->app->http()->unprepared()
-            ->post('/logout', [], ['Authorization' => "Bearer {$token}", 'Accept' => 'application/json'])
-            ->assertStatus(500);
+            ->post('/logout', [], ['Authorization' => "Bearer {$token}"])
+            ->assertStatus(401);
     }
 
     public function test_an_unsafe_bearer_request_needs_no_csrf_token(): void
