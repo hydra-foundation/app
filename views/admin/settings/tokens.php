@@ -53,6 +53,17 @@
                 <span class="invalid-feedback d-block"><?= $this->e($vm->error('expires')) ?></span>
                 <?php endif ?>
             </div>
+            <div class="mb-3">
+                <label class="form-label" for="token_current_password">Current password</label>
+                <input type="password"
+                       id="token_current_password"
+                       class="form-control<?= $vm->hasError('current_password') ? ' is-invalid' : '' ?>"
+                       name="current_password"
+                       autocomplete="current-password">
+                <?php if ($vm->hasError('current_password')): ?>
+                <span class="invalid-feedback d-block"><?= $this->e($vm->error('current_password')) ?></span>
+                <?php endif ?>
+            </div>
             <div class="admin-form-actions">
                 <button class="btn btn-primary" type="submit">Create token</button>
             </div>

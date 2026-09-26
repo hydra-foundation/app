@@ -20,6 +20,7 @@ use Hydra\Admin\Chrome;
 use Hydra\Admin\ModuleRegistry;
 use Hydra\Admin\Notice;
 use Hydra\Admin\Renderer;
+use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\Exceptions\NotFoundException;
@@ -70,6 +71,7 @@ final class SettingsController
         private readonly AuditRepository $audit,
         private readonly QueueInterface $queue,
         private readonly LoggerInterface $logger,
+        private readonly ApiTokenStoreInterface $apiTokens,
     ) {}
 
     public function saveAccount(Request $request): Response
@@ -122,6 +124,9 @@ final class SettingsController
         }
 
         $this->users->updatePassword($user->id, $this->hasher->hash($data['password']));
+        // The same as a reset: a password changed because someone else had it
+        // must not leave them a bearer token that outlives it.
+        $this->apiTokens->revokeAll($user);
         $this->guard->refresh($this->users->byIdentifier($user->id) ?? throw new NotFoundException);
         $this->auditPasswordChange($user);
 

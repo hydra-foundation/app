@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Admin\Sources\UserSource;
+use App\Repositories\ApiTokenRepository;
 use App\Repositories\UserRepository;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
@@ -51,7 +52,7 @@ final class UserSourceTest extends WritableSourceContractTestCase
         }
 
         $db = new PdoConnection($this->pdo);
-        $this->source = new UserSource($db, $this->guard(), new FakeHasher, new UserRepository($db));
+        $this->source = new UserSource($db, $this->guard(), new FakeHasher, new UserRepository($db), new ApiTokenRepository($db));
     }
 
     protected function source(): SourceInterface

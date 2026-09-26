@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Repositories\ApiTokenRepository;
 use App\Config\LogConfig;
 use DateTimeZone;
 use App\Providers\AppServiceProvider;
@@ -13,6 +14,7 @@ use App\Tests\Support\TestSchema;
 use Hydra\Admin\Console\AdminCheckCommand;
 use Hydra\Admin\Contracts\DescribesColumnsInterface;
 use Hydra\Admin\ModuleRegistry;
+use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Auth\Testing\FakeGuard;
@@ -99,6 +101,7 @@ final class AdminModulePairingTest extends TestCase
         $container->instance(ClockInterface::class, new SystemClock);
         $container->instance(HasherInterface::class, new FakeHasher);
         $container->instance(GuardInterface::class, $this->guard());
+        $container->instance(ApiTokenStoreInterface::class, new ApiTokenRepository($db));
 
         return $container;
     }
