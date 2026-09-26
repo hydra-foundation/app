@@ -13,8 +13,5 @@
             <?php endif ?>
             <?= $this->partial('auth/login/form', ['vm' => $vm]) ?>
         </div>
-        <?php if (($version = trim($this->partial('partials/version'))) !== ''): ?>
-            <p class="auth-version"><?= $version ?></p>
-        <?php endif ?>
     </div>
 </div>

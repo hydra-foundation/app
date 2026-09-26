@@ -23,11 +23,15 @@ final class VersionFlowTest extends TestCase
         $this->app = TestApp::boot();
     }
 
-    public function test_the_sign_in_page_names_the_versions(): void
+    /**
+     * The one page anybody can load: an exact version there tells a scanner
+     * which advisories to try before it has signed in as anyone.
+     */
+    public function test_the_sign_in_page_names_no_version(): void
     {
         $body = $this->app->http()->get('/login')->assertOk()->body();
 
-        $this->assertStringContainsString('<p class="auth-version">' . $this->expected() . '</p>', $body);
+        $this->assertStringNotContainsString($this->expected(), $body);
     }
 
     public function test_the_backend_footer_names_the_versions(): void
