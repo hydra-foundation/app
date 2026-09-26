@@ -36,8 +36,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 /**
  * Forgotten passwords. The emailed link carries the token only as far as the
  * first request, which moves it into the session and redirects to a clean
- * URL: every signed-in user can read the activity log, and a path or Referer
- * holding a live token there is somebody else's account.
+ * URL: every admin can read the activity log, and a path or Referer holding a
+ * live token there is somebody else's account.
  */
 final class PasswordResetController extends Controller
 {
