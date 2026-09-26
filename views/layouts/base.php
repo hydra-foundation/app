@@ -28,7 +28,7 @@
     <?php foreach ($themes->names() as $name): ?>
     <link rel="stylesheet" href="/css/themes/<?= $this->e($name) ?>.css" />
     <?php endforeach ?>
-    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/app.css?t=20260926" />
     <?php /* Screens that carry their own stylesheet append it here, after the
        shared theme so it can build on the tokens rather than fight them. */ ?>
     <?= $this->section('meta', '') ?>

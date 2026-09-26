@@ -185,3 +185,11 @@
     border: 1px solid var(--line);
     border-radius: var(--r-2);
 }
+
+/* The scroller is the containing block for anything absolute inside it. Without
+   it the visually-hidden "Actions" heading is placed against the page, lands past
+   the table's clip at the far end of a wide table, and scrolls the whole page
+   sideways instead of just the table. */
+.table-responsive {
+    position: relative;
+}

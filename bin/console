@@ -53,20 +53,18 @@ $app = Bootstrap::application(__DIR__ . '/..');
 $app->boot();
 $container = $app->container();
 
+// Only commands that build nothing from the container are added eagerly. A
+// service resolved here is resolved for every command, key:generate included,
+// and the view reaches the signer, which will not build without APP_KEY: an
+// eager admin:routes once made a fresh checkout unable to generate its key.
 $application = new ConsoleApplication('Hydra');
 $application->add(
     new KeyGenerateCommand(__DIR__ . '/../.env'),
-    new RouteCacheCommand($container->get(RouteCache::class), AppServiceProvider::CONTROLLERS),
-    new RouteCacheClearCommand($container->get(RouteCache::class)),
-    new DownCommand($container->get(Maintenance::class)),
-    new UpCommand($container->get(Maintenance::class)),
     new MakeMigrationCommand(__DIR__ . '/../database/migrations'),
     new UpgradeCommand(dirname(__DIR__)),
     new MakeControllerCommand(__DIR__ . '/../src/Controllers'),
     new MakeAbilityCommand(__DIR__ . '/../src/Authorization'),
     new MakeListenerCommand(__DIR__ . '/../src/Listeners'),
-    new AdminRoutesCommand($container->get(ModuleRegistry::class), $container->get(ViewInterface::class)),
-    new AdminCheckCommand($container->get(ModuleRegistry::class)),
 );
 
 // The table-shaped generators read the schema to fill in a column list, so
@@ -85,6 +83,13 @@ $repository = static fn (): MakeRepositoryCommand => new MakeRepositoryCommand(_
 // #[AsCommand], so writing it out again here would be a second copy free to
 // disagree with the first.
 $application->addLazy([
+    RouteCacheCommand::class => static fn () => new RouteCacheCommand($container->get(RouteCache::class), AppServiceProvider::CONTROLLERS),
+    RouteCacheClearCommand::class => static fn () => new RouteCacheClearCommand($container->get(RouteCache::class)),
+    DownCommand::class => static fn () => new DownCommand($container->get(Maintenance::class)),
+    UpCommand::class => static fn () => new UpCommand($container->get(Maintenance::class)),
+    AdminRoutesCommand::class => static fn () => new AdminRoutesCommand($container->get(ModuleRegistry::class), $container->get(ViewInterface::class)),
+    AdminCheckCommand::class => static fn () => new AdminCheckCommand($container->get(ModuleRegistry::class)),
+
     MigrateRunCommand::class => static fn () => new MigrateRunCommand($container->get(MigrationRunner::class)),
     MigrateFreshCommand::class => static fn () => new MigrateFreshCommand(
         $container->get(MigrationRunner::class),
