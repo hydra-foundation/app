@@ -12,6 +12,7 @@ use Hydra\Http\Testing\Client;
 use Hydra\Queue\DatabaseQueue;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 /**
  * The queue as the admin shows it: what is waiting and what gave up, and the
@@ -87,6 +88,57 @@ final class QueueAdminFlowTest extends TestCase
 
         $this->assertStringContainsString('A worker is running this job', $response->body());
         $this->assertNotNull($this->db->selectOne('SELECT id FROM jobs WHERE id = ?', [$held]));
+    }
+
+    public function test_a_failure_is_listed_by_its_reason_newest_first(): void
+    {
+        $this->failJob('mail server down');
+        $this->failJob('address rejected');
+        $this->login('boss');
+        $body = $this->body('/admin/failed-jobs');
+
+        $this->assertStringContainsString('<title>Failed jobs · Admin</title>', $body);
+        $this->assertStringContainsString('>RuntimeException: address rejected</td>', $body);
+        $this->assertLessThan(strpos($body, 'mail server down'), strpos($body, 'address rejected'));
+        $this->assertStringNotContainsString('#0 ', $body);
+    }
+
+    public function test_the_failures_are_admin_only(): void
+    {
+        $this->login('clerk');
+
+        $this->http->get('/admin/failed-jobs')->assertStatus(403);
+    }
+
+    public function test_a_failure_opens_on_its_whole_trace_and_its_payload(): void
+    {
+        $id = $this->failJob('mail server down');
+        $this->login('boss');
+        $body = $this->body("/admin/failed-jobs/{$id}");
+
+        $this->assertMatchesRegularExpression('/<pre[^>]*>RuntimeException: mail server down in \S+\n.*#0 /s', $body);
+        $this->assertStringContainsString('{&quot;user&quot;:7}</pre>', $body);
+    }
+
+    public function test_a_deleted_failure_is_gone_for_good(): void
+    {
+        $id = $this->failJob('mail server down');
+        $this->login('boss');
+
+        $this->http->post("/admin/failed-jobs/{$id}/delete")->assertStatus(302);
+
+        $this->assertSame([], $this->queue->failed());
+        $this->assertSame([], $this->db->select('SELECT id FROM jobs'));
+    }
+
+    /** Push, claim and fail one job, returning its id in failed_jobs. */
+    private function failJob(string $message): int
+    {
+        $this->queue->push(SendVerificationLink::class, ['user' => 7]);
+        [$job] = $this->queue->reserve(1);
+        $this->queue->fail($job, new RuntimeException($message));
+
+        return $this->queue->failed()[0]->id;
     }
 
     /** @return array{int, int} the held job's id, then the free one's */
