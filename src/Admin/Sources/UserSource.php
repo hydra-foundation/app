@@ -83,6 +83,13 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             throw WriteRejected::on('email', 'That email address is already in use.');
         }
 
+        // The same reason an admin cannot delete their own account: done to the
+        // last admin, it leaves nobody who can reach this screen to undo it.
+        // Another admin can still change this row's role.
+        if ((string) $this->guard->id() === (string) $key && $this->users->byIdentifier($key)?->role->value !== $this->role($data)) {
+            throw WriteRejected::on('role', 'You cannot change your own role.');
+        }
+
         // Ahead of the email assignment: MariaDB reads an already-assigned
         // column's new value in later assignments, SQLite the old one.
         $columns = [

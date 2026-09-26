@@ -134,6 +134,34 @@ final class UserSourceTest extends WritableSourceContractTestCase
         $this->assertNull($this->verifiedAt(1));
     }
 
+    public function test_an_admin_cannot_change_their_own_role(): void
+    {
+        $this->expectExceptionObject(WriteRejected::on('role', 'You cannot change your own role.'));
+
+        $this->signedInAs(1)->update('1', ['username' => 'ada', 'email' => 'ada@example.com', 'role' => 'user']);
+    }
+
+    public function test_an_admin_can_edit_their_own_row_keeping_the_role(): void
+    {
+        $this->signedInAs(1)->update('1', ['username' => 'ada-renamed', 'email' => 'ada@example.com', 'role' => 'admin']);
+
+        $this->assertSame('ada-renamed', $this->pdo->query('SELECT username FROM users WHERE id = 1')->fetchColumn());
+    }
+
+    public function test_an_admin_can_change_another_admin_s_role(): void
+    {
+        $this->signedInAs(1)->update('2', ['username' => 'grace', 'email' => 'grace@example.com', 'role' => 'user']);
+
+        $this->assertSame('user', $this->pdo->query('SELECT role FROM users WHERE id = 2')->fetchColumn());
+    }
+
+    private function signedInAs(int $id): UserSource
+    {
+        $db = new PdoConnection($this->pdo);
+
+        return new UserSource($db, FakeGuard::signedInAs(new FakeUser($id)), new FakeHasher, new UserRepository($db), new ApiTokenRepository($db));
+    }
+
     private function verifiedAt(int $id): ?string
     {
         $statement = $this->pdo->prepare('SELECT email_verified_at FROM users WHERE id = ?');
