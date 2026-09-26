@@ -29,9 +29,11 @@ services:
       - ../:/var/www/html
       - ./docker/php/dev.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
 
+  # Localhost only, like mailpit. dev.ini shows errors and runs xdebug, and a
+  # bare port would put that on the LAN; Docker's publish bypasses a firewall.
   nginx:
     ports:
-      - "${APP_PORT:-8080}:80"
+      - "127.0.0.1:${APP_PORT:-8080}:80"
 
   # Catches every message sent to mailpit:1025 and delivers none of them. The
   # inbox is on localhost only: it holds working reset links.
