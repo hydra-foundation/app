@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Config\LogConfig;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\CommandRun;
 use App\Tests\Support\Console;
@@ -86,6 +87,7 @@ final class AdminModulePairingTest extends TestCase
         $container->instance(ContainerInterface::class, $container);
         $container->instance(ConnectionInterface::class, $db = new PdoConnection(TestSchema::connect()));
         $container->instance(DatabaseQueue::class, new DatabaseQueue($db, new SystemClock, 'sqlite'));
+        $container->instance(LogConfig::class, new LogConfig('php://stderr'));
         $container->instance(HasherInterface::class, new FakeHasher);
         $container->instance(GuardInterface::class, $this->guard());
 
