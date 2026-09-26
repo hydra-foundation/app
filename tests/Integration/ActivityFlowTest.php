@@ -147,7 +147,7 @@ final class ActivityFlowTest extends TestCase
         $this->seed(new Activity(null, null, 'GET', '/about', '', 200, 7, null, null, null, 'req-two'));
         $this->login('boss');
 
-        $this->assertStringContainsString('>req-one</dd>', $this->body('/admin/activity/' . $one));
+        $this->assertStringContainsString('<a href="/admin/logs?request_id=req-one">req-one</a>', $this->body('/admin/activity/' . $one));
 
         $body = $this->body('/admin/activity?request_id=req-one');
 

@@ -64,6 +64,18 @@ final class LogsAdminFlowTest extends TestCase
         $this->assertStringNotContainsString('#0 ', $body);
     }
 
+    public function test_a_line_s_request_leads_back_to_it_in_activity(): void
+    {
+        $this->login('boss');
+
+        $this->assertStringContainsString('<a href="/admin/activity?request_id=req-boom">req-boom</a>', $this->body('/admin/logs'));
+        $this->assertStringContainsString(
+            '<a href="/admin/activity?request_id=req-boom">req-boom</a>',
+            $this->body('/admin/logs/' . $this->offsetOf('ERROR: Could not record activity')),
+        );
+        $this->assertStringNotContainsString('/admin/activity?request_id=">', $this->body('/admin/logs'));
+    }
+
     public function test_the_log_is_admin_only(): void
     {
         $this->login('clerk');
@@ -97,7 +109,6 @@ final class LogsAdminFlowTest extends TestCase
         $this->assertStringContainsString('<title>Log line · Admin</title>', $body);
         $this->assertMatchesRegularExpression('#<pre[^>]*>RuntimeException: disk full in \S+\n\#0 #', $body);
         $this->assertStringContainsString('&quot;why&quot;: &quot;disk full&quot;', $body);
-        $this->assertStringContainsString('>req-boom<', $body);
     }
 
     public function test_the_first_line_of_the_file_opens_too(): void

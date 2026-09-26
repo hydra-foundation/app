@@ -47,7 +47,8 @@ final class LogsModule implements ModuleInterface
                     ->emptyAs('none')->format(self::preformatted(...)),
                 Field::text('context')->onlyOn(Surface::Show)
                     ->emptyAs('none')->format(self::preformatted(...)),
-                Field::text('request_id')->labelled('Request ID')->filterable(),
+                Field::text('request_id')->labelled('Request ID')->filterable()
+                    ->format(self::request(...)),
             )
             ->screens(
                 ShowScreen::make()->title('Log line'),
@@ -58,5 +59,17 @@ final class LogsModule implements ModuleInterface
     private static function preformatted(mixed $value): HtmlView
     {
         return new HtmlView('<pre class="mb-0 small">' . htmlspecialchars((string) $value, ENT_QUOTES) . '</pre>');
+    }
+
+    /** The request in Activity that wrote this line. */
+    private static function request(mixed $value): string|HtmlView
+    {
+        $id = (string) $value;
+
+        if ($id === '') {
+            return '';
+        }
+
+        return new HtmlView('<a href="/admin/activity?request_id=' . rawurlencode($id) . '">' . htmlspecialchars($id, ENT_QUOTES) . '</a>');
     }
 }

@@ -12,6 +12,7 @@ use Hydra\Admin\Field;
 use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
+use Hydra\View\HtmlView;
 
 /**
  * The request log every visitor writes to. The two heaviest columns (agent and
@@ -64,11 +65,24 @@ final class ActivityModule implements ModuleInterface
                 Field::text('user_agent')->labelled('Agent')->truncate(32),
                 Field::text('referer')->truncate(32),
                 Field::datetime('created_at')->labelled('Created')->sortable()->relative(),
-                Field::text('request_id')->labelled('Request ID')->filterable()->onlyOn(Surface::Show),
+                Field::text('request_id')->labelled('Request ID')->filterable()->onlyOn(Surface::Show)
+                    ->format(self::logs(...)),
             )
             ->screens(
                 ShowScreen::make()->title('Request'),
                 ExportScreen::make(),
             );
+    }
+
+    /** The log lines this request wrote. */
+    private static function logs(mixed $value): string|HtmlView
+    {
+        $id = (string) $value;
+
+        if ($id === '') {
+            return '';
+        }
+
+        return new HtmlView('<a href="/admin/logs?request_id=' . rawurlencode($id) . '">' . htmlspecialchars($id, ENT_QUOTES) . '</a>');
     }
 }
