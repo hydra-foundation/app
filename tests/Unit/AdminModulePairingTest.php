@@ -17,10 +17,12 @@ use Hydra\Auth\Testing\FakeGuard;
 use Hydra\Auth\Testing\FakeHasher;
 use Hydra\Auth\Testing\FakeUser;
 use Hydra\Console\ExitCode;
+use Hydra\Core\Clock\SystemClock;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\PhpDi\Container;
+use Hydra\Queue\DatabaseQueue;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
@@ -82,7 +84,8 @@ final class AdminModulePairingTest extends TestCase
     {
         $container = Container::create();
         $container->instance(ContainerInterface::class, $container);
-        $container->instance(ConnectionInterface::class, new PdoConnection(TestSchema::connect()));
+        $container->instance(ConnectionInterface::class, $db = new PdoConnection(TestSchema::connect()));
+        $container->instance(DatabaseQueue::class, new DatabaseQueue($db, new SystemClock, 'sqlite'));
         $container->instance(HasherInterface::class, new FakeHasher);
         $container->instance(GuardInterface::class, $this->guard());
 
