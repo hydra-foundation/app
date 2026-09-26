@@ -8,6 +8,7 @@ use App\Entities\Audit;
 use App\Entities\User;
 use App\Repositories\AuditRepository;
 use Hydra\Admin\Events\AdminEvent;
+use Hydra\Admin\Events\ActionTaken;
 use Hydra\Admin\Events\Exported;
 use Hydra\Admin\Events\RowCreated;
 use Hydra\Admin\Events\RowDeleted;
@@ -67,6 +68,12 @@ final class AuditAdminEventsListener
     {
         if ($event instanceof Exported) {
             $this->write($event, self::EXPORT, null, $this->exported($event));
+
+            return;
+        }
+
+        if ($event instanceof ActionTaken) {
+            $this->write($event, $event->id ?? $event->name, null, null);
 
             return;
         }
@@ -163,6 +170,10 @@ final class AuditAdminEventsListener
     {
         if ($event instanceof Exported) {
             return sprintf('%s: %d rows', $event->action(), $event->rows);
+        }
+
+        if ($event instanceof ActionTaken) {
+            return $event->action() . ': ' . $event->name;
         }
 
         if (!$event instanceof RowUpdated) {

@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Admin\Modules;
 
+use App\Admin\Actions\ClearFailedJobs;
+use App\Admin\Actions\RetryAllFailedJobs;
+use App\Admin\Actions\RetryFailedJob;
 use App\Admin\Sources\FailedJobSource;
 use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
+use Hydra\Admin\Screens\ActionScreen;
 use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
@@ -43,6 +47,16 @@ final class FailedJobsModule implements ModuleInterface
             ->screens(
                 ShowScreen::make()->title('Failed job'),
                 DeleteScreen::make()->confirm('Delete this failed job? It will not run again.'),
+                ActionScreen::row('retry')
+                    ->confirm('Put this job back on the queue?')
+                    ->runs(RetryFailedJob::class),
+                ActionScreen::module('retry-all')
+                    ->confirm('Put every failed job back on the queue?')
+                    ->runs(RetryAllFailedJobs::class),
+                ActionScreen::module('clear')
+                    ->labelled('Clear all')
+                    ->confirm('Delete every failed job? None of them will run again.')
+                    ->runs(ClearFailedJobs::class),
             );
     }
 

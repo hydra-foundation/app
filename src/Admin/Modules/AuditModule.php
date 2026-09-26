@@ -21,6 +21,8 @@ final class AuditModule implements ModuleInterface
     private const MODULES = [
         'activity' => 'Activity',
         'audit' => 'Audit',
+        'failed-jobs' => 'Failed jobs',
+        'jobs' => 'Jobs',
         'users' => 'Users',
     ];
 

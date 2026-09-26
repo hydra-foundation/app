@@ -131,6 +131,89 @@ final class QueueAdminFlowTest extends TestCase
         $this->assertSame([], $this->db->select('SELECT id FROM jobs'));
     }
 
+    public function test_each_failure_offers_a_retry_that_asks_first(): void
+    {
+        $id = $this->failJob('mail server down');
+        $this->login('boss');
+        $body = $this->body('/admin/failed-jobs');
+
+        $this->assertStringContainsString("hx-post=\"/admin/failed-jobs/{$id}/retry", $body);
+        $this->assertStringContainsString('hx-confirm="Put this job back on the queue?"', $body);
+        $this->assertStringContainsString('>Retry all</button>', $body);
+        $this->assertStringContainsString('>Clear all</button>', $body);
+    }
+
+    public function test_a_retried_failure_is_back_on_the_queue_due_now_with_its_tries_restored(): void
+    {
+        $id = $this->failJob('mail server down');
+        $this->login('boss');
+
+        $this->frame()->post("/admin/failed-jobs/{$id}/retry")->assertOk()->assertSee("Job {$id} is back on the queue.");
+
+        $this->assertSame([], $this->queue->failed());
+        $this->assertSame(
+            [['job' => SendVerificationLink::class, 'payload' => '{"user":7}', 'attempts' => 0, 'reserved_at' => null]],
+            $this->db->select('SELECT job, payload, attempts, reserved_at FROM jobs'),
+        );
+    }
+
+    public function test_a_failure_already_gone_refuses_a_retry(): void
+    {
+        $id = $this->failJob('mail server down');
+        $this->queue->forget($id);
+        $this->login('boss');
+
+        $this->frame()->post("/admin/failed-jobs/{$id}/retry")->assertStatus(422)->assertSee('That failed job is already gone.');
+        $this->assertSame([], $this->db->select('SELECT id FROM jobs'));
+    }
+
+    public function test_retry_all_and_clear_all_say_how_many(): void
+    {
+        $this->login('boss');
+
+        $this->frame()->post('/admin/failed-jobs/retry-all')->assertOk()->assertSee('No failed jobs.');
+
+        $this->failJob('one');
+        $this->failJob('two');
+        $this->frame()->post('/admin/failed-jobs/retry-all')->assertOk()->assertSee('2 jobs are back on the queue.');
+        $this->assertCount(2, $this->db->select('SELECT id FROM jobs'));
+
+        $this->db->execute('DELETE FROM jobs');
+        $this->failJob('three');
+        $this->frame()->post('/admin/failed-jobs/clear')->assertOk()->assertSee('1 failed job deleted.');
+        $this->assertSame([], $this->queue->failed());
+        $this->assertSame([], $this->db->select('SELECT id FROM jobs'));
+    }
+
+    public function test_every_action_leaves_one_audit_line_and_no_trace_or_payload(): void
+    {
+        $retried = $this->failJob('secret trace');
+        $deleted = $this->failJob('secret trace');
+        $this->login('boss');
+
+        $this->http->post("/admin/failed-jobs/{$retried}/retry");
+        $this->http->post("/admin/failed-jobs/{$deleted}/delete");
+        $this->failJob('secret trace');
+        $this->http->post('/admin/failed-jobs/clear');
+        [, $free] = $this->holdOneOfTwo();
+        $this->http->post("/admin/jobs/{$free}/delete");
+
+        $this->assertSame(
+            [
+                ['module' => 'failed-jobs', 'table_id' => (string) $retried, 'old_value' => null, 'new_value' => null, 'username' => 'boss', 'message' => 'admin.action: retry'],
+                ['module' => 'failed-jobs', 'table_id' => (string) $deleted, 'old_value' => null, 'new_value' => null, 'username' => 'boss', 'message' => 'admin.row_deleted'],
+                ['module' => 'failed-jobs', 'table_id' => 'clear', 'old_value' => null, 'new_value' => null, 'username' => 'boss', 'message' => 'admin.action: clear'],
+                ['module' => 'jobs', 'table_id' => (string) $free, 'old_value' => null, 'new_value' => null, 'username' => 'boss', 'message' => 'admin.row_deleted'],
+            ],
+            $this->db->select('SELECT module, table_id, old_value, new_value, username, message FROM audit ORDER BY id'),
+        );
+    }
+
+    private function frame(): Client
+    {
+        return $this->http->htmx('div#admin-frame');
+    }
+
     /** Push, claim and fail one job, returning its id in failed_jobs. */
     private function failJob(string $message): int
     {
