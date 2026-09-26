@@ -28,9 +28,12 @@ final class QueueFlowTest extends TestCase
 
     public function test_the_worker_is_on_the_schedule_every_minute(): void
     {
-        $tasks = $this->app->get(Schedule::class)->tasks();
+        $tasks = array_values(array_filter(
+            $this->app->get(Schedule::class)->tasks(),
+            static fn (ScheduledTask $task): bool => $task->class === Worker::class,
+        ));
 
-        $this->assertSame([Worker::class], array_map(static fn (ScheduledTask $task): string => $task->class, $tasks));
+        $this->assertCount(1, $tasks);
         $this->assertSame('* * * * *', $tasks[0]->expression()->expression);
         $this->assertSame(5, $tasks[0]->budgetMinutes());
     }

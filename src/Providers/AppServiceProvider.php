@@ -61,6 +61,9 @@ use Hydra\Http\{
 use Hydra\Log\{ContextualLogger, FanOutLogger, RedactingLogger, StreamLogger};
 use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Queue\{DatabaseQueue, Worker};
+use Hydra\Scheduler\Contracts\RunLogInterface;
+use Hydra\Scheduler\DatabaseRunLog;
+use Hydra\Scheduler\PruneScheduledRuns;
 use Hydra\Scheduler\Schedule;
 use Hydra\Session\StartSessionMiddleware;
 use Hydra\Throttle\RateLimitMiddleware;
@@ -199,6 +202,14 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(QueueInterface::class, function () use ($container) {
             return $container->get(DatabaseQueue::class);
+        });
+
+        $container->singleton(DatabaseRunLog::class, function () use ($container) {
+            return new DatabaseRunLog($container->get(ConnectionInterface::class), $container->get(ClockInterface::class));
+        });
+
+        $container->singleton(RunLogInterface::class, function () use ($container) {
+            return $container->get(DatabaseRunLog::class);
         });
 
         $container->singleton(Worker::class, function () use ($container) {
@@ -408,7 +419,9 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(ContainerInterface $container): void
     {
-        $container->get(Schedule::class)->drain(Worker::class)->everyMinute()->for(5);
+        $schedule = $container->get(Schedule::class);
+        $schedule->run(PruneScheduledRuns::class)->dailyAt('03:00');
+        $schedule->drain(Worker::class)->everyMinute()->for(5);
 
         $listeners = $container->get(ListenerProvider::class);
         $audit = new LogAuthEventsListener($container->get(LoggerInterface::class));

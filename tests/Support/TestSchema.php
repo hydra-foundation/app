@@ -126,5 +126,18 @@ final class TestSchema
                 failed_at INTEGER NOT NULL
             )'
         );
+
+        $pdo->exec(
+            'CREATE TABLE scheduled_runs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task TEXT NOT NULL,
+                outcome TEXT NOT NULL,
+                items INTEGER NULL,
+                held_minutes INTEGER NULL,
+                error TEXT NULL,
+                started_at INTEGER NOT NULL,
+                duration_ms INTEGER NULL
+            )'
+        );
     }
 }
