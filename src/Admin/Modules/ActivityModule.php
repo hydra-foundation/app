@@ -11,6 +11,7 @@ use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\ShowScreen;
+use Hydra\Admin\Surface;
 
 /**
  * The request log every visitor writes to. The two heaviest columns (agent and
@@ -63,6 +64,7 @@ final class ActivityModule implements ModuleInterface
                 Field::text('user_agent')->labelled('Agent')->truncate(32),
                 Field::text('referer')->truncate(32),
                 Field::datetime('created_at')->labelled('Created')->sortable()->relative(),
+                Field::text('request_id')->labelled('Request ID')->filterable()->onlyOn(Surface::Show),
             )
             ->screens(
                 ShowScreen::make()->title('Request'),

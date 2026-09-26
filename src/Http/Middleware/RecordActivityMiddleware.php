@@ -10,6 +10,7 @@ use App\Repositories\ActivityRepository;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\ClientIpResolver;
 use Hydra\Http\Exceptions\HttpException;
+use Hydra\Http\RequestId;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -104,6 +105,7 @@ final class RecordActivityMiddleware implements MiddlewareInterface
                 ip: $this->clients->resolve($request),
                 userAgent: $this->header($request, 'User-Agent'),
                 referer: $this->header($request, 'Referer'),
+                requestId: $this->requestId($request),
             ));
         } catch (Throwable $e) {
             $this->logger->warning('Could not record activity: ' . $e->getMessage(), ['exception' => $e]);
@@ -131,5 +133,12 @@ final class RecordActivityMiddleware implements MiddlewareInterface
         $value = $request->getHeaderLine($name);
 
         return $value === '' ? null : $value;
+    }
+
+    private function requestId(ServerRequestInterface $request): ?string
+    {
+        $id = $request->getAttribute(RequestId::ATTRIBUTE);
+
+        return is_string($id) && $id !== '' ? $id : null;
     }
 }

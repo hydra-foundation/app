@@ -19,11 +19,11 @@ final class ActivitySource extends TableSource
             table: 'activity',
             columns: [
                 'id', 'user_id', 'username', 'method', 'path', 'query',
-                'status', 'duration_ms', 'ip', 'user_agent', 'referer', 'created_at',
+                'status', 'duration_ms', 'ip', 'user_agent', 'referer', 'created_at', 'request_id',
             ],
             sortable: ['id', 'username', 'method', 'path', 'status', 'duration_ms', 'ip', 'created_at'],
             searchable: ['username', 'path', 'ip'],
-            filterable: ['method', 'status'],
+            filterable: ['method', 'status', 'request_id'],
         );
     }
 }

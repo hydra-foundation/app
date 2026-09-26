@@ -140,6 +140,22 @@ final class ActivityFlowTest extends TestCase
         $this->assertStringContainsString('>200 OK</dd>', $body);
     }
 
+    public function test_a_request_shows_its_id_and_the_list_filters_to_it(): void
+    {
+        $this->seed(new Activity(null, null, 'GET', '/pricing', '', 200, 7, null, null, null, 'req-one'));
+        $one = $this->lastId();
+        $this->seed(new Activity(null, null, 'GET', '/about', '', 200, 7, null, null, null, 'req-two'));
+        $this->login('boss');
+
+        $this->assertStringContainsString('>req-one</dd>', $this->body('/admin/activity/' . $one));
+
+        $body = $this->body('/admin/activity?request_id=req-one');
+
+        $this->assertStringContainsString('>/pricing</td>', $body);
+        $this->assertStringNotContainsString('>/about</td>', $body);
+        $this->assertMatchesRegularExpression('#name="request_id"\s+value="req-one"#', $body);
+    }
+
     public function test_the_log_can_be_read_one_row_at_a_time_and_still_not_be_written(): void
     {
         $this->seed(new Activity(null, null, 'GET', '/pricing', '', 200, 7, null, null, null));

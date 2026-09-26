@@ -85,7 +85,8 @@ final class TestSchema
                 ip TEXT NULL,
                 user_agent TEXT NULL,
                 referer TEXT NULL,
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                request_id TEXT NULL
             )'
         );
 
