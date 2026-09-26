@@ -160,15 +160,15 @@ final class SettingsController
             return $this->account($request, $result->errors(), self::EMAIL_FORM, status: Status::UnprocessableEntity);
         }
 
+        // The password first: whether an address is taken is somebody else's
+        // account, and only the password's budget keeps it from being asked
+        // one address after another.
         $errors = match (true) {
             strcasecmp($data['email'], $user->email) === 0 => ['email' => 'That is already your address.'],
+            !$this->currentPassword->matches($user, $data['current_password']) => ['current_password' => 'That is not your current password.'],
             $this->users->byEmail($data['email']) !== null => ['email' => 'That email address is already in use.'],
             default => [],
         };
-
-        if ($errors === [] && !$this->currentPassword->matches($user, $data['current_password'])) {
-            $errors = ['current_password' => 'That is not your current password.'];
-        }
 
         if ($errors !== []) {
             return $this->account($request, $errors, self::EMAIL_FORM, status: Status::UnprocessableEntity);
