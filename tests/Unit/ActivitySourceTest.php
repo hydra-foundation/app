@@ -39,10 +39,10 @@ final class ActivitySourceTest extends RowSourceContractTestCase
             ['barbara', 'DELETE', '/five', 500, '10.0.0.5'],
         ];
 
-        foreach ($rows as [$username, $method, $path, $status, $ip]) {
+        foreach ($rows as $n => [$username, $method, $path, $status, $ip]) {
             $this->pdo->prepare(
-                'INSERT INTO activity (username, method, path, status, duration_ms, ip) VALUES (?, ?, ?, ?, ?, ?)',
-            )->execute([$username, $method, $path, $status, 5, $ip]);
+                'INSERT INTO activity (username, method, path, status, duration_ms, ip, request_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            )->execute([$username, $method, $path, $status, 5, $ip, 'req-' . $n]);
         }
 
         $this->source = new ActivitySource(new PdoConnection($this->pdo));
@@ -52,7 +52,7 @@ final class ActivitySourceTest extends RowSourceContractTestCase
     protected function filterValues(): array
     {
         // Three GETs and two 200s of the five, so neither reads as unfiltered.
-        return ['method' => 'GET', 'status' => '200'];
+        return ['method' => 'GET', 'status' => '200', 'request_id' => 'req-2'];
     }
 
     protected function source(): SourceInterface

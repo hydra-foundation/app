@@ -12,6 +12,7 @@ use App\Tests\Support\TestSchema;
 use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\ClientIpResolver;
+use Hydra\Http\RequestId;
 use Hydra\Http\Testing\FakeHandler;
 use Hydra\Http\TrustedProxies;
 use Hydra\Database\Contracts\ConnectionInterface;
@@ -49,6 +50,23 @@ final class RecordActivityMiddlewareTest extends TestCase
         // The header is present but not trusted: a direct client could have
         // invented it, so the address PHP actually saw wins.
         $this->assertSame('10.0.0.8', $this->row()['ip']);
+    }
+
+    public function test_the_request_id_is_recorded_so_the_log_lines_can_be_found(): void
+    {
+        $this->middleware()->process(
+            $this->request()->withAttribute(RequestId::ATTRIBUTE, 'f00dfeed'),
+            $this->handler(),
+        );
+
+        $this->assertSame('f00dfeed', $this->row()['request_id']);
+    }
+
+    public function test_a_request_without_an_id_records_none(): void
+    {
+        $this->middleware()->process($this->request(), $this->handler());
+
+        $this->assertNull($this->row()['request_id']);
     }
 
     public function test_a_trusted_forwarded_header_names_the_original_client(): void

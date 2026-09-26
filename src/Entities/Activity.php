@@ -22,5 +22,6 @@ final readonly class Activity
         public ?string $ip,
         public ?string $userAgent,
         public ?string $referer,
+        public ?string $requestId = null,
     ) {}
 }

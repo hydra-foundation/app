@@ -22,6 +22,7 @@ final class ActivityRepository
         'ip' => 45,
         'user_agent' => 512,
         'referer' => 512,
+        'request_id' => 64,
     ];
 
     private const COLUMNS = [
@@ -34,7 +35,8 @@ final class ActivityRepository
         'duration_ms',
         'ip',
         'user_agent',
-        'referer'
+        'referer',
+        'request_id',
     ];
 
     public function __construct(private readonly ConnectionInterface $db) {}
@@ -55,6 +57,7 @@ final class ActivityRepository
             $this->clip('ip', $activity->ip),
             $this->clip('user_agent', $activity->userAgent),
             $this->clip('referer', $activity->referer),
+            $this->clip('request_id', $activity->requestId),
         ];
 
         if ($at !== null) {

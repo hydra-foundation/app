@@ -42,6 +42,10 @@ you remember to turn off.
 
 Open **http://localhost:8080** (the port is `APP_PORT` in `.env`).
 
+`./bin/dev` also opens `storage/logs` to every user (mode 1777): PHP-FPM writes
+the log as www-data and the scheduler as root. Under the prod compose files, do
+the same once with `chmod 1777 storage/logs`.
+
 **Without Docker (public site only):**
 
 ```bash
