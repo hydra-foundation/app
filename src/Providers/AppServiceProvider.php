@@ -458,8 +458,15 @@ final class AppServiceProvider extends ServiceProvider
      */
     public static function logger(LogConfig $config, RequestId $requestId, string $stderr = 'php://stderr'): LoggerInterface
     {
+        $created = $config->isFile() && !is_file($config->path);
         $file = @fopen($config->path, 'a');
         $streams = $file === false ? [] : [$file];
+
+        // php-fpm (www-data) and the scheduler (root) append to the same file,
+        // and whichever creates it would otherwise lock the other out.
+        if ($file !== false && $created) {
+            @chmod($config->path, 0666);
+        }
 
         if ($file === false || $config->alsoStderr()) {
             $streams[] = fopen($stderr, 'a');

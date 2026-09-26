@@ -14,6 +14,9 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# php-fpm runs as www-data and the scheduler as root; both write the log here.
+mkdir -p storage/logs && chmod 1777 storage/logs
+
 files=(-f docker-compose.yml -f docker-compose.dev.yml)
 [[ -f docker-compose.local.yml ]] && files+=(-f docker-compose.local.yml)
 

@@ -49,6 +49,23 @@ final class AppLoggerTest extends TestCase
         $this->assertFileDoesNotExist($this->stderr);
     }
 
+    public function test_a_new_file_is_left_writable_by_the_other_containers(): void
+    {
+        AppServiceProvider::logger(new LogConfig($this->file, stderr: false), new RequestId, $this->stderr)->info('first');
+
+        $this->assertSame(0666, fileperms($this->file) & 0777);
+    }
+
+    public function test_an_existing_file_keeps_its_mode(): void
+    {
+        touch($this->file);
+        chmod($this->file, 0640);
+
+        AppServiceProvider::logger(new LogConfig($this->file, stderr: false), new RequestId, $this->stderr)->info('later');
+
+        $this->assertSame(0640, fileperms($this->file) & 0777);
+    }
+
     public function test_a_file_that_cannot_be_opened_falls_back_to_stderr(): void
     {
         AppServiceProvider::logger(new LogConfig('/nonexistent/dir/x.log', stderr: false), new RequestId, $this->stderr)->error('lost?');
