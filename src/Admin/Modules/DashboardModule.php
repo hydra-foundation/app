@@ -18,8 +18,12 @@ use Hydra\Admin\Shape;
 use Hydra\Admin\Widget;
 
 /**
- * No source, no fields, just a grid of cards. Signing in is the whole gate, so
- * it declares no ability and every authenticated user sees it.
+ * No source, no fields, just a grid of cards. The module itself declares no
+ * ability, because /admin lands here and every authenticated user must be able
+ * to arrive somewhere. Each card is an admin's, though: they read the activity,
+ * users and audit tables, whose own modules are admin-only, and a card that
+ * showed them to everyone would undo those gates. A user who is not an admin
+ * gets the grid's empty state.
  */
 final class DashboardModule implements ModuleInterface
 {
@@ -36,6 +40,7 @@ final class DashboardModule implements ModuleInterface
                         Widget::make('totals', 'admin/partials/stats')
                             ->titled('Totals')
                             ->periodic()
+                            ->requires(AccessAdmin::class)
                             ->from(TotalsWidget::class),
                     )
                     ->widgets(
@@ -47,6 +52,7 @@ final class DashboardModule implements ModuleInterface
                             ->shaped(Shape::Block)
                             ->refreshEvery(60)
                             ->periodic()
+                            ->requires(AccessAdmin::class)
                             ->from(TrafficWidget::class),
                         Widget::make('paths', 'admin/widgets/paths')
                             ->titled('Busiest paths')
@@ -55,6 +61,7 @@ final class DashboardModule implements ModuleInterface
                             ->reserving(BusiestPathsWidget::PATHS)
                             ->shaped(Shape::Bars)
                             ->periodic()
+                            ->requires(AccessAdmin::class)
                             ->from(BusiestPathsWidget::class),
                         Widget::make('newest', 'admin/widgets/newest')
                             ->titled('Newest accounts')
@@ -63,6 +70,7 @@ final class DashboardModule implements ModuleInterface
                             ->reserving(NewestAccountsWidget::ACCOUNTS)
                             ->shaped(Shape::Rows)
                             ->periodic()
+                            ->requires(AccessAdmin::class)
                             ->from(NewestAccountsWidget::class),
                         Widget::make('changes', 'admin/widgets/changes')
                             ->titled('Recent changes')
@@ -71,6 +79,7 @@ final class DashboardModule implements ModuleInterface
                             ->reserving(RecentChangesWidget::CHANGES)
                             ->shaped(Shape::Rows)
                             ->periodic()
+                            ->requires(AccessAdmin::class)
                             ->from(RecentChangesWidget::class),
                         Widget::make('queue', 'admin/widgets/queue')
                             ->titled('Queue')

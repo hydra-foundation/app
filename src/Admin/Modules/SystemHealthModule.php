@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Modules;
 
 use App\Admin\Widgets\DatabaseWidget;
+use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Screens\DashboardScreen;
@@ -30,6 +31,9 @@ final class SystemHealthModule implements ModuleInterface
             ->title('System Health')
             ->group('Overview')
             ->icon('heart-pulse')
+            // The updates card says whether this install is behind a release,
+            // which is a list of what it has not been patched against.
+            ->ability(AccessAdmin::class)
             ->screens(
                 DashboardScreen::make()
                     ->named('overview')

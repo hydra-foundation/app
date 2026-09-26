@@ -26,7 +26,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 /**
  * Proving an account's address. The link moves its token into the session
  * and redirects before anything is rendered, for the same reason a reset
- * link does: the activity log is readable by every signed-in user.
+ * link does: the activity log is readable by every admin.
  *
  * Opening the link does not need a session of its own. The mail client that
  * opens it is often not the browser that is signed in.

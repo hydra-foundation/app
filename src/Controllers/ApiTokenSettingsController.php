@@ -8,6 +8,7 @@ use App\Admin\Presenters\ApiTokensPresenter;
 use App\Entities\Audit;
 use App\Entities\User;
 use App\Repositories\AuditRepository;
+use App\Security\CurrentPassword;
 use App\ViewModels\ApiTokensViewModel;
 use Hydra\Admin\Chrome;
 use Hydra\Admin\ModuleRegistry;
@@ -37,6 +38,9 @@ final class ApiTokenSettingsController
 
     private const WINDOW = 3600;
 
+    /** The same ceiling the login form holds a password to. */
+    private const MAX_PASSWORD = 4096;
+
     public function __construct(
         private readonly ModuleRegistry $registry,
         private readonly Chrome $chrome,
@@ -49,6 +53,7 @@ final class ApiTokenSettingsController
         private readonly ClockInterface $clock,
         private readonly AuditRepository $audit,
         private readonly LoggerInterface $logger,
+        private readonly CurrentPassword $currentPassword,
     ) {}
 
     public function save(Request $request): Response
@@ -79,6 +84,19 @@ final class ApiTokenSettingsController
 
         if (!array_key_exists($old['expires'], ApiTokensViewModel::EXPIRIES)) {
             $errors['expires'] = 'Choose when the token expires.';
+        }
+
+        // Asked like every other settings form that hands out a way in: a
+        // token outlives the session that made it, so a borrowed session must
+        // not be enough to mint one.
+        $password = $input->string('current_password');
+
+        if ($password === '' || strlen($password) > self::MAX_PASSWORD) {
+            $errors['current_password'] = 'Enter your current password.';
+        }
+
+        if ($errors === [] && !$this->currentPassword->matches($user, $password)) {
+            $errors['current_password'] = 'That is not your current password.';
         }
 
         if ($errors !== []) {

@@ -12,6 +12,7 @@ use Hydra\Admin\Contracts\UpdateSourceInterface;
 use Hydra\Admin\Exceptions\WriteRejected;
 use Hydra\Admin\RowId;
 use Hydra\Admin\Sources\TableSource;
+use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
@@ -28,6 +29,7 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
         private readonly GuardInterface $guard,
         private readonly HasherInterface $hasher,
         private readonly UserRepository $users,
+        private readonly ApiTokenStoreInterface $tokens,
     ) {
         parent::__construct(
             $db,
@@ -81,6 +83,13 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             throw WriteRejected::on('email', 'That email address is already in use.');
         }
 
+        // The same reason an admin cannot delete their own account: done to the
+        // last admin, it leaves nobody who can reach this screen to undo it.
+        // Another admin can still change this row's role.
+        if ((string) $this->guard->id() === (string) $key && $this->users->byIdentifier($key)?->role->value !== $this->role($data)) {
+            throw WriteRejected::on('role', 'You cannot change your own role.');
+        }
+
         // Ahead of the email assignment: MariaDB reads an already-assigned
         // column's new value in later assignments, SQLite the old one.
         $columns = [
@@ -104,12 +113,18 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
         $this->db->execute($sql, $params);
 
         // A new password ends every session the account has, the one making
-        // this edit included when it is the admin's own row.
-        if (($data['password'] ?? '') !== '' && (string) $this->guard->id() === (string) $key) {
-            $self = $this->users->byIdentifier($key);
+        // this edit included when it is the admin's own row, and every API
+        // token: a password set because the account was taken over must not
+        // leave the intruder a bearer token that still works.
+        if (($data['password'] ?? '') !== '') {
+            $user = $this->users->byIdentifier($key);
 
-            if ($self !== null) {
-                $this->guard->refresh($self);
+            if ($user !== null) {
+                $this->tokens->revokeAll($user);
+
+                if ((string) $this->guard->id() === (string) $key) {
+                    $this->guard->refresh($user);
+                }
             }
         }
     }

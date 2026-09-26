@@ -59,7 +59,7 @@ final class ApiTokenSettingsFlowTest extends TestCase
 
     public function test_a_new_token_is_shown_once_and_works_on_the_api(): void
     {
-        $response = $this->http->post(self::URL, ['intent' => 'create', 'label' => 'Deploy script', 'expires' => 'never'])
+        $response = $this->http->post(self::URL, ['intent' => 'create', 'label' => 'Deploy script', 'expires' => 'never', 'current_password' => TestApp::PASSWORD])
             ->assertOk()
             ->assertSee('Deploy script');
         $plain = $this->plain($response);
@@ -73,7 +73,7 @@ final class ApiTokenSettingsFlowTest extends TestCase
 
     public function test_the_expiry_is_counted_from_now(): void
     {
-        $this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => '30'])->assertOk();
+        $this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => '30', 'current_password' => TestApp::PASSWORD])->assertOk();
 
         $token = $this->stored($this->id)[0];
 
@@ -83,30 +83,46 @@ final class ApiTokenSettingsFlowTest extends TestCase
 
     public function test_a_bad_name_or_expiry_makes_nothing(): void
     {
-        $this->http->post(self::URL, ['intent' => 'create', 'label' => '', 'expires' => 'never'])
+        $this->http->post(self::URL, ['intent' => 'create', 'label' => '', 'expires' => 'never', 'current_password' => TestApp::PASSWORD])
             ->assertStatus(422)
             ->assertSee('Give the token a name');
-        $this->http->post(self::URL, ['intent' => 'create', 'label' => str_repeat('x', 101), 'expires' => 'never'])
+        $this->http->post(self::URL, ['intent' => 'create', 'label' => str_repeat('x', 101), 'expires' => 'never', 'current_password' => TestApp::PASSWORD])
             ->assertStatus(422);
-        $this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => '7'])
+        $this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => '7', 'current_password' => TestApp::PASSWORD])
             ->assertStatus(422);
 
         $this->assertSame([], $this->stored($this->id));
     }
 
-    public function test_creating_is_limited_to_ten_an_hour(): void
+    /**
+     * Every create checks the password, and that budget is five an hour for
+     * every settings form together, so it is the one that binds first.
+     */
+    public function test_creating_spends_the_settings_password_budget(): void
     {
-        for ($i = 1; $i <= 10; $i++) {
-            $this->http->post(self::URL, ['intent' => 'create', 'label' => "t{$i}", 'expires' => 'never'])->assertOk();
+        for ($i = 1; $i <= 5; $i++) {
+            $this->http->post(self::URL, ['intent' => 'create', 'label' => "t{$i}", 'expires' => 'never', 'current_password' => TestApp::PASSWORD])->assertOk();
         }
 
-        $this->http->post(self::URL, ['intent' => 'create', 'label' => 't11', 'expires' => 'never'])->assertStatus(429);
-        $this->assertCount(10, $this->stored($this->id));
+        $this->http->post(self::URL, ['intent' => 'create', 'label' => 't6', 'expires' => 'never', 'current_password' => TestApp::PASSWORD])->assertStatus(429);
+        $this->assertCount(5, $this->stored($this->id));
+    }
+
+    public function test_a_missing_or_wrong_password_makes_nothing(): void
+    {
+        $this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => 'never'])
+            ->assertStatus(422)
+            ->assertSee('Enter your current password.');
+        $this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => 'never', 'current_password' => 'wrong'])
+            ->assertStatus(422)
+            ->assertSee('That is not your current password.');
+
+        $this->assertSame([], $this->stored($this->id));
     }
 
     public function test_revoking_ends_the_token(): void
     {
-        $plain = $this->plain($this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => 'never']));
+        $plain = $this->plain($this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => 'never', 'current_password' => TestApp::PASSWORD]));
         $id = $this->stored($this->id)[0]->id;
 
         $this->http->post(self::URL, ['intent' => 'revoke', 'token' => (string) $id])->assertOk()->assertDontSee('>CI<');
@@ -131,7 +147,7 @@ final class ApiTokenSettingsFlowTest extends TestCase
 
     public function test_making_and_revoking_are_audited(): void
     {
-        $this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => 'never']);
+        $this->http->post(self::URL, ['intent' => 'create', 'label' => 'CI', 'expires' => 'never', 'current_password' => TestApp::PASSWORD]);
         $this->http->post(self::URL, ['intent' => 'revoke', 'token' => (string) $this->stored($this->id)[0]->id]);
 
         $messages = array_column(

@@ -124,6 +124,18 @@ final class EmailChangeFlowTest extends TestCase
         $this->assertSame(0, $this->app->queued());
     }
 
+    /**
+     * Whether an address has an account is somebody else's business, so the
+     * form only answers it for a caller who has spent a password check.
+     */
+    public function test_a_wrong_password_does_not_say_whether_an_address_is_taken(): void
+    {
+        $this->ask('boss@example.com', 'wrong')
+            ->assertStatus(422)
+            ->assertSee('That is not your current password.')
+            ->assertDontSee('already in use');
+    }
+
     public function test_both_forms_spend_one_budget(): void
     {
         for ($i = 0; $i < 4; $i++) {

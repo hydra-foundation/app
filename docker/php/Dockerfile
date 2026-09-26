@@ -35,8 +35,9 @@ RUN if [ "$BUILD_MODE" = "dev" ]; then \
         pecl install pcov && docker-php-ext-enable pcov; \
     fi
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install Composer. Held to a major version rather than :latest, so a rebuild
+# cannot pick up a Composer that changes how the lock is read.
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # The repo is bind-mounted from the host (owned by the host user), so git's
 # "dubious ownership" guard would otherwise block Composer (running as root)

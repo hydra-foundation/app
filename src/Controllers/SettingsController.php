@@ -20,6 +20,7 @@ use Hydra\Admin\Chrome;
 use Hydra\Admin\ModuleRegistry;
 use Hydra\Admin\Notice;
 use Hydra\Admin\Renderer;
+use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\Exceptions\NotFoundException;
@@ -70,6 +71,7 @@ final class SettingsController
         private readonly AuditRepository $audit,
         private readonly QueueInterface $queue,
         private readonly LoggerInterface $logger,
+        private readonly ApiTokenStoreInterface $apiTokens,
     ) {}
 
     public function saveAccount(Request $request): Response
@@ -122,6 +124,9 @@ final class SettingsController
         }
 
         $this->users->updatePassword($user->id, $this->hasher->hash($data['password']));
+        // The same as a reset: a password changed because someone else had it
+        // must not leave them a bearer token that outlives it.
+        $this->apiTokens->revokeAll($user);
         $this->guard->refresh($this->users->byIdentifier($user->id) ?? throw new NotFoundException);
         $this->auditPasswordChange($user);
 
@@ -155,15 +160,15 @@ final class SettingsController
             return $this->account($request, $result->errors(), self::EMAIL_FORM, status: Status::UnprocessableEntity);
         }
 
+        // The password first: whether an address is taken is somebody else's
+        // account, and only the password's budget keeps it from being asked
+        // one address after another.
         $errors = match (true) {
             strcasecmp($data['email'], $user->email) === 0 => ['email' => 'That is already your address.'],
+            !$this->currentPassword->matches($user, $data['current_password']) => ['current_password' => 'That is not your current password.'],
             $this->users->byEmail($data['email']) !== null => ['email' => 'That email address is already in use.'],
             default => [],
         };
-
-        if ($errors === [] && !$this->currentPassword->matches($user, $data['current_password'])) {
-            $errors = ['current_password' => 'That is not your current password.'];
-        }
 
         if ($errors !== []) {
             return $this->account($request, $errors, self::EMAIL_FORM, status: Status::UnprocessableEntity);
