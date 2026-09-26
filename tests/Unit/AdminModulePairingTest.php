@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Config\LogConfig;
+use DateTimeZone;
 use App\Providers\AppServiceProvider;
 use App\Tests\Support\CommandRun;
 use App\Tests\Support\Console;
@@ -24,6 +25,10 @@ use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\PhpDi\Container;
 use Hydra\Queue\DatabaseQueue;
+use Hydra\Scheduler\DatabaseRunLog;
+use Hydra\Scheduler\Schedule;
+use Hydra\Scheduler\SchedulerConfig;
+use Psr\Clock\ClockInterface;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
@@ -88,6 +93,10 @@ final class AdminModulePairingTest extends TestCase
         $container->instance(ConnectionInterface::class, $db = new PdoConnection(TestSchema::connect()));
         $container->instance(DatabaseQueue::class, new DatabaseQueue($db, new SystemClock, 'sqlite'));
         $container->instance(LogConfig::class, new LogConfig('php://stderr'));
+        $container->instance(Schedule::class, new Schedule(new DateTimeZone('UTC')));
+        $container->instance(SchedulerConfig::class, new SchedulerConfig(new DateTimeZone('UTC'), sys_get_temp_dir()));
+        $container->instance(DatabaseRunLog::class, new DatabaseRunLog($db, new SystemClock));
+        $container->instance(ClockInterface::class, new SystemClock);
         $container->instance(HasherInterface::class, new FakeHasher);
         $container->instance(GuardInterface::class, $this->guard());
 

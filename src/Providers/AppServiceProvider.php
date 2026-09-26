@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Admin\Modules\{ActivityModule, AuditModule, DashboardModule, FailedJobsModule, JobsModule, LogsModule, SettingsModule, SystemHealthModule, UsersModule};
+use App\Admin\Modules\{ActivityModule, AuditModule, DashboardModule, FailedJobsModule, JobsModule, LogsModule, SchedulerModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\Api\MeController;
 use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController, TwoFactorChallengeController};
@@ -104,6 +104,7 @@ final class AppServiceProvider extends ServiceProvider
         ActivityModule::class,
         AuditModule::class,
         LogsModule::class,
+        SchedulerModule::class,
         JobsModule::class,
         FailedJobsModule::class,
         SettingsModule::class,
