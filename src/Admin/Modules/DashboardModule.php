@@ -6,9 +6,11 @@ namespace App\Admin\Modules;
 
 use App\Admin\Widgets\BusiestPathsWidget;
 use App\Admin\Widgets\NewestAccountsWidget;
+use App\Admin\Widgets\QueueWidget;
 use App\Admin\Widgets\RecentChangesWidget;
 use App\Admin\Widgets\TotalsWidget;
 use App\Admin\Widgets\TrafficWidget;
+use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Screens\DashboardScreen;
@@ -70,6 +72,15 @@ final class DashboardModule implements ModuleInterface
                             ->shaped(Shape::Rows)
                             ->periodic()
                             ->from(RecentChangesWidget::class),
+                        Widget::make('queue', 'admin/widgets/queue')
+                            ->titled('Queue')
+                            ->withIcon('hourglass-split')
+                            ->spanning(4)
+                            ->reserving(3)
+                            ->shaped(Shape::Rows)
+                            ->refreshEvery(60)
+                            ->requires(AccessAdmin::class)
+                            ->from(QueueWidget::class),
                     ),
             );
     }

@@ -209,6 +209,51 @@ final class QueueAdminFlowTest extends TestCase
         );
     }
 
+    public function test_an_admin_s_dashboard_carries_the_queue_card(): void
+    {
+        $this->login('boss');
+
+        $this->assertStringContainsString('/admin/dashboard/w/queue', $this->body('/admin/dashboard'));
+    }
+
+    public function test_the_queue_card_counts_what_waits_what_is_held_and_what_failed(): void
+    {
+        $this->holdOneOfTwo();
+        $this->queue->push(SendVerificationLink::class, ['user' => 3]);
+        $this->failJob('mail server down');
+        $this->login('boss');
+        $body = $this->body('/admin/dashboard/w/queue');
+
+        $this->assertSeeRow($body, 'Waiting', '2', '/admin/jobs');
+        $this->assertSeeRow($body, 'Held by a worker', '1', '/admin/jobs');
+        $this->assertSeeRow($body, 'Failed', '1', '/admin/failed-jobs');
+        $this->assertStringContainsString('oldest', $body);
+        $this->assertStringContainsString('<time datetime=', $body);
+    }
+
+    public function test_an_empty_queue_says_so_on_the_card(): void
+    {
+        $this->login('boss');
+
+        $this->assertStringContainsString('Nothing has failed.', $this->body('/admin/dashboard/w/queue'));
+    }
+
+    public function test_a_standard_user_never_sees_the_queue_card(): void
+    {
+        $this->login('clerk');
+
+        $this->assertStringNotContainsString('/admin/dashboard/w/queue', $this->body('/admin/dashboard'));
+        $this->http->get('/admin/dashboard/w/queue')->assertStatus(403);
+    }
+
+    private function assertSeeRow(string $body, string $label, string $count, string $href): void
+    {
+        $this->assertMatchesRegularExpression(
+            sprintf('#<a href="%s"[^>]*>%s</a>\s*<span class="widget-caption">%s\b#', preg_quote($href, '#'), preg_quote($label, '#'), $count),
+            $body,
+        );
+    }
+
     private function frame(): Client
     {
         return $this->http->htmx('div#admin-frame');
