@@ -40,6 +40,8 @@ use App\Repositories\UserRepository;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\RouteCache;
 use Hydra\Queue\Console\QueueFailedCommand;
+use Hydra\Queue\Console\QueueFlushCommand;
+use Hydra\Queue\Console\QueueForgetCommand;
 use Hydra\Queue\Console\QueueRetryCommand;
 use Hydra\Queue\DatabaseQueue;
 use Hydra\Scheduler\Console\ScheduleRunCommand;
@@ -103,6 +105,8 @@ $application->addLazy([
     ScheduleRunCommand::class => static fn () => new ScheduleRunCommand($container->get(Runner::class)),
     QueueFailedCommand::class => static fn () => new QueueFailedCommand($container->get(DatabaseQueue::class)),
     QueueRetryCommand::class => static fn () => new QueueRetryCommand($container->get(DatabaseQueue::class)),
+    QueueForgetCommand::class => static fn () => new QueueForgetCommand($container->get(DatabaseQueue::class)),
+    QueueFlushCommand::class => static fn () => new QueueFlushCommand($container->get(DatabaseQueue::class)),
 ]);
 
 exit($application->run());
