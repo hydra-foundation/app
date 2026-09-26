@@ -35,6 +35,7 @@ final class FailedJobsModule implements ModuleInterface
             ->source(FailedJobSource::class)
             ->perPage(25)
             ->defaultSort('id', 'desc')
+            ->gone('That failed job has been retried or deleted.')
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
                 Field::text('job')->sortable()->searchable(),

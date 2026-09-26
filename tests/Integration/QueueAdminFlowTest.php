@@ -90,6 +90,20 @@ final class QueueAdminFlowTest extends TestCase
         $this->assertNotNull($this->db->selectOne('SELECT id FROM jobs WHERE id = ?', [$held]));
     }
 
+    public function test_a_job_that_ran_while_the_list_was_open_says_so(): void
+    {
+        $this->login('boss');
+
+        $this->frame()->get('/admin/jobs/99')->assertStatus(404)->assertSee('That job has already run or been cancelled.');
+    }
+
+    public function test_a_failure_retried_while_the_list_was_open_says_so(): void
+    {
+        $this->login('boss');
+
+        $this->frame()->get('/admin/failed-jobs/99')->assertStatus(404)->assertSee('That failed job has been retried or deleted.');
+    }
+
     public function test_a_failure_is_listed_by_its_reason_newest_first(): void
     {
         $this->failJob('mail server down');

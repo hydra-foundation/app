@@ -29,6 +29,7 @@ final class JobsModule implements ModuleInterface
             ->source(JobSource::class)
             ->perPage(25)
             ->defaultSort('id', 'asc')
+            ->gone('That job has already run or been cancelled.')
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
                 Field::text('job')->sortable()->searchable(),
