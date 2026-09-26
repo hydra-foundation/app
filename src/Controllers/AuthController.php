@@ -18,6 +18,8 @@ use Hydra\Http\Status;
 use Hydra\Validation\Rules\MaxLength;
 use Hydra\Validation\Rules\Required;
 use Hydra\Session\Contracts\SessionInterface;
+use Hydra\Throttle\RateLimiter;
+use Hydra\Throttle\RateLimitPolicy;
 use Hydra\Validation\Validator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -38,6 +40,20 @@ final class AuthController extends Controller
      */
     private const MAX_PASSWORD = 4096;
 
+    /**
+     * Guesses at one username, from anywhere. LoginThrottleMiddleware counts
+     * per client, which a guessing run spread over many addresses never
+     * spends; this is the budget it cannot spread. Keyed on the name as typed,
+     * so an unknown name is counted the same as a real one and the refusal
+     * says nothing about which it was.
+     *
+     * Anyone who knows a username can spend it, which locks that account's
+     * password form for the window. That is the trade: the window is short,
+     * and the emailed reset is not behind it.
+     */
+    private const PER_ACCOUNT = 10;
+    private const PER_ACCOUNT_WINDOW = 900;
+
     public function __construct(
         Responder $respond,
         ViewInterface $view,
@@ -45,6 +61,7 @@ final class AuthController extends Controller
         private readonly TwoFactorChallenge $challenge,
         private readonly Validator $validator,
         private readonly SessionInterface $session,
+        private readonly RateLimiter $limiter,
     ) {
         parent::__construct($respond, $view);
     }
@@ -88,7 +105,14 @@ final class AuthController extends Controller
             ],
         );
 
-        $user = $result->passes() ? $this->guard->validate($username, $password) : null;
+        // Counted before the check, like every password budget here: once it
+        // is spent, a right guess has to be refused the same as a wrong one.
+        $throttled = $result->passes() && !$this->limiter->hit(
+            mb_strtolower($username),
+            new RateLimitPolicy('login-account', self::PER_ACCOUNT, self::PER_ACCOUNT_WINDOW),
+        )->allowed;
+
+        $user = $result->passes() && !$throttled ? $this->guard->validate($username, $password) : null;
 
         if ($user !== null && $this->challenge->required($user)) {
             $this->challenge->begin($user);
@@ -103,9 +127,11 @@ final class AuthController extends Controller
         }
 
         // A failed login is deliberately vague
-        $errors = $result->passes()
-            ? ['credentials' => "Those credentials don't match our records."]
-            : $result->errors();
+        $errors = match (true) {
+            !$result->passes() => $result->errors(),
+            $throttled => ['credentials' => 'Too many sign-in attempts for this account. Wait a few minutes, or reset your password.'],
+            default => ['credentials' => "Those credentials don't match our records."],
+        };
 
         $route = Htmx::fromRequest($request)->isHtmx()
             ? 'auth/login/form'
@@ -114,7 +140,7 @@ final class AuthController extends Controller
         return $this->render(
             $route,
             ['vm' => new LoginViewModel($username, $errors)],
-            Status::UnprocessableEntity,
+            $throttled ? Status::TooManyRequests : Status::UnprocessableEntity,
         );
     }
 
