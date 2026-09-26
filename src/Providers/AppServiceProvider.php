@@ -58,7 +58,7 @@ use Hydra\Http\{
     SecurityHeadersMiddleware,
     TrustedProxies,
 };
-use Hydra\Log\{ContextualLogger, RedactingLogger, StreamLogger};
+use Hydra\Log\{ContextualLogger, FanOutLogger, RedactingLogger, StreamLogger};
 use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Queue\{DatabaseQueue, Worker};
 use Hydra\Scheduler\Schedule;
@@ -222,14 +222,7 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         $container->singleton(LoggerInterface::class, function () use ($container) {
-            $path = $container->get(LogConfig::class)->path;
-            $stream = @fopen($path, 'a') ?: fopen('php://stderr', 'w');
-            $requestId = $container->get(RequestId::class);
-
-            return new RedactingLogger(new ContextualLogger(
-                new StreamLogger($stream),
-                fn (): array => array_filter(['request_id' => $requestId->get()]),
-            ));
+            return self::logger($container->get(LogConfig::class), $container->get(RequestId::class));
         });
 
         $container->singleton(RequestId::class, fn () => new RequestId);
@@ -458,6 +451,27 @@ final class AppServiceProvider extends ServiceProvider
      * Error tracking is opt-in: bind an ExceptionReporterInterface in a
      * provider and every fault the log records is reported to it as well.
      */
+    /**
+     * The file the admin reads and, unless turned off, stderr for the container.
+     * A file that cannot be opened falls back to stderr alone.
+     */
+    public static function logger(LogConfig $config, RequestId $requestId, string $stderr = 'php://stderr'): LoggerInterface
+    {
+        $file = @fopen($config->path, 'a');
+        $streams = $file === false ? [] : [$file];
+
+        if ($file === false || $config->alsoStderr()) {
+            $streams[] = fopen($stderr, 'a');
+        }
+
+        $loggers = array_map(static fn ($stream): StreamLogger => new StreamLogger($stream), array_filter($streams));
+
+        return new RedactingLogger(new ContextualLogger(
+            count($loggers) === 1 ? $loggers[0] : new FanOutLogger(...$loggers),
+            fn (): array => array_filter(['request_id' => $requestId->get()]),
+        ));
+    }
+
     private function reporter(ContainerInterface $container): ?ExceptionReporterInterface
     {
         return $container->bound(ExceptionReporterInterface::class)
