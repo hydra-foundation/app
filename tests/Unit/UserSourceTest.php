@@ -155,11 +155,50 @@ final class UserSourceTest extends WritableSourceContractTestCase
         $this->assertSame('user', $this->pdo->query('SELECT role FROM users WHERE id = 2')->fetchColumn());
     }
 
+    public function test_a_create_stores_the_avatar_key_it_was_handed(): void
+    {
+        $id = $this->source->create([
+            'username' => 'linus', 'email' => 'linus@example.com', 'role' => 'user', 'password' => 'secret-enough',
+            'avatar' => 'private:avatars/abc.png',
+        ]);
+
+        $this->assertSame('private:avatars/abc.png', $this->avatarOf((int) $id));
+    }
+
+    public function test_an_update_that_says_nothing_about_the_avatar_keeps_it(): void
+    {
+        $this->pdo->exec("UPDATE users SET avatar = 'private:avatars/abc.png' WHERE id = 3");
+
+        $this->source->update('3', ['username' => 'alan', 'email' => 'alan@example.com', 'role' => 'user']);
+
+        $this->assertSame('private:avatars/abc.png', $this->avatarOf(3));
+    }
+
+    public function test_an_update_can_replace_or_clear_the_avatar(): void
+    {
+        $this->pdo->exec("UPDATE users SET avatar = 'private:avatars/abc.png' WHERE id = 3");
+        $row = ['username' => 'alan', 'email' => 'alan@example.com', 'role' => 'user'];
+
+        $this->source->update('3', [...$row, 'avatar' => 'private:avatars/def.png']);
+        $this->assertSame('private:avatars/def.png', $this->avatarOf(3));
+
+        $this->source->update('3', [...$row, 'avatar' => null]);
+        $this->assertNull($this->avatarOf(3));
+    }
+
     private function signedInAs(int $id): UserSource
     {
         $db = new PdoConnection($this->pdo);
 
         return new UserSource($db, FakeGuard::signedInAs(new FakeUser($id)), new FakeHasher, new UserRepository($db), new ApiTokenRepository($db));
+    }
+
+    private function avatarOf(int $id): ?string
+    {
+        $statement = $this->pdo->prepare('SELECT avatar FROM users WHERE id = ?');
+        $statement->execute([$id]);
+
+        return $statement->fetchColumn() ?: null;
     }
 
     private function verifiedAt(int $id): ?string

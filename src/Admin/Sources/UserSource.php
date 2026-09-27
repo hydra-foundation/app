@@ -34,7 +34,7 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
         parent::__construct(
             $db,
             table: 'users',
-            columns: ['id', 'username', 'email', 'role', 'created_at'],
+            columns: ['id', 'avatar', 'username', 'email', 'role', 'created_at'],
             sortable: ['id', 'username', 'email', 'role', 'created_at'],
             searchable: ['username', 'email'],
             filterable: ['role'],
@@ -54,8 +54,8 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             throw WriteRejected::on('email', 'That email address is already in use.');
         }
 
-        $sql = sprintf('INSERT INTO %s (username, email, role, password_hash)
-            VALUES (?, ?, ?, ?)', $this->table);
+        $sql = sprintf('INSERT INTO %s (username, email, role, password_hash, avatar)
+            VALUES (?, ?, ?, ?, ?)', $this->table);
         $this->db->execute(
             $sql,
             [
@@ -63,6 +63,7 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
                 $email,
                 $this->role($data),
                 $this->hasher->hash((string) ($data['password'] ?? '')),
+                $this->avatar($data),
             ],
         );
 
@@ -99,6 +100,13 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             'role = ?',
         ];
         $params = [$email, $email, $username, $this->role($data)];
+
+        // Only when the form said something about it: the admin leaves the key
+        // out altogether when the file input was left empty, meaning "keep".
+        if (array_key_exists('avatar', $data)) {
+            $columns[] = 'avatar = ?';
+            $params[] = $this->avatar($data);
+        }
 
         if (($data['password'] ?? '') !== '') {
             $columns[] = 'password_hash = ?';
@@ -141,6 +149,19 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             FROM %s
             WHERE id=?', $this->table);
         $this->db->execute($sql, [$key]);
+    }
+
+    /**
+     * The stored key the admin handed over, or null. The admin stores the file
+     * and passes its key, so anything here is already a key it made.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function avatar(array $data): ?string
+    {
+        $avatar = $data['avatar'] ?? null;
+
+        return is_string($avatar) && $avatar !== '' ? $avatar : null;
     }
 
     /**

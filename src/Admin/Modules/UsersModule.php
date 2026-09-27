@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Modules;
 
+use App\Admin\Avatar;
 use App\Admin\Sources\UserSource;
 use App\Authorization\AccessAdmin;
 use App\Entities\Role;
@@ -38,6 +39,7 @@ final class UsersModule implements ModuleInterface
             ->links(...$this->roles())
             ->fields(
                 Field::id()->labelled('ID')->sortable(),
+                Avatar::field(),
                 Field::text('username')->sortable()->searchable(),
                 Field::text('email')->sortable()->searchable(),
                 Field::select('role', Role::options())->sortable(),
@@ -53,6 +55,7 @@ final class UsersModule implements ModuleInterface
                     Input::select('role', Role::options()),
                     Input::password('password')->required('Set a password.')
                         ->rules(new MinLength(8)),
+                    Avatar::input(),
                 ),
                 FormScreen::edit()->title('Edit user')->inputs(
                     Input::text('username')->required('Enter a username.')
@@ -63,6 +66,7 @@ final class UsersModule implements ModuleInterface
                     Input::password('password')
                         ->rules(new MinLength(8))
                         ->help('Leave blank to keep the current password.'),
+                    Avatar::input(),
                 ),
                 DeleteScreen::make()->confirm('Delete this user? This cannot be undone.'),
                 ExportScreen::make(),

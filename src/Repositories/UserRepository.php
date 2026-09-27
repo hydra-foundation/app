@@ -18,7 +18,7 @@ use Hydra\Database\Contracts\ConnectionInterface;
  */
 final class UserRepository implements UserProviderInterface, EmailUserProviderInterface
 {
-    private const COLUMNS = 'id, username, email, email_verified_at, password_hash, role, created_at';
+    private const COLUMNS = 'id, username, email, email_verified_at, password_hash, role, created_at, avatar';
 
     public function __construct(private readonly ConnectionInterface $db) {}
 
@@ -72,6 +72,12 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
     public function updatePassword(int $id, string $passwordHash): void
     {
         $this->db->execute('UPDATE users SET password_hash = ? WHERE id = ?', [$passwordHash, $id]);
+    }
+
+    /** A qualified storage key, or null to clear it. The file itself is the caller's to store or delete. */
+    public function updateAvatar(int $id, ?string $avatar): void
+    {
+        $this->db->execute('UPDATE users SET avatar = ? WHERE id = ?', [$avatar, $id]);
     }
 
     /**

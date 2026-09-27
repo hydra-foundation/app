@@ -39,7 +39,8 @@ final class TestSchema
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 two_factor_secret TEXT NULL,
                 two_factor_enabled_at TEXT NULL,
-                two_factor_step INTEGER NULL
+                two_factor_step INTEGER NULL,
+                avatar TEXT NULL
             )'
         );
 

@@ -21,6 +21,8 @@ final readonly class User implements HasEmailInterface
         public Role $role,
         public string $createdAt,
         public ?string $emailVerifiedAt = null,
+        /** The qualified storage key of the user's picture, e.g. "private:avatars/…". */
+        public ?string $avatar = null,
     ) {}
 
     /** @param array<string, mixed> $row */
@@ -34,6 +36,7 @@ final readonly class User implements HasEmailInterface
             role: Role::coerce($row['role'] ?? null),
             createdAt: (string) $row['created_at'],
             emailVerifiedAt: isset($row['email_verified_at']) ? (string) $row['email_verified_at'] : null,
+            avatar: isset($row['avatar']) && $row['avatar'] !== '' ? (string) $row['avatar'] : null,
         );
     }
 
