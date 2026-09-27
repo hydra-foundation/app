@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\View;
 
+use App\Admin\Avatar;
 use App\Entities\User;
 use Hydra\Admin\FileUrls;
 use Hydra\Admin\ModuleRegistry;
@@ -23,12 +24,25 @@ final readonly class Avatars
         private Disks $disks,
     ) {}
 
-    /** The signed-in user's picture, or null for the icon. */
-    public function current(): ?string
+    /** Who is signed in, when it is a user of this app. */
+    public function user(): ?User
     {
         $user = $this->guard->user();
 
-        return $user instanceof User ? $this->of($user) : null;
+        return $user instanceof User ? $user : null;
+    }
+
+    /** The signed-in user's picture, or null for the icon. */
+    public function current(): ?string
+    {
+        $user = $this->user();
+
+        return $user === null ? null : $this->of($user);
+    }
+
+    public function icon(): string
+    {
+        return Avatar::ICON;
     }
 
     public function of(User $user): ?string

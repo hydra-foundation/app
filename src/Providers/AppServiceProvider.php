@@ -13,7 +13,7 @@ use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
 use App\Repositories\{ActivityRepository, ApiTokenRepository, TwoFactorRepository, UserRepository};
-use App\View\{ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
+use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
@@ -286,6 +286,7 @@ final class AppServiceProvider extends ServiceProvider
                     'versions' => $container->get(Versions::class),
                     'updates' => $container->get(UpdateCheck::class),
                     'verification' => $container->get(VerificationBanner::class),
+                    'avatars' => $container->get(Avatars::class),
                 ],
             );
         });

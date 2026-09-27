@@ -112,6 +112,27 @@ final class AccountAvatarFlowTest extends TestCase
         $this->assertNull($this->avatar());
     }
 
+    public function test_the_admin_chrome_shows_who_is_signed_in_with_the_icon_until_there_is_a_picture(): void
+    {
+        $body = $this->app->http()->get('/admin/settings')->assertOk()->body();
+
+        $this->assertStringContainsString('<div class="admin-account">', $body);
+        $this->assertStringContainsString('href="/admin/settings/account"', $body);
+        $this->assertStringContainsString('<span>clerk</span>', $body);
+        $this->assertStringContainsString('bi-person-circle', $body);
+    }
+
+    public function test_the_admin_chrome_shows_the_picture_once_there_is_one(): void
+    {
+        $this->upload($this->png());
+        $url = '/admin/files?key=' . rawurlencode((string) $this->avatar());
+
+        $body = $this->app->http()->get('/admin/settings')->assertOk()->body();
+        $account = substr($body, (int) strpos($body, '<div class="admin-account">'), 400);
+
+        $this->assertStringContainsString(htmlspecialchars($url), $account);
+    }
+
     private function upload(UploadedFile $file): TestResponse
     {
         return $this->app->http()->withFiles(['avatar' => $file])->post('/admin/settings/account', ['intent' => 'avatar']);

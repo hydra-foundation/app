@@ -14,4 +14,5 @@
     'content' => $this->section('content'),
     'footer' => trim($this->partial('partials/version')) . rtrim($this->partial('admin/partials/update-notice', ['update' => $updates->update()])),
     'banner' => trim($this->partial('partials/verify_email_banner')),
+    'account' => trim($this->partial('partials/account')),
 ]) ?>
