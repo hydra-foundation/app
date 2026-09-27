@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Admin\Presenters;
 
 use App\Entities\User;
+use App\View\Avatars;
+use App\ViewModels\AvatarViewModel;
 use App\ViewModels\ChangeEmailViewModel;
 use App\ViewModels\ChangePasswordViewModel;
 use Hydra\Admin\Contracts\PresenterInterface;
@@ -13,11 +15,14 @@ use Hydra\Http\Exceptions\NotFoundException;
 
 final class AccountPresenter implements PresenterInterface
 {
-    public function __construct(private readonly GuardInterface $guard) {}
+    public function __construct(
+        private readonly GuardInterface $guard,
+        private readonly Avatars $avatars,
+    ) {}
 
     /**
      * @param array<string, string> $errors
-     * @param string $form which of the two forms the errors belong to
+     * @param string $form which of the forms the errors belong to
      */
     public function present(array $errors = [], string $form = 'password'): array
     {
@@ -31,6 +36,7 @@ final class AccountPresenter implements PresenterInterface
             'user' => $user,
             'vm' => new ChangePasswordViewModel($form === 'password' ? $errors : []),
             'emailVm' => new ChangeEmailViewModel($form === 'email' ? $errors : []),
+            'avatarVm' => new AvatarViewModel($this->avatars->of($user), $form === 'avatar' ? $errors : []),
         ];
     }
 }

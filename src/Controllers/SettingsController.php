@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Admin\Avatar;
 use App\Admin\Presenters\AccountPresenter;
 use App\Admin\Presenters\AppearancePresenter;
 use App\Admin\Presenters\RegionalPresenter;
@@ -17,9 +18,11 @@ use App\Security\CurrentPassword;
 use App\View\Themes;
 use App\View\Timezones;
 use Hydra\Admin\Chrome;
+use Hydra\Admin\Flag;
 use Hydra\Admin\ModuleRegistry;
 use Hydra\Admin\Notice;
 use Hydra\Admin\Renderer;
+use Hydra\Admin\Uploads;
 use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
@@ -35,6 +38,7 @@ use Hydra\Validation\Rules\Required;
 use Hydra\Validation\Validator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\UploadedFileInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -52,6 +56,8 @@ final class SettingsController
     private const MAX_EMAIL = 255;
 
     private const EMAIL_FORM = 'email';
+
+    private const AVATAR_FORM = 'avatar';
 
     public function __construct(
         private readonly ModuleRegistry $registry,
@@ -72,6 +78,7 @@ final class SettingsController
         private readonly QueueInterface $queue,
         private readonly LoggerInterface $logger,
         private readonly ApiTokenStoreInterface $apiTokens,
+        private readonly Uploads $uploads,
     ) {}
 
     public function saveAccount(Request $request): Response
@@ -82,12 +89,61 @@ final class SettingsController
             throw new NotFoundException;
         }
 
-        // Two forms on one screen, and a screen submits to one handler.
+        // Three forms on one screen, and a screen submits to one handler.
         $input = ParsedBody::fromRequest($request);
 
-        return $input->string('intent') === self::EMAIL_FORM
-            ? $this->changeEmail($request, $user, $input)
-            : $this->changePassword($request, $user, $input);
+        return match ($input->string('intent')) {
+            self::EMAIL_FORM => $this->changeEmail($request, $user, $input),
+            self::AVATAR_FORM => $this->changeAvatar($request, $user, $input),
+            default => $this->changePassword($request, $user, $input),
+        };
+    }
+
+    /**
+     * The account's own picture, held to the rules the Users module holds an
+     * admin's upload to. The new file is stored before the row points at it
+     * and the old one deleted only after, so a failure partway leaves the
+     * account showing a picture rather than a hole.
+     */
+    private function changeAvatar(Request $request, User $user, ParsedBody $input): Response
+    {
+        if (Flag::of($input->string('avatar_remove'))) {
+            $this->users->updateAvatar($user->id, null);
+            $this->uploads->delete($user->avatar);
+
+            return $this->avatarChanged($request, $user);
+        }
+
+        $upload = $request->getUploadedFiles()['avatar'] ?? null;
+        $result = $this->validator->validate(['avatar' => $upload], [
+            'avatar' => [new Required('Choose a picture to upload.'), ...Avatar::rules()],
+        ]);
+
+        if (!$result->passes() || !$upload instanceof UploadedFileInterface) {
+            return $this->account($request, $result->errors(), self::AVATAR_FORM, status: Status::UnprocessableEntity);
+        }
+
+        $key = $this->uploads->store($upload, Avatar::DIRECTORY);
+
+        try {
+            $this->users->updateAvatar($user->id, $key);
+        } catch (Throwable $failure) {
+            $this->uploads->delete($key);
+
+            throw $failure;
+        }
+
+        $this->uploads->delete($user->avatar);
+
+        return $this->avatarChanged($request, $user);
+    }
+
+    /** The guard holds the user it signed in, so it is handed the new picture too. */
+    private function avatarChanged(Request $request, User $user): Response
+    {
+        $this->guard->refresh($this->users->byIdentifier($user->id) ?? throw new NotFoundException);
+
+        return $this->account($request, notice: Notice::saved());
     }
 
     private function changePassword(Request $request, User $user, ParsedBody $input): Response
