@@ -17,6 +17,14 @@ cd "$(dirname "$0")/.."
 # php-fpm runs as www-data and the scheduler as root; both write the log here.
 mkdir -p storage/logs && chmod 1777 storage/logs
 
+# Uploads, written by php-fpm as www-data: the private disk and the public one.
+mkdir -p storage/uploads storage/public && chmod 1777 storage/uploads storage/public
+
+# The web server serves the public disk through this link. Relative, so it
+# resolves on the host and in the containers alike; the same link
+# `./hydra storage:link` makes, made here because the host may have no PHP.
+[[ -e public/storage || -L public/storage ]] || ln -s ../storage/public public/storage
+
 files=(-f docker-compose.yml -f docker-compose.dev.yml)
 [[ -f docker-compose.local.yml ]] && files+=(-f docker-compose.local.yml)
 

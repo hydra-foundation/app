@@ -44,6 +44,7 @@
         "hydrakit/auth": "*",
         "hydrakit/authorization": "*",
         "hydrakit/event": "*",
+        "hydrakit/filesystem": "*",
         "hydrakit/kernel": "*",
         "hydrakit/log": "*",
         "hydrakit/mail": "*",

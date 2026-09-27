@@ -30,6 +30,7 @@ use Hydra\Database\Console\MigrateRunCommand;
 use Hydra\Database\Console\MigrateStatusCommand;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\MigrationRunner;
+use Hydra\Filesystem\Console\StorageLinkCommand;
 use Hydra\Http\Console\DownCommand;
 use Hydra\Http\Console\RouteCacheClearCommand;
 use Hydra\Http\Console\RouteCacheCommand;
@@ -89,6 +90,7 @@ $application->addLazy([
     UpCommand::class => static fn () => new UpCommand($container->get(Maintenance::class)),
     AdminRoutesCommand::class => static fn () => new AdminRoutesCommand($container->get(ModuleRegistry::class), $container->get(ViewInterface::class)),
     AdminCheckCommand::class => static fn () => new AdminCheckCommand($container->get(ModuleRegistry::class)),
+    StorageLinkCommand::class => static fn () => $container->get(StorageLinkCommand::class),
 
     MigrateRunCommand::class => static fn () => new MigrateRunCommand($container->get(MigrationRunner::class)),
     MigrateFreshCommand::class => static fn () => new MigrateFreshCommand(

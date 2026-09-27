@@ -1,6 +1,9 @@
 # Dependencies
 /vendor/
 
+# The link to the public disk; made by ./bin/dev or ./hydra storage:link
+/public/storage
+
 # Environment: never commit real secrets (keep a .env.example instead)
 /.env
 

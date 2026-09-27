@@ -12,6 +12,7 @@ use Hydra\Core\Environment;
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Core\Security\SignerServiceProvider;
+use Hydra\Filesystem\FilesystemServiceProvider;
 use Hydra\Kernel\HttpServiceProvider;
 use Hydra\Kernel\Kernel;
 use Hydra\Mail\MailServiceProvider;
@@ -45,6 +46,10 @@ final class Bootstrap
                 routeCachePath: $basePath . '/bootstrap/cache/routes.php',
             ))
             ->register(new SchedulerServiceProvider(lockPath: $basePath . '/bootstrap/cache/scheduler'))
+            ->register(new FilesystemServiceProvider(
+                storagePath: $basePath . '/storage',
+                publicPath: $basePath . '/public',
+            ))
             ->register(new AppServiceProvider)
             ->register(new AdminServiceProvider(
                 modules: AppServiceProvider::MODULES,

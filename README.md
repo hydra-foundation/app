@@ -42,9 +42,16 @@ you remember to turn off.
 
 Open **http://localhost:8080** (the port is `APP_PORT` in `.env`).
 
-`./bin/dev` also opens `storage/logs` to every user (mode 1777): PHP-FPM writes
-the log as www-data and the scheduler as root. Under the prod compose files, do
-the same once with `chmod 1777 storage/logs`.
+`./bin/dev` also opens `storage/logs`, `storage/uploads` and `storage/public` to
+every user (mode 1777): PHP-FPM writes the log and uploaded files as www-data,
+and the scheduler writes the log as root. It also links `public/storage` to the
+public disk so nginx can serve it. Under the prod compose files, do the same
+once:
+
+```bash
+chmod 1777 storage/logs storage/uploads storage/public
+./hydra storage:link
+```
 
 **Without Docker (public site only):**
 

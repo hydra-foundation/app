@@ -35,6 +35,7 @@
         "hydrakit/auth": "^0.9",
         "hydrakit/authorization": "^0.9",
         "hydrakit/event": "^0.9",
+        "hydrakit/filesystem": "^0.9",
         "hydrakit/kernel": "^0.9",
         "hydrakit/log": "^0.9",
         "hydrakit/mail": "^0.9",

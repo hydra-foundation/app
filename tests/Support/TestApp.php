@@ -27,6 +27,7 @@ use Hydra\Csrf\Testing\CarriesCsrfToken;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\Event\EventServiceProvider;
+use Hydra\Filesystem\FilesystemServiceProvider;
 use Hydra\Http\Maintenance;
 use Hydra\Http\Testing\Client;
 use Hydra\Http\Testing\TestResponse;
@@ -93,6 +94,12 @@ final class TestApp
                 routeCachePath: '/dev/null',
             ))
             ->register(new SchedulerServiceProvider(lockPath: sys_get_temp_dir() . '/hydra-app-locks-' . getmypid()))
+            // A directory per boot: an upload one test makes is not a file
+            // the next one finds.
+            ->register(new FilesystemServiceProvider(
+                storagePath: sys_get_temp_dir() . '/hydra-app-storage-' . getmypid() . '-' . bin2hex(random_bytes(4)),
+                publicPath: sys_get_temp_dir() . '/hydra-app-public-' . getmypid(),
+            ))
             ->register(new AppServiceProvider)
             ->register(new AdminServiceProvider(
                 modules: AppServiceProvider::MODULES,
