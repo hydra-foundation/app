@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Modules;
 
 use App\Authorization\AccessAdmin;
-use Hydra\Admin\Bytes;
+use Hydra\Admin\Widgets\Readable;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
@@ -66,7 +66,7 @@ final class FilesModule implements ModuleInterface
                 Field::text('name')->sortable()->searchable(),
                 Field::select('kind', self::KINDS)->labelled('Type')->filterable(),
                 Field::number('size')->sortable()
-                    ->format(static fn (mixed $value): string => Bytes::human((int) $value)),
+                    ->format(static fn (mixed $value): string => (string) Readable::bytes((float) $value)),
                 Field::select('disk', self::DISKS)->filterable(),
                 Field::datetime('modified_at')->labelled('Modified')->sortable()->relative(),
                 Field::select('status', self::STATUSES)->filterable()

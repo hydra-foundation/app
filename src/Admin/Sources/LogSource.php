@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Sources;
 
 use App\Config\LogConfig;
-use Hydra\Admin\Bytes;
+use Hydra\Admin\Widgets\Readable;
 use Hydra\Admin\Contracts\DescribesColumnsInterface;
 use Hydra\Admin\Contracts\RowSourceInterface;
 use Hydra\Admin\Contracts\SourceInterface;
@@ -41,7 +41,7 @@ final class LogSource implements SourceInterface, RowSourceInterface, DescribesC
             array_slice($rows, $criteria->offset(), $criteria->perPage),
             count($rows),
             $criteria,
-            'Reading the last ' . Bytes::human($this->config->readBytes) . ' of the log.',
+            'Reading the last ' . Readable::bytes($this->config->readBytes) . ' of the log.',
         );
     }
 

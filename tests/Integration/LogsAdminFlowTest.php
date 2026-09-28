@@ -60,7 +60,7 @@ final class LogsAdminFlowTest extends TestCase
         $this->assertLessThan(strpos($body, 'Mail sent to ada@example.test'), strpos($body, 'Slow query'));
         $this->assertStringContainsString('>Error</td>', $body);
         $this->assertStringContainsString('<time datetime=', $body);
-        $this->assertStringContainsString('Reading the last 2 MB of the log.', $body);
+        $this->assertStringContainsString('Reading the last 2.0MB of the log.', $body);
         $this->assertStringNotContainsString('#0 ', $body);
     }
 
