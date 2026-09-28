@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Sources;
 
 use App\Config\LogConfig;
+use Hydra\Admin\Bytes;
 use Hydra\Admin\Contracts\DescribesColumnsInterface;
 use Hydra\Admin\Contracts\RowSourceInterface;
 use Hydra\Admin\Contracts\SourceInterface;
@@ -40,7 +41,7 @@ final class LogSource implements SourceInterface, RowSourceInterface, DescribesC
             array_slice($rows, $criteria->offset(), $criteria->perPage),
             count($rows),
             $criteria,
-            'Reading the last ' . self::size($this->config->readBytes) . ' of the log.',
+            'Reading the last ' . Bytes::human($this->config->readBytes) . ' of the log.',
         );
     }
 
@@ -98,14 +99,5 @@ final class LogSource implements SourceInterface, RowSourceInterface, DescribesC
         }
 
         return $criteria->search === null || stripos((string) $row['message'], $criteria->search) !== false;
-    }
-
-    private static function size(int $bytes): string
-    {
-        $mb = $bytes / 1_048_576;
-
-        return $mb >= 1
-            ? ($mb == floor($mb) ? (int) $mb : number_format($mb, 1)) . ' MB'
-            : (int) round($bytes / 1024) . ' KB';
     }
 }

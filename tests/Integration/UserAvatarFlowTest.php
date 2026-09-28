@@ -55,7 +55,7 @@ final class UserAvatarFlowTest extends TestCase
     public function test_the_list_and_the_user_screen_show_it(): void
     {
         $this->save($this->png());
-        $url = '/admin/files?key=' . rawurlencode((string) $this->avatar());
+        $url = '/admin/file?key=' . rawurlencode((string) $this->avatar());
 
         $this->assertStringContainsString(htmlspecialchars($url), $this->app->http()->get('/admin/users')->assertOk()->body());
         $this->assertStringContainsString(htmlspecialchars($url), $this->app->http()->get("/admin/users/{$this->clerk}")->assertOk()->body());
@@ -92,7 +92,7 @@ final class UserAvatarFlowTest extends TestCase
 
         $this->assertSame('Clerk Portrait.png', $this->avatarName());
 
-        $url = '/admin/files?key=' . rawurlencode((string) $this->avatar()) . '&name=Clerk%20Portrait.png';
+        $url = '/admin/file?key=' . rawurlencode((string) $this->avatar()) . '&name=Clerk%20Portrait.png';
         $this->assertStringContainsString(
             htmlspecialchars($url),
             $this->app->http()->get("/admin/users/{$this->clerk}/edit")->assertOk()->body(),
@@ -125,7 +125,7 @@ final class UserAvatarFlowTest extends TestCase
     public function test_someone_signed_out_cannot_fetch_it(): void
     {
         $this->save($this->png());
-        $url = '/admin/files?key=' . rawurlencode((string) $this->avatar());
+        $url = '/admin/file?key=' . rawurlencode((string) $this->avatar());
 
         $this->app->http()->post('/logout');
 

@@ -56,7 +56,7 @@ final class AccountAvatarFlowTest extends TestCase
     public function test_the_account_screen_shows_it_afterwards_and_serves_it(): void
     {
         $this->upload($this->png());
-        $url = '/admin/files?key=' . rawurlencode((string) $this->avatar());
+        $url = '/admin/file?key=' . rawurlencode((string) $this->avatar());
 
         $this->assertStringContainsString(htmlspecialchars($url), $this->app->http()->get('/admin/settings/account')->body());
         $this->app->http()->get($url)->assertOk()->assertHeader('Content-Type', 'image/png');
@@ -141,7 +141,7 @@ final class AccountAvatarFlowTest extends TestCase
     public function test_the_admin_chrome_shows_the_picture_once_there_is_one(): void
     {
         $this->upload($this->png());
-        $url = '/admin/files?key=' . rawurlencode((string) $this->avatar());
+        $url = '/admin/file?key=' . rawurlencode((string) $this->avatar());
 
         $body = $this->app->http()->get('/admin/settings')->assertOk()->body();
         $account = substr($body, (int) strpos($body, '<div class="admin-account">'), 400);
