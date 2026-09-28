@@ -23,6 +23,8 @@ final readonly class User implements HasEmailInterface
         public ?string $emailVerifiedAt = null,
         /** The qualified storage key of the user's picture, e.g. "private:avatars/…". */
         public ?string $avatar = null,
+        /** What the picture was called when it was uploaded, if it was kept. */
+        public ?string $avatarName = null,
     ) {}
 
     /** @param array<string, mixed> $row */
@@ -37,6 +39,7 @@ final readonly class User implements HasEmailInterface
             createdAt: (string) $row['created_at'],
             emailVerifiedAt: isset($row['email_verified_at']) ? (string) $row['email_verified_at'] : null,
             avatar: isset($row['avatar']) && $row['avatar'] !== '' ? (string) $row['avatar'] : null,
+            avatarName: isset($row['avatar_name']) && $row['avatar_name'] !== '' ? (string) $row['avatar_name'] : null,
         );
     }
 

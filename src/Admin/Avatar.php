@@ -27,7 +27,7 @@ final class Avatar
     /** The column, as the list and the user screen show it. */
     public static function field(): Field
     {
-        return Field::image('avatar')->labelled('Avatar')->fallbackIcon(self::ICON);
+        return Field::image('avatar')->labelled('Avatar')->fallbackIcon(self::ICON)->nameFrom('avatar_name');
     }
 
     /** The control on the Users module's forms. */
@@ -39,6 +39,7 @@ final class Avatar
             ->accepts(...self::TYPES)
             ->maxSize(self::MAX_BYTES)
             ->removable()
+            ->keepsName()
             ->help(self::HELP);
     }
 

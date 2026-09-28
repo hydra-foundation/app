@@ -86,6 +86,32 @@ final class UserAvatarFlowTest extends TestCase
         $this->assertFalse($this->stored($avatar));
     }
 
+    public function test_the_name_it_was_uploaded_under_is_kept_and_downloaded_under(): void
+    {
+        $this->save($this->png('Clerk Portrait.png'))->assertStatus(302);
+
+        $this->assertSame('Clerk Portrait.png', $this->avatarName());
+
+        $url = '/admin/files?key=' . rawurlencode((string) $this->avatar()) . '&name=Clerk%20Portrait.png';
+        $this->assertStringContainsString(
+            htmlspecialchars($url),
+            $this->app->http()->get("/admin/users/{$this->clerk}/edit")->assertOk()->body(),
+        );
+        $this->assertStringContainsString(
+            "filename*=UTF-8''Clerk%20Portrait.png",
+            $this->app->http()->get($url)->assertOk()->header('Content-Disposition'),
+        );
+    }
+
+    public function test_removing_it_clears_its_name_too(): void
+    {
+        $this->save($this->png('Clerk Portrait.png'));
+
+        $this->save(null, ['avatar_remove' => '1'])->assertStatus(302);
+
+        $this->assertNull($this->avatarName());
+    }
+
     public function test_deleting_the_user_deletes_the_avatar(): void
     {
         $this->save($this->png());
@@ -124,6 +150,11 @@ final class UserAvatarFlowTest extends TestCase
         return $this->app->get(UserRepository::class)->byIdentifier($this->clerk)?->avatar;
     }
 
+    private function avatarName(): ?string
+    {
+        return $this->app->get(UserRepository::class)->byIdentifier($this->clerk)?->avatarName;
+    }
+
     private function stored(string $qualified): bool
     {
         [$disk, $key] = $this->app->get(Disks::class)->locate($qualified);
@@ -131,10 +162,10 @@ final class UserAvatarFlowTest extends TestCase
         return $disk->exists($key);
     }
 
-    private function png(): UploadedFile
+    private function png(string $name = 'me.png'): UploadedFile
     {
         $bytes = base64_decode(self::PNG);
 
-        return new UploadedFile(Stream::create($bytes), strlen($bytes), UPLOAD_ERR_OK, 'me.png', 'image/png');
+        return new UploadedFile(Stream::create($bytes), strlen($bytes), UPLOAD_ERR_OK, $name, 'image/png');
     }
 }

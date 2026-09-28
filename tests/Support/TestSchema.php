@@ -40,7 +40,8 @@ final class TestSchema
                 two_factor_secret TEXT NULL,
                 two_factor_enabled_at TEXT NULL,
                 two_factor_step INTEGER NULL,
-                avatar TEXT NULL
+                avatar TEXT NULL,
+                avatar_name TEXT NULL
             )'
         );
 

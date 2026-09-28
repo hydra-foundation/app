@@ -186,6 +186,32 @@ final class UserSourceTest extends WritableSourceContractTestCase
         $this->assertNull($this->avatarOf(3));
     }
 
+    public function test_the_avatar_s_name_is_written_beside_its_key(): void
+    {
+        $id = $this->source->create([
+            'username' => 'linus', 'email' => 'linus@example.com', 'role' => 'user', 'password' => 'secret-enough',
+            'avatar' => 'private:avatars/abc.png', 'avatar_name' => 'Linus.png',
+        ]);
+        $this->assertSame('Linus.png', $this->avatarNameOf((int) $id));
+
+        $row = ['username' => 'linus', 'email' => 'linus@example.com', 'role' => 'user'];
+        $this->source->update($id, [...$row, 'avatar' => 'private:avatars/def.png', 'avatar_name' => 'New.png']);
+        $this->assertSame('New.png', $this->avatarNameOf((int) $id));
+
+        $this->source->update($id, [...$row, 'avatar' => null, 'avatar_name' => null]);
+        $this->assertNull($this->avatarNameOf((int) $id));
+    }
+
+    public function test_a_name_is_never_kept_without_a_key(): void
+    {
+        $this->source->update('3', [
+            'username' => 'alan', 'email' => 'alan@example.com', 'role' => 'user',
+            'avatar' => null, 'avatar_name' => 'orphan.png',
+        ]);
+
+        $this->assertNull($this->avatarNameOf(3));
+    }
+
     private function signedInAs(int $id): UserSource
     {
         $db = new PdoConnection($this->pdo);
@@ -213,5 +239,13 @@ final class UserSourceTest extends WritableSourceContractTestCase
     private function guard(): GuardInterface
     {
         return FakeGuard::signedInAs(new FakeUser(99));
+    }
+
+    private function avatarNameOf(int $id): ?string
+    {
+        $statement = $this->pdo->prepare('SELECT avatar_name FROM users WHERE id = ?');
+        $statement->execute([$id]);
+
+        return $statement->fetchColumn() ?: null;
     }
 }

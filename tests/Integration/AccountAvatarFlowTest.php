@@ -84,6 +84,22 @@ final class AccountAvatarFlowTest extends TestCase
         $this->assertFalse($this->stored($old));
     }
 
+    public function test_the_name_it_was_uploaded_under_is_kept(): void
+    {
+        $this->upload($this->png('Holiday.png'))->assertOk();
+
+        $this->assertSame('Holiday.png', $this->avatarName());
+    }
+
+    public function test_removing_it_clears_its_name_too(): void
+    {
+        $this->upload($this->png('Holiday.png'));
+
+        $this->app->http()->post('/admin/settings/account', ['intent' => 'avatar', 'avatar_remove' => '1'])->assertOk();
+
+        $this->assertNull($this->avatarName());
+    }
+
     public function test_something_that_is_not_an_image_is_refused_with_a_reason(): void
     {
         $script = new UploadedFile(Stream::create("<?php echo 1;\n"), 14, UPLOAD_ERR_OK, 'me.png', 'image/png');
@@ -143,6 +159,11 @@ final class AccountAvatarFlowTest extends TestCase
         return $this->app->get(UserRepository::class)->byIdentifier($this->clerk)?->avatar;
     }
 
+    private function avatarName(): ?string
+    {
+        return $this->app->get(UserRepository::class)->byIdentifier($this->clerk)?->avatarName;
+    }
+
     private function stored(string $qualified): bool
     {
         [$disk, $key] = $this->app->get(Disks::class)->locate($qualified);
@@ -150,10 +171,10 @@ final class AccountAvatarFlowTest extends TestCase
         return $disk->exists($key);
     }
 
-    private function png(): UploadedFile
+    private function png(string $name = 'me.png'): UploadedFile
     {
         $bytes = base64_decode(self::PNG);
 
-        return new UploadedFile(Stream::create($bytes), strlen($bytes), UPLOAD_ERR_OK, 'me.png', 'image/png');
+        return new UploadedFile(Stream::create($bytes), strlen($bytes), UPLOAD_ERR_OK, $name, 'image/png');
     }
 }

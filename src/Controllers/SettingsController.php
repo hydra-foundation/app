@@ -126,7 +126,7 @@ final class SettingsController
         $key = $this->uploads->store($upload, Avatar::DIRECTORY);
 
         try {
-            $this->users->updateAvatar($user->id, $key);
+            $this->users->updateAvatar($user->id, $key, $this->uploads->nameFor($upload, $key));
         } catch (Throwable $failure) {
             $this->uploads->delete($key);
 
