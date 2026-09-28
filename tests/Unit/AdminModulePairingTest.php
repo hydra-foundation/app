@@ -21,7 +21,12 @@ use Hydra\Auth\Testing\FakeGuard;
 use Hydra\Auth\Testing\FakeHasher;
 use Hydra\Auth\Testing\FakeUser;
 use Hydra\Console\ExitCode;
+use Hydra\Admin\Files\FileReferences;
 use Hydra\Core\Clock\SystemClock;
+use Hydra\Filesystem\Disks;
+use Hydra\Filesystem\LocalPublicStorage;
+use Hydra\Filesystem\LocalStorage;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
@@ -102,6 +107,15 @@ final class AdminModulePairingTest extends TestCase
         $container->instance(HasherInterface::class, new FakeHasher);
         $container->instance(GuardInterface::class, $this->guard());
         $container->instance(ApiTokenStoreInterface::class, new ApiTokenRepository($db));
+        // Disks in a directory nobody writes to: listing one that does not
+        // exist is empty, and nothing is left to clean up.
+        $streams = new Psr17Factory;
+        $root = sys_get_temp_dir() . '/hydra-pairing-' . bin2hex(random_bytes(4));
+        $disks = new Disks(new LocalStorage($root . '/private', $streams), new LocalPublicStorage($root . '/public', '/storage', $streams));
+        $container->instance(Disks::class, $disks);
+        // Lazily: the registry is the one this container is being built for.
+        $container->singleton(ModuleRegistry::class, fn () => $this->registry);
+        $container->singleton(FileReferences::class, fn () => new FileReferences($this->registry, $disks, new SystemClock));
 
         return $container;
     }
