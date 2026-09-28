@@ -99,6 +99,20 @@ final class FilesAdminFlowTest extends TestCase
         $this->assertFalse($this->stored($stray));
     }
 
+    public function test_the_dashboard_card_counts_each_disk_and_links_to_the_orphans(): void
+    {
+        $this->uploadAvatar('Clerk Portrait.png');
+        $this->stray(2 * 86_400);
+
+        $card = $this->app->http()->get('/admin/dashboard/w/files')->assertOk()->body();
+
+        $this->assertStringContainsString('Private', $card);
+        $this->assertStringContainsString('2 files', $card);
+        $this->assertStringContainsString('href="/admin/files?status=orphan"', $card);
+        $this->assertStringContainsString('1 orphan', $card);
+        $this->assertStringContainsString('Clerk Portrait.png', $card);
+    }
+
     public function test_someone_who_is_not_an_admin_is_kept_out(): void
     {
         $this->app->http()->post('/logout');

@@ -35,7 +35,7 @@ final class AdminGatesFlowTest extends TestCase
     /** @return iterable<string, array{string}> */
     public static function cards(): iterable
     {
-        foreach (['totals', 'traffic', 'paths', 'newest', 'changes', 'queue'] as $card) {
+        foreach (['totals', 'traffic', 'paths', 'newest', 'changes', 'queue', 'files'] as $card) {
             yield $card => [$card];
         }
     }

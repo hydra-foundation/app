@@ -12,6 +12,7 @@ use App\Admin\Widgets\TotalsWidget;
 use App\Admin\Widgets\TrafficWidget;
 use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
+use Hydra\Admin\Files\FilesWidget;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Screens\DashboardScreen;
 use Hydra\Admin\Shape;
@@ -90,6 +91,15 @@ final class DashboardModule implements ModuleInterface
                             ->refreshEvery(60)
                             ->requires(AccessAdmin::class)
                             ->from(QueueWidget::class),
+                        Widget::make('files', 'admin/widgets/files')
+                            ->titled('Files')
+                            ->withIcon('folder2-open')
+                            ->spanning(4)
+                            // Two disks, the orphans, and the newest five.
+                            ->reserving(8)
+                            ->shaped(Shape::Rows)
+                            ->requires(AccessAdmin::class)
+                            ->from(FilesWidget::class),
                     ),
             );
     }
