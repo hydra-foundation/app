@@ -21,6 +21,7 @@ use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Admin\Updates\UpdateCheck;
 use Hydra\Auth\AuthenticateBearerMiddleware;
+use Hydra\Auth\TrackSignInMiddleware;
 use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, SignInStoreInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
@@ -144,6 +145,9 @@ final class AppServiceProvider extends ServiceProvider
         // After the session, which a bearer request skips; ahead of everything
         // that asks the guard who this is.
         AuthenticateBearerMiddleware::class,
+        // After both, so it knows whether this is a sign-in or a token; it
+        // writes on the way out, so the request that signs in is recorded too.
+        TrackSignInMiddleware::class,
         RecordActivityMiddleware::class,
         RedirectUnauthenticatedMiddleware::class,
         VerifyCsrfTokenMiddleware::class,

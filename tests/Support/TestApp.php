@@ -13,6 +13,7 @@ use Hydra\Auth\AuthConfig;
 use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Auth\AuthServiceProvider;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Auth\SessionGuard;
 use Hydra\Authorization\AuthorizationServiceProvider;
@@ -44,6 +45,7 @@ use Hydra\Session\Contracts\SessionInterface;
 use Hydra\Session\Testing\ArraySessionServiceProvider;
 use Hydra\Throttle\ThrottleServiceProvider;
 use PDO;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -197,10 +199,15 @@ final class TestApp
         $session = $this->container->get(SessionInterface::class);
         $session->start();
 
+        // Built as AuthServiceProvider builds it, sign-in records included, so
+        // a revoked sign-in reads as signed out here as it would in the app.
         return new SessionGuard(
             $session,
             $this->container->get(UserProviderInterface::class),
             $this->container->get(HasherInterface::class),
+            null,
+            $this->container->get(SignInStoreInterface::class),
+            $this->container->get(ClockInterface::class),
         );
     }
 
