@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Repositories\ApiTokenRepository;
+use App\Repositories\SignInRepository;
 use App\Config\LogConfig;
 use DateTimeZone;
 use App\Providers\AppServiceProvider;
@@ -16,6 +17,7 @@ use Hydra\Admin\ModuleRegistry;
 use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Auth\Testing\ArrayUserProvider;
 use Hydra\Auth\Testing\FakeGuard;
@@ -108,6 +110,7 @@ final class AdminModulePairingTest extends TestCase
         $container->instance(HasherInterface::class, new FakeHasher);
         $container->instance(GuardInterface::class, $this->guard());
         $container->instance(ApiTokenStoreInterface::class, new ApiTokenRepository($db));
+        $container->instance(SignInStoreInterface::class, new SignInRepository($db));
         $container->instance(UserProviderInterface::class, new ArrayUserProvider);
         // Disks in a directory nobody writes to: listing one that does not
         // exist is empty, and nothing is left to clean up.
