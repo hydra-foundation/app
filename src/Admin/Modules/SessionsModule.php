@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Admin\Modules;
 
+use App\Admin\Actions\SignOutOwnerEverywhere;
 use App\Admin\Sources\SessionSource;
 use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
+use Hydra\Admin\Screens\ActionScreen;
 use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
@@ -46,6 +48,10 @@ final class SessionsModule implements ModuleInterface
                     ->labelled('Revoke')
                     ->confirm('Sign this browser out? It is sent to sign in on its next request.')
                     ->when(static fn (array $row): bool => $row['you'] === ''),
+                ActionScreen::row('sign-out-everywhere')
+                    ->labelled('Sign out everywhere')
+                    ->confirm('Sign this person out of every browser and revoke every API token they have?')
+                    ->runs(SignOutOwnerEverywhere::class),
             );
     }
 }

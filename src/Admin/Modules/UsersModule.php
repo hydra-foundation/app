@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Modules;
 
+use App\Admin\Actions\SignOutUserEverywhere;
 use App\Admin\Avatar;
 use App\Admin\Sources\UserSource;
 use App\Authorization\AccessAdmin;
@@ -13,6 +14,7 @@ use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Input;
 use Hydra\Admin\Link;
+use Hydra\Admin\Screens\ActionScreen;
 use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ExportScreen;
 use Hydra\Admin\Screens\FormScreen;
@@ -69,6 +71,10 @@ final class UsersModule implements ModuleInterface
                     Avatar::input(),
                 ),
                 DeleteScreen::make()->confirm('Delete this user? This cannot be undone.'),
+                ActionScreen::row('sign-out-everywhere')
+                    ->labelled('Sign out everywhere')
+                    ->confirm('Sign this person out of every browser and revoke every API token they have?')
+                    ->runs(SignOutUserEverywhere::class),
                 ExportScreen::make(),
             );
     }
