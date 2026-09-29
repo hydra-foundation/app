@@ -337,6 +337,7 @@ final class QueueAdminFlowTest extends TestCase
                 '/admin/system-health',
                 '/admin/users',
                 '/admin/access',
+                '/admin/rate-limits',
                 '/admin/files',
                 '/admin/activity',
                 '/admin/audit',

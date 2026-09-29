@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Repositories\ApiTokenRepository;
+use App\Repositories\LockoutRepository;
 use App\Repositories\SignInRepository;
 use App\Config\LogConfig;
 use DateTimeZone;
@@ -36,6 +37,10 @@ use Hydra\Session\Stores\ArraySessionStore;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\PhpDi\Container;
+use Hydra\Throttle\RateLimiter;
+use Hydra\Throttle\Contracts\LockoutStoreInterface;
+use Hydra\Http\ClientIpResolver;
+use Hydra\Cache\ArrayStore;
 use Hydra\Queue\DatabaseQueue;
 use Hydra\Scheduler\DatabaseRunLog;
 use Hydra\Scheduler\Schedule;
@@ -113,6 +118,8 @@ final class AdminModulePairingTest extends TestCase
         $container->instance(GuardInterface::class, $this->guard());
         $container->instance(ApiTokenStoreInterface::class, new ApiTokenRepository($db));
         $container->instance(SignInStoreInterface::class, new SignInRepository($db));
+        $container->instance(LockoutStoreInterface::class, new LockoutRepository($db));
+        $container->instance(RateLimiter::class, new RateLimiter(new ArrayStore, new ClientIpResolver));
         $container->instance(SessionGuard::class, new SessionGuard(new ArraySessionStore, new ArrayUserProvider, new FakeHasher));
         $container->instance(UserProviderInterface::class, new ArrayUserProvider);
         // Disks in a directory nobody writes to: listing one that does not

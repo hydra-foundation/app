@@ -45,6 +45,7 @@ final class AuditAdminEventsListener
         'users' => ['username', 'role'],
         'access' => ['owner', 'name'],
         'sessions' => ['owner', 'ip'],
+        'rate-limits' => ['policy', 'identity'],
     ];
 
     public function __construct(
