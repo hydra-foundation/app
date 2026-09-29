@@ -69,6 +69,16 @@ final class AccessAdminFlowTest extends TestCase
         $this->assertStringContainsString('bi-key', $body);
     }
 
+    public function test_the_strip_names_the_tokens_list_and_the_heading_names_the_family(): void
+    {
+        $this->login('boss');
+        $body = $this->body('/admin/access');
+
+        $this->assertMatchesRegularExpression('~<a class="admin-tab active"\s+href="/admin/access"[^>]*>API tokens</a>~', $body);
+        $this->assertMatchesRegularExpression('~<a class="admin-tab"\s+href="/admin/sessions"[^>]*>Sessions</a>~', $body);
+        $this->assertStringContainsString('<title>Access · Admin</title>', $body);
+    }
+
     public function test_a_time_that_never_came_says_never(): void
     {
         $this->issue('alice', 'Forever');

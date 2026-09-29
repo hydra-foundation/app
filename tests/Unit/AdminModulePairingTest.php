@@ -19,6 +19,7 @@ use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
+use Hydra\Auth\SessionGuard;
 use Hydra\Auth\Testing\ArrayUserProvider;
 use Hydra\Auth\Testing\FakeGuard;
 use Hydra\Auth\Testing\FakeHasher;
@@ -31,6 +32,7 @@ use Hydra\Filesystem\LocalPublicStorage;
 use Hydra\Filesystem\LocalStorage;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Hydra\Core\Contracts\ContainerInterface;
+use Hydra\Session\Stores\ArraySessionStore;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\PdoConnection;
 use Hydra\PhpDi\Container;
@@ -111,6 +113,7 @@ final class AdminModulePairingTest extends TestCase
         $container->instance(GuardInterface::class, $this->guard());
         $container->instance(ApiTokenStoreInterface::class, new ApiTokenRepository($db));
         $container->instance(SignInStoreInterface::class, new SignInRepository($db));
+        $container->instance(SessionGuard::class, new SessionGuard(new ArraySessionStore, new ArrayUserProvider, new FakeHasher));
         $container->instance(UserProviderInterface::class, new ArrayUserProvider);
         // Disks in a directory nobody writes to: listing one that does not
         // exist is empty, and nothing is left to clean up.
