@@ -52,7 +52,10 @@ final class SettingsFlowTest extends TestCase
         // links, so the back button works between categories.
         $this->assertStringContainsString('Admin / Application / Settings / Appearance', $this->crumbs($body));
         $this->assertStringContainsString('href="/admin/settings"', $body);
-        $this->assertStringContainsString('class="settings-tab active"', $body);
+        // The admin's own strip, the one a family of modules draws, so tabs
+        // across the top of a module look one way wherever they are.
+        $this->assertMatchesRegularExpression('~class="admin-tabs"[^>]*aria-label="Settings"~', $body);
+        $this->assertMatchesRegularExpression('~class="admin-tab active"\s+href="/admin/settings/appearance"[^>]*aria-current="page"~', $body);
     }
 
     public function test_the_picker_offers_every_palette_on_disk(): void

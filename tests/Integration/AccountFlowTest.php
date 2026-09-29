@@ -35,7 +35,7 @@ final class AccountFlowTest extends TestCase
             ->assertOk()
             ->assertSee('clerk@example.com')
             ->assertSee('Not verified')
-            ->assertSee('class="settings-tab active"');
+            ->assertSee('class="admin-tab active"');
     }
 
     public function test_the_new_password_signs_in_and_the_old_one_does_not(): void

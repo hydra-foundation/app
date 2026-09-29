@@ -1,16 +1,10 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var string $current */ ?>
-<?php /* Each category is a URL, so these are links and the browser keeps the
-   history. They swap the frame like every other admin link. */ ?>
-<nav class="settings-nav" hx-nonce="<?= $this->e($this->cspNonce()) ?>" aria-label="Settings categories">
-    <?php foreach (['' => 'General', 'account' => 'Account', 'security' => 'Security', 'tokens' => 'API tokens', 'appearance' => 'Appearance', 'regional' => 'Regional'] as $path => $label): ?>
-        <?php $url = rtrim('/admin/settings/' . $path, '/') ?>
-        <a class="settings-tab<?= $path === $current ? ' active' : '' ?>"
-           href="<?= $this->e($url) ?>"
-           hx-nonce="<?= $this->e($this->cspNonce()) ?>"
-           hx-get="<?= $this->e($url) ?>"
-           hx-target="#admin-frame"
-           hx-push-url="true"
-           <?= $path === $current ? 'aria-current="page"' : '' ?>><?= $this->e($label) ?></a>
-    <?php endforeach ?>
-</nav>
+<?php /* Each category is a screen of this module, not a module of its own, so
+   the list is written here. The strip itself is the admin's, the one a family
+   of modules draws, so tabs across a module look one way everywhere. */ ?>
+<?php $tabs = [] ?>
+<?php foreach (['' => 'General', 'account' => 'Account', 'security' => 'Security', 'tokens' => 'API tokens', 'appearance' => 'Appearance', 'regional' => 'Regional'] as $path => $label): ?>
+    <?php $tabs[] = ['label' => $label, 'url' => rtrim('/admin/settings/' . $path, '/'), 'active' => $path === $current] ?>
+<?php endforeach ?>
+<?= $this->partial('admin/partials/tabs', ['tabs' => $tabs, 'label' => 'Settings']) ?>
