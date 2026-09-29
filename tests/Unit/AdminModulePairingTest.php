@@ -16,6 +16,8 @@ use Hydra\Admin\ModuleRegistry;
 use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Contracts\UserProviderInterface;
+use Hydra\Auth\Testing\ArrayUserProvider;
 use Hydra\Auth\Testing\FakeGuard;
 use Hydra\Auth\Testing\FakeHasher;
 use Hydra\Auth\Testing\FakeUser;
@@ -106,6 +108,7 @@ final class AdminModulePairingTest extends TestCase
         $container->instance(HasherInterface::class, new FakeHasher);
         $container->instance(GuardInterface::class, $this->guard());
         $container->instance(ApiTokenStoreInterface::class, new ApiTokenRepository($db));
+        $container->instance(UserProviderInterface::class, new ArrayUserProvider);
         // Disks in a directory nobody writes to: listing one that does not
         // exist is empty, and nothing is left to clean up.
         $streams = new Psr17Factory;

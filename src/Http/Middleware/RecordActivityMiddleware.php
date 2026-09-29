@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use App\Entities\Activity;
 use App\Entities\User;
 use App\Repositories\ActivityRepository;
+use Hydra\Auth\ApiTokens;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\ClientIpResolver;
 use Hydra\Http\Exceptions\HttpException;
@@ -99,12 +100,12 @@ final class RecordActivityMiddleware implements MiddlewareInterface
                 username: $user instanceof User ? $user->username : null,
                 method: $request->getMethod(),
                 path: $uri->getPath(),
-                query: $uri->getQuery(),
+                query: ApiTokens::redact($uri->getQuery()),
                 status: $status,
                 durationMs: intdiv(hrtime(true) - $started, 1_000_000),
                 ip: $this->clients->resolve($request),
                 userAgent: $this->header($request, 'User-Agent'),
-                referer: $this->header($request, 'Referer'),
+                referer: $this->redacted($this->header($request, 'Referer')),
                 requestId: $this->requestId($request),
             ));
         } catch (Throwable $e) {
@@ -133,6 +134,16 @@ final class RecordActivityMiddleware implements MiddlewareInterface
         $value = $request->getHeaderLine($name);
 
         return $value === '' ? null : $value;
+    }
+
+    /**
+     * Every signed-in user can read this table, so an API token pasted into a
+     * URL — an admin looking one up in Access — is cut back to its prefix
+     * rather than kept readable for as long as the row.
+     */
+    private function redacted(?string $value): ?string
+    {
+        return $value === null ? null : ApiTokens::redact($value);
     }
 
     private function requestId(ServerRequestInterface $request): ?string

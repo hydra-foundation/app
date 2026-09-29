@@ -43,6 +43,7 @@ final class AuditAdminEventsListener
      */
     private const AUDITED = [
         'users' => ['username', 'role'],
+        'access' => ['owner', 'name'],
     ];
 
     public function __construct(
