@@ -66,6 +66,17 @@ final class TestSchema
         );
 
         $pdo->exec(
+            'CREATE TABLE sign_ins (
+                id TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                created_at INTEGER NOT NULL,
+                last_seen_at INTEGER NOT NULL,
+                ip TEXT NULL,
+                user_agent TEXT NULL
+            )'
+        );
+
+        $pdo->exec(
             'CREATE TABLE user_preferences (
                 user_id INTEGER NOT NULL,
                 name TEXT NOT NULL,
