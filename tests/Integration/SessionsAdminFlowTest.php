@@ -8,12 +8,16 @@ use App\Entities\Role;
 use App\Tests\Support\TestApp;
 use DateTimeImmutable;
 use Hydra\Auth\Contracts\AuthenticatableInterface;
+use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
+use Hydra\Auth\SessionGuard;
 use Hydra\Auth\SignIn;
 use Hydra\Http\Testing\Client;
+use Hydra\Session\Stores\ArraySessionStore;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
+use Psr\Clock\ClockInterface;
 use RuntimeException;
 
 /**
@@ -128,6 +132,107 @@ final class SessionsAdminFlowTest extends TestCase
 
         $this->http->get('/admin/sessions')->assertStatus(403);
         $this->http->get("/admin/sessions/{$signIn->id}")->assertStatus(403);
+    }
+
+    public function test_a_revoked_sign_in_is_signed_out_on_its_next_request(): void
+    {
+        [$elsewhere, $session] = $this->browserSignedIn('alice');
+        $this->login('boss');
+
+        $this->http->post("/admin/sessions/{$elsewhere}/delete")->assertStatus(302);
+
+        $this->assertNull($this->signIns->find($elsewhere));
+        $this->assertNull($this->guardOver($session)->user());
+    }
+
+    public function test_every_other_sign_in_offers_a_revoke_and_the_admins_own_does_not(): void
+    {
+        $other = $this->signIn('alice', 'a', '203.0.113.7', 'Firefox');
+        $this->login('boss');
+        $mine = $this->mine();
+        $body = $this->body('/admin/sessions');
+
+        $this->assertStringContainsString("/admin/sessions/{$other->id}/delete", $body);
+        $this->assertStringNotContainsString("/admin/sessions/{$mine}/delete", $body);
+        $this->assertStringContainsString('>Revoke</button>', $body);
+    }
+
+    public function test_the_admins_own_sign_in_is_refused_by_the_server_too(): void
+    {
+        $this->login('boss');
+        $mine = $this->mine();
+
+        $this->http->post("/admin/sessions/{$mine}/delete")
+            ->assertStatus(422)->assertSee('That is your own sign-in; use Sign out instead.');
+
+        $this->assertNotNull($this->signIns->find($mine));
+    }
+
+    public function test_revoking_a_sign_in_twice_says_it_has_already_ended(): void
+    {
+        $other = $this->signIn('alice', 'a', '203.0.113.7', 'Firefox');
+        $this->login('boss');
+        $this->http->post("/admin/sessions/{$other->id}/delete")->assertStatus(302);
+
+        $this->http->post("/admin/sessions/{$other->id}/delete")
+            ->assertStatus(422)->assertSee('That sign-in has already ended.');
+    }
+
+    public function test_a_revoke_is_audited_by_whose_it_was_and_where_from(): void
+    {
+        $other = $this->signIn('alice', 'a', '203.0.113.7', 'Firefox');
+        $this->login('boss');
+
+        $this->http->post("/admin/sessions/{$other->id}/delete")->assertStatus(302);
+
+        $rows = $this->app->db()->select('SELECT module, table_id, message, old_value FROM audit');
+        $this->assertSame(
+            [['module' => 'sessions', 'table_id' => $other->id, 'message' => 'admin.row_deleted', 'old_value' => '{"owner":"alice","ip":"203.0.113.7"}']],
+            $rows,
+        );
+    }
+
+    public function test_only_an_admin_may_revoke_a_sign_in(): void
+    {
+        $other = $this->signIn('alice', 'a', '203.0.113.7', 'Firefox');
+        $this->login('clerk');
+
+        $this->http->post("/admin/sessions/{$other->id}/delete")->assertStatus(403);
+        $this->assertNotNull($this->signIns->find($other->id));
+    }
+
+    /**
+     * A second browser, signed in for real: its own session, and the guard a
+     * request of its would build.
+     *
+     * @return array{0: string, 1: ArraySessionStore}
+     */
+    private function browserSignedIn(string $username): array
+    {
+        $session = new ArraySessionStore;
+        $session->start();
+        $guard = $this->guardOver($session);
+        $guard->login($this->user($username));
+
+        return [$guard->signIn()->id ?? throw new RuntimeException('not recorded'), $session];
+    }
+
+    private function guardOver(ArraySessionStore $session): SessionGuard
+    {
+        return new SessionGuard(
+            $session,
+            $this->app->get(UserProviderInterface::class),
+            $this->app->get(HasherInterface::class),
+            null,
+            $this->signIns,
+            $this->app->get(ClockInterface::class),
+        );
+    }
+
+    /** The sign-in the admin is making these requests with. */
+    private function mine(): string
+    {
+        return $this->app->get(SessionGuard::class)->signIn()->id ?? throw new RuntimeException('not signed in');
     }
 
     private function signIn(string $username, string $seed, string $ip, string $agent, ?DateTimeImmutable $at = null): SignIn

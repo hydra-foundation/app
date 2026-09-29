@@ -9,6 +9,7 @@ use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
+use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
 
@@ -41,6 +42,10 @@ final class SessionsModule implements ModuleInterface
             )
             ->screens(
                 ShowScreen::make()->title('Sign-in'),
+                DeleteScreen::make()
+                    ->labelled('Revoke')
+                    ->confirm('Sign this browser out? It is sent to sign in on its next request.')
+                    ->when(static fn (array $row): bool => $row['you'] === ''),
             );
     }
 }

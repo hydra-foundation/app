@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Admin\Sources;
 
 use App\Auth\SignInWindow;
+use Hydra\Admin\Contracts\DeleteSourceInterface;
 use Hydra\Admin\Contracts\DescribesColumnsInterface;
 use Hydra\Admin\Contracts\RowSourceInterface;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Criteria;
+use Hydra\Admin\Exceptions\WriteRejected;
 use Hydra\Admin\Page;
 use Hydra\Admin\SourceDescription;
+use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\SessionGuard;
 use Hydra\Database\Contracts\ConnectionInterface;
 
@@ -20,10 +23,16 @@ use Hydra\Database\Contracts\ConnectionInterface;
  * row id is the sign-in's own, which grants nothing without the session that
  * holds it; the PHP session id is never read. `you` marks the sign-in making
  * this request, from the guard.
+ *
+ * Revoking is deleting, through the sign-in store. The admin's own sign-in is
+ * refused here as well as having no button: ending it from a list would sign
+ * them out mid-click, and Sign out already says so plainly.
  */
-final class SessionSource implements SourceInterface, RowSourceInterface, DescribesColumnsInterface
+final class SessionSource implements SourceInterface, RowSourceInterface, DescribesColumnsInterface, DeleteSourceInterface
 {
     private const FROM = 'sign_ins s JOIN users u ON u.id = s.user_id';
+
+    private const COLUMNS = 's.id, s.user_id, u.username AS owner, u.email AS owner_email, s.ip, s.user_agent, s.created_at, s.last_seen_at';
 
     /** What a list may be sorted by, and the SQL each key stands for. */
     private const SORTS = [
@@ -38,6 +47,7 @@ final class SessionSource implements SourceInterface, RowSourceInterface, Descri
         private readonly ConnectionInterface $db,
         private readonly SignInWindow $window,
         private readonly SessionGuard $guard,
+        private readonly SignInStoreInterface $signIns,
     ) {}
 
     public function describe(): SourceDescription
@@ -90,7 +100,16 @@ final class SessionSource implements SourceInterface, RowSourceInterface, Descri
         return new Page(array_map($this->marked(...), $rows), (int) ($total['total'] ?? 0), $criteria);
     }
 
-    private const COLUMNS = 's.id, s.user_id, u.username AS owner, u.email AS owner_email, s.ip, s.user_agent, s.created_at, s.last_seen_at';
+    public function delete(string $id): void
+    {
+        if ($id === $this->guard->signIn()?->id) {
+            throw WriteRejected::on('id', 'That is your own sign-in; use Sign out instead.');
+        }
+
+        if (!$this->signIns->revoke($id)) {
+            throw WriteRejected::on('id', 'That sign-in has already ended.');
+        }
+    }
 
     /** @return array{0: string, 1: list<scalar|null>} */
     private function conditions(Criteria $criteria): array
