@@ -10,6 +10,7 @@ use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Link;
+use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
 
@@ -48,6 +49,9 @@ final class AccessModule implements ModuleInterface
             )
             ->screens(
                 ShowScreen::make()->title('API token'),
+                DeleteScreen::make()
+                    ->labelled('Revoke')
+                    ->confirm('Revoke this token? Anything using it is refused from its next request.'),
             );
     }
 }

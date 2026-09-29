@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
+use App\Admin\Sources\AccessTokenSource;
 use App\Entities\Role;
 use App\Tests\Support\TestApp;
 use DateTimeImmutable;
+use Hydra\Admin\Exceptions\WriteRejected;
 use Hydra\Auth\ApiTokens;
 use Hydra\Auth\Contracts\ApiTokenStoreInterface;
+use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Auth\IssuedApiToken;
 use Hydra\Core\Testing\FrozenClock;
@@ -204,17 +207,95 @@ final class AccessAdminFlowTest extends TestCase
         $this->http->get("/admin/access/{$issued->token->id}")->assertStatus(403);
     }
 
+    public function test_a_revoked_token_no_longer_gets_into_the_api(): void
+    {
+        $revoked = $this->issue('alice', 'Leaked one');
+        $kept = $this->issue('alice', 'Still hers');
+        $this->login('boss');
+
+        $this->http->post("/admin/access/{$revoked->token->id}/delete")->assertStatus(302);
+
+        $tokens = $this->app->get(ApiTokens::class);
+        $this->assertNull($tokens->authenticate($revoked->plain));
+        $this->assertNotNull($tokens->authenticate($kept->plain));
+    }
+
+    public function test_the_row_offers_a_revoke_rather_than_a_delete(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->login('boss');
+        $body = $this->body('/admin/access');
+
+        $this->assertStringContainsString("/admin/access/{$issued->token->id}/delete", $body);
+        $this->assertStringContainsString('>Revoke</button>', $body);
+    }
+
+    public function test_a_revoke_is_audited_by_owner_and_name_and_nothing_secret(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->login('boss');
+
+        $this->http->post("/admin/access/{$issued->token->id}/delete")->assertStatus(302);
+
+        $rows = $this->app->db()->select('SELECT * FROM audit');
+        $this->assertCount(1, $rows);
+        $this->assertSame('access', $rows[0]['module']);
+        $this->assertSame((string) $issued->token->id, $rows[0]['table_id']);
+        $this->assertSame('admin.row_deleted', $rows[0]['message']);
+        $this->assertSame('{"owner":"alice","name":"Laptop"}', $rows[0]['old_value']);
+
+        $all = json_encode($rows, JSON_THROW_ON_ERROR);
+        $this->assertStringNotContainsString($issued->token->hash, $all);
+        $this->assertStringNotContainsString($issued->plain, $all);
+    }
+
+    public function test_revoking_a_token_twice_says_it_is_already_gone(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->login('boss');
+        $this->http->post("/admin/access/{$issued->token->id}/delete")->assertStatus(302);
+
+        $this->http->post("/admin/access/{$issued->token->id}/delete")->assertStatus(422)->assertSee('That token has already been revoked.');
+    }
+
+    /** Deleting a user cascades to their tokens, so a stale row may have no owner either. */
+    public function test_a_token_whose_owner_was_deleted_is_already_revoked(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->app->db()->execute("DELETE FROM users WHERE username = 'alice'");
+
+        try {
+            $this->app->get(AccessTokenSource::class)->delete((string) $issued->token->id);
+            self::fail('A token with no owner was revoked.');
+        } catch (WriteRejected $e) {
+            $this->assertSame(['id' => 'That token has already been revoked.'], $e->errors());
+        }
+    }
+
+    public function test_only_an_admin_may_revoke(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->login('clerk');
+
+        $this->http->post("/admin/access/{$issued->token->id}/delete")->assertStatus(403);
+        $this->assertNotNull($this->app->get(ApiTokens::class)->authenticate($issued->plain));
+    }
+
     private function issue(string $username, string $name, ?DateTimeImmutable $expires = null): IssuedApiToken
     {
-        $id = $this->app->db()->selectOne('SELECT id FROM users WHERE username = ?', [$username])['id'] ?? throw new RuntimeException("{$username} is not seeded");
-        $user = $this->app->get(UserProviderInterface::class)->byIdentifier((int) $id) ?? throw new RuntimeException("{$username} is not seeded");
-
         // Issued on the real clock, so an expiry is "in the future" to it.
         return (new ApiTokens(
             $this->app->get(ApiTokenStoreInterface::class),
             $this->app->get(UserProviderInterface::class),
             new FrozenClock('now'),
-        ))->issue($user, $name, $expires);
+        ))->issue($this->user($username), $name, $expires);
+    }
+
+    private function user(string $username): AuthenticatableInterface
+    {
+        $id = $this->app->db()->selectOne('SELECT id FROM users WHERE username = ?', [$username])['id'] ?? throw new RuntimeException("{$username} is not seeded");
+
+        return $this->app->get(UserProviderInterface::class)->byIdentifier((int) $id) ?? throw new RuntimeException("{$username} is not seeded");
     }
 
     private function body(string $path): string

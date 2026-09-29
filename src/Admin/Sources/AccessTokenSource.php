@@ -4,26 +4,32 @@ declare(strict_types=1);
 
 namespace App\Admin\Sources;
 
+use Hydra\Admin\Contracts\DeleteSourceInterface;
 use Hydra\Admin\Contracts\DescribesColumnsInterface;
 use Hydra\Admin\Contracts\RowSourceInterface;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Criteria;
+use Hydra\Admin\Exceptions\WriteRejected;
 use Hydra\Admin\Page;
 use Hydra\Admin\SourceDescription;
 use Hydra\Auth\ApiTokens;
+use Hydra\Auth\Contracts\ApiTokenStoreInterface;
+use Hydra\Auth\Contracts\AuthenticatableInterface;
+use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Psr\Clock\ClockInterface;
 
 /**
  * Every API token, whoever owns it: the list an admin reaches for when a token
  * leaks and all they hold is the secret. Read with a join, which is why this
- * is written out rather than a TableSource. The hash never leaves this class,
+ * is written out rather than a TableSource, and written only through the token
+ * store, which Settings revokes through too. The hash never leaves this class,
  * so it can't reach a cell, an export or the audit trail.
  *
  * `state` is derived against the app's clock, bound as a value, so the list
  * and ApiTokens::authenticate() agree on which tokens still work.
  */
-final class AccessTokenSource implements SourceInterface, RowSourceInterface, DescribesColumnsInterface
+final class AccessTokenSource implements SourceInterface, RowSourceInterface, DescribesColumnsInterface, DeleteSourceInterface
 {
     private const FROM = 'api_tokens t JOIN users u ON u.id = t.user_id';
 
@@ -45,6 +51,8 @@ final class AccessTokenSource implements SourceInterface, RowSourceInterface, De
     public function __construct(
         private readonly ConnectionInterface $db,
         private readonly ClockInterface $clock,
+        private readonly ApiTokenStoreInterface $tokens,
+        private readonly UserProviderInterface $users,
     ) {}
 
     public function describe(): SourceDescription
@@ -101,6 +109,27 @@ final class AccessTokenSource implements SourceInterface, RowSourceInterface, De
         );
     }
 
+    /** Revoking is deleting: the store is asked, as Settings asks it. */
+    public function delete(string $id): void
+    {
+        if (!$this->tokens->revoke($this->owner($id), $id)) {
+            throw self::gone();
+        }
+    }
+
+    /**
+     * Whose token this is, by the id of any one of theirs. A token revoked in
+     * the meantime, or whose owner was deleted and took their tokens with them,
+     * is refused the same way, since either way there is nothing to revoke.
+     */
+    public function owner(string $id): AuthenticatableInterface
+    {
+        $row = $this->find($id);
+        $owner = $row === null ? null : $this->users->byIdentifier((int) $row['user_id']);
+
+        return $owner ?? throw self::gone();
+    }
+
     /** @return array{0: string, 1: list<scalar|null>} */
     private function conditions(Criteria $criteria): array
     {
@@ -136,6 +165,11 @@ final class AccessTokenSource implements SourceInterface, RowSourceInterface, De
     {
         return 't.id, t.user_id, u.username AS owner, u.email AS owner_email, t.name, '
             . self::STATE . ' AS state, t.created_at, t.last_used_at, t.expires_at';
+    }
+
+    private static function gone(): WriteRejected
+    {
+        return WriteRejected::on('id', 'That token has already been revoked.');
     }
 
     private function now(): int
