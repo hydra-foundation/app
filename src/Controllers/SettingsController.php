@@ -24,6 +24,7 @@ use Hydra\Admin\Notice;
 use Hydra\Admin\Renderer;
 use Hydra\Admin\Uploads;
 use Hydra\Auth\Contracts\ApiTokenStoreInterface;
+use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
 use Hydra\Http\Exceptions\NotFoundException;
@@ -111,6 +112,11 @@ final class SettingsController
             $this->users->updateAvatar($user->id, null);
             $this->uploads->delete($user->avatar);
 
+            // Removing a picture that was never there changes nothing to record.
+            if ($user->avatar !== null) {
+                $this->record($user, 'account.avatar_removed');
+            }
+
             return $this->avatarChanged($request, $user);
         }
 
@@ -134,6 +140,7 @@ final class SettingsController
         }
 
         $this->uploads->delete($user->avatar);
+        $this->record($user, 'account.avatar_changed');
 
         return $this->avatarChanged($request, $user);
     }
@@ -184,7 +191,7 @@ final class SettingsController
         // must not leave them a bearer token that outlives it.
         $this->apiTokens->revokeAll($user);
         $this->guard->refresh($this->users->byIdentifier($user->id) ?? throw new NotFoundException);
-        $this->auditPasswordChange($user);
+        $this->record($user, 'account.password_changed');
 
         return $this->account($request, notice: Notice::saved());
     }
@@ -240,20 +247,12 @@ final class SettingsController
     /**
      * Filed under the users module and the row's id, beside the rows an admin's
      * edits leave, so one account's history reads the same whoever changed it.
-     * Swallowed like the listener's write: the password has already changed.
+     * Swallowed like the listener's write: the change has already happened.
      */
-    private function auditPasswordChange(User $user): void
+    private function record(User $user, string $message, ?string $old = null, ?string $new = null): void
     {
         try {
-            $this->audit->record(new Audit(
-                'users',
-                (string) $user->id,
-                null,
-                null,
-                $user->id,
-                $user->username,
-                'account.password_changed',
-            ));
+            $this->audit->record(new Audit('users', (string) $user->id, $old, $new, $user->id, $user->username, $message));
         } catch (Throwable $e) {
             $this->logger->warning('Could not record audit: ' . $e->getMessage(), ['exception' => $e]);
         }
@@ -275,6 +274,7 @@ final class SettingsController
             );
         }
 
+        // Not audited: nobody will ever need to ask who chose their own palette.
         $this->preferences->set($user->getAuthIdentifier(), Themes::PREFERENCE, $chosen);
 
         return $this->screen($request, Notice::saved());
@@ -297,9 +297,33 @@ final class SettingsController
             );
         }
 
-        $this->preferences->set($user->getAuthIdentifier(), Timezones::PREFERENCE, $chosen);
+        $this->setTimezone($user, $chosen);
 
         return $this->regional($request, Notice::saved());
+    }
+
+    /**
+     * Saved, and audited with the zone it replaced, the way the listener
+     * records a field that moved: it decides every date the account reads, so
+     * "why are my times off?" has an answer here. A save that left it where it
+     * was is not recorded at all.
+     */
+    private function setTimezone(AuthenticatableInterface $user, string $chosen): void
+    {
+        $id = $user->getAuthIdentifier();
+        $previous = $this->preferences->get($id, Timezones::PREFERENCE);
+
+        $this->preferences->set($id, Timezones::PREFERENCE, $chosen);
+
+        if ($previous !== $chosen && $user instanceof User) {
+            $this->record($user, 'account.timezone_changed', $this->timezone($previous), $this->timezone($chosen));
+        }
+    }
+
+    /** As JSON, like the listener's before and after; null when it was never set. */
+    private function timezone(?string $value): ?string
+    {
+        return $value === null ? null : json_encode([Timezones::PREFERENCE => $value], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
     }
 
     private function screen(Request $request, Notice $notice, int|Status $status = Status::Ok): Response

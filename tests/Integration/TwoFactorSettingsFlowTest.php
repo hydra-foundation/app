@@ -136,6 +136,7 @@ final class TwoFactorSettingsFlowTest extends TestCase
         $this->assertNull($this->stored());
         $this->assertSame(0, (int) $this->app->db()->selectOne('SELECT COUNT(*) AS n FROM user_recovery_codes')['n']);
         $this->assertContains('account.two_factor_disabled', $this->auditMessages());
+        $this->assertContains('account.recovery_code_used', $this->auditMessages());
 
         $this->app->work();
         $subjects = array_map(static fn (Message $m): string => (string) $m->getSubject(), $this->app->mailer()->sent());

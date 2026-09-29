@@ -9,6 +9,7 @@ use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\Api\MeController;
 use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController, TwoFactorChallengeController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
+use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
@@ -462,6 +463,14 @@ final class AppServiceProvider extends ServiceProvider
 
         $listeners->listen(RecoveryCodeUsed::class, static function (RecoveryCodeUsed $event) use ($container): void {
             ($container->get(MailRecoveryCodeUseListener::class))($event);
+        });
+
+        $listeners->listen(PasswordReset::class, static function (PasswordReset $event) use ($container): void {
+            $container->get(AuditAccountEventsListener::class)->onPasswordReset($event);
+        });
+
+        $listeners->listen(RecoveryCodeUsed::class, static function (RecoveryCodeUsed $event) use ($container): void {
+            $container->get(AuditAccountEventsListener::class)->onRecoveryCodeUsed($event);
         });
     }
 

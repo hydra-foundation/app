@@ -84,6 +84,33 @@ final class AccountAvatarFlowTest extends TestCase
         $this->assertFalse($this->stored($old));
     }
 
+    public function test_setting_and_removing_it_are_audited(): void
+    {
+        $this->upload($this->png())->assertOk();
+        $this->app->http()->post('/admin/settings/account', ['intent' => 'avatar', 'avatar_remove' => '1'])->assertOk();
+
+        $rows = $this->audits();
+
+        $this->assertSame(['account.avatar_changed', 'account.avatar_removed'], array_column($rows, 'message'));
+        $this->assertSame(['users'], array_values(array_unique(array_column($rows, 'module'))));
+        $this->assertSame([(string) $this->clerk], array_values(array_unique(array_column($rows, 'table_id'))));
+        $this->assertSame(['clerk'], array_values(array_unique(array_column($rows, 'username'))));
+    }
+
+    public function test_removing_a_picture_that_is_not_there_is_not_audited(): void
+    {
+        $this->app->http()->post('/admin/settings/account', ['intent' => 'avatar', 'avatar_remove' => '1'])->assertOk();
+
+        $this->assertSame([], $this->audits());
+    }
+
+    public function test_a_refused_upload_is_not_audited(): void
+    {
+        $this->app->http()->post('/admin/settings/account', ['intent' => 'avatar'])->assertStatus(422);
+
+        $this->assertSame([], $this->audits());
+    }
+
     public function test_the_name_it_was_uploaded_under_is_kept(): void
     {
         $this->upload($this->png('Holiday.png'))->assertOk();
@@ -147,6 +174,12 @@ final class AccountAvatarFlowTest extends TestCase
         $account = substr($body, (int) strpos($body, '<div class="admin-account">'), 400);
 
         $this->assertStringContainsString(htmlspecialchars($url), $account);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function audits(): array
+    {
+        return $this->app->db()->select('SELECT * FROM audit ORDER BY id');
     }
 
     private function upload(UploadedFile $file): TestResponse

@@ -103,6 +103,19 @@ final class TwoFactorLoginFlowTest extends TestCase
             ->assertSee('has been used');
     }
 
+    public function test_a_recovery_code_used_to_sign_in_is_audited_with_how_many_are_left(): void
+    {
+        $this->app->login('clerk');
+        $this->http->post('/two-factor', ['code_type' => 'recovery', 'code' => $this->codes[3]])->assertRedirect('/admin');
+
+        $rows = $this->app->db()->select("SELECT * FROM audit WHERE message = 'account.recovery_code_used'");
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('clerk', $rows[0]['username']);
+        $this->assertSame('{"recovery_codes_remaining":9}', $rows[0]['new_value']);
+        $this->assertStringNotContainsString($this->codes[3], json_encode($rows, JSON_THROW_ON_ERROR));
+    }
+
     public function test_each_step_is_logged(): void
     {
         $this->app->login('clerk');

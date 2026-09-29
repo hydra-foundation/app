@@ -113,6 +113,26 @@ final class PasswordResetFlowTest extends TestCase
         );
     }
 
+    public function test_a_reset_is_audited_beside_a_change_made_in_settings(): void
+    {
+        $this->http->get($this->requestLink());
+        $this->http->post('/reset-password', [
+            'password' => self::NEW_PASSWORD,
+            'password_confirmation' => self::NEW_PASSWORD,
+        ])->assertRedirect('/login');
+
+        $rows = $this->app->db()->select('SELECT * FROM audit');
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('users', $rows[0]['module']);
+        $this->assertSame((string) $this->id, $rows[0]['table_id']);
+        $this->assertSame('clerk', $rows[0]['username']);
+        $this->assertSame('account.password_reset', $rows[0]['message']);
+        $this->assertNull($rows[0]['old_value']);
+        $this->assertNull($rows[0]['new_value']);
+        $this->assertStringNotContainsString(self::NEW_PASSWORD, json_encode($rows, JSON_THROW_ON_ERROR));
+    }
+
     public function test_a_reset_revokes_every_api_token_of_the_account(): void
     {
         $users = $this->app->get(UserProviderInterface::class);
@@ -143,6 +163,7 @@ final class PasswordResetFlowTest extends TestCase
 
         $this->app->login('clerk')->assertRedirect('/admin');
         $this->assertFalse($this->app->log()->has('auth.password_reset'));
+        $this->assertSame([], $this->app->db()->select('SELECT * FROM audit'));
     }
 
     public function test_an_expired_link_is_refused(): void

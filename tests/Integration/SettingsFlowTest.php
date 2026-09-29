@@ -116,6 +116,34 @@ final class SettingsFlowTest extends TestCase
         $this->assertSame('graphite', $this->preferences()->get($this->id('boss'), 'theme'));
     }
 
+    public function test_a_theme_change_is_not_audited(): void
+    {
+        // A preference nobody will ever need to ask about; the log is kept for
+        // the ones somebody will.
+        $this->login('boss');
+        $this->save('graphite')->assertOk();
+
+        $this->assertSame([], $this->audits());
+    }
+
+    public function test_a_timezone_change_is_audited_with_what_it_replaced(): void
+    {
+        $this->login('clerk');
+        $this->http->post('/admin/settings/regional', ['timezone' => 'America/Edmonton'])->assertOk();
+        $this->http->post('/admin/settings/regional', ['timezone' => 'Europe/Paris'])->assertOk();
+        $this->http->post('/admin/settings/regional', ['timezone' => 'Europe/Paris'])->assertOk();
+        $this->http->post('/admin/settings/regional', ['timezone' => 'Not/AZone'])->assertStatus(422);
+
+        $rows = $this->audits();
+
+        $this->assertSame(['account.timezone_changed', 'account.timezone_changed'], array_column($rows, 'message'));
+        $this->assertSame('clerk', $rows[0]['username']);
+        $this->assertNull($rows[0]['old_value']);
+        $this->assertSame('{"timezone":"America/Edmonton"}', $rows[0]['new_value']);
+        $this->assertSame('{"timezone":"America/Edmonton"}', $rows[1]['old_value']);
+        $this->assertSame('{"timezone":"Europe/Paris"}', $rows[1]['new_value']);
+    }
+
     public function test_a_preference_belongs_to_one_person(): void
     {
         $this->login('boss');
@@ -138,6 +166,12 @@ final class SettingsFlowTest extends TestCase
         $http = $frame ? $this->http->htmx('div#admin-frame') : $this->http;
 
         return $http->post('/admin/settings/appearance', ['theme' => $theme]);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function audits(): array
+    {
+        return $this->app->db()->select('SELECT * FROM audit ORDER BY id');
     }
 
     private function preferences(): PreferenceRepository
