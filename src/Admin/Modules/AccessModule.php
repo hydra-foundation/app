@@ -27,6 +27,7 @@ final class AccessModule implements ModuleInterface
     {
         return Definition::make('access')
             ->title('Access')
+            ->tabLabel('API tokens')
             ->group('Administration')
             ->icon('key')
             ->ability(AccessAdmin::class)
