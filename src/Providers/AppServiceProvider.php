@@ -14,6 +14,7 @@ use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
 use App\Repositories\{ActivityRepository, ApiTokenRepository, SignInRepository, TwoFactorRepository, UserRepository};
+use App\Tasks\PruneSignIns;
 use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
@@ -438,6 +439,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         $schedule = $container->get(Schedule::class);
         $schedule->run(PruneScheduledRuns::class)->dailyAt('03:00');
+        $schedule->run(PruneSignIns::class)->hourly();
         $schedule->drain(Worker::class)->everyMinute()->for(5);
 
         $listeners = $container->get(ListenerProvider::class);
