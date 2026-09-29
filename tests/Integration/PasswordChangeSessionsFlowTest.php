@@ -9,6 +9,7 @@ use App\Tests\Support\TestApp;
 use Hydra\Auth\ApiTokens;
 use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use RuntimeException;
 use Hydra\Http\Testing\Client;
@@ -131,6 +132,56 @@ final class PasswordChangeSessionsFlowTest extends TestCase
         ]);
 
         $this->assertCount(1, $this->tokens(2));
+    }
+
+    public function test_an_admin_setting_someone_s_password_ends_their_sign_ins(): void
+    {
+        $this->app->get(SignInStoreInterface::class)->create(str_repeat('c', 32), $this->user(2), new \DateTimeImmutable);
+        $this->app->login('boss')->assertStatus(302);
+
+        $this->http->post('/admin/users/2/edit', [
+            'username' => 'clerk',
+            'email' => 'clerk@example.com',
+            'role' => 'user',
+            'password' => 'a-brand-new-passphrase',
+        ]);
+
+        $signIns = $this->app->get(SignInStoreInterface::class);
+        $this->assertSame([], $signIns->forUser($this->user(2)));
+        $this->assertCount(1, $signIns->forUser($this->user(1)), "the admin's own sign-in is not theirs");
+    }
+
+    public function test_an_admin_setting_their_own_password_keeps_this_sign_in_and_ends_the_others(): void
+    {
+        $elsewhere = $this->app->get(SignInStoreInterface::class)->create(str_repeat('d', 32), $this->user(1), new \DateTimeImmutable);
+        $this->app->login('boss')->assertStatus(302);
+
+        $this->http->post('/admin/users/1/edit', [
+            'username' => 'boss',
+            'email' => 'boss@example.com',
+            'role' => 'admin',
+            'password' => 'a-brand-new-passphrase',
+        ]);
+
+        $left = $this->app->get(SignInStoreInterface::class)->forUser($this->user(1));
+        $this->assertCount(1, $left);
+        $this->assertNotSame($elsewhere->id, $left[0]->id);
+        $this->assertSame(1, $this->app->nextGuard()->user()?->getAuthIdentifier());
+    }
+
+    public function test_an_edit_that_leaves_the_password_alone_keeps_the_sign_ins(): void
+    {
+        $this->app->get(SignInStoreInterface::class)->create(str_repeat('f', 32), $this->user(2), new \DateTimeImmutable);
+        $this->app->login('boss')->assertStatus(302);
+
+        $this->http->post('/admin/users/2/edit', [
+            'username' => 'clerk',
+            'email' => 'clerk@example.com',
+            'role' => 'user',
+            'password' => '',
+        ]);
+
+        $this->assertCount(1, $this->app->get(SignInStoreInterface::class)->forUser($this->user(2)));
     }
 
     private function issueToken(int $id): void

@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Admin\Sources\UserSource;
 use App\Repositories\ApiTokenRepository;
+use App\Repositories\SignInRepository;
 use App\Repositories\UserRepository;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
@@ -52,7 +53,7 @@ final class UserSourceTest extends WritableSourceContractTestCase
         }
 
         $db = new PdoConnection($this->pdo);
-        $this->source = new UserSource($db, $this->guard(), new FakeHasher, new UserRepository($db), new ApiTokenRepository($db));
+        $this->source = new UserSource($db, $this->guard(), new FakeHasher, new UserRepository($db), new ApiTokenRepository($db), new SignInRepository($db));
     }
 
     protected function source(): SourceInterface
@@ -216,7 +217,7 @@ final class UserSourceTest extends WritableSourceContractTestCase
     {
         $db = new PdoConnection($this->pdo);
 
-        return new UserSource($db, FakeGuard::signedInAs(new FakeUser($id)), new FakeHasher, new UserRepository($db), new ApiTokenRepository($db));
+        return new UserSource($db, FakeGuard::signedInAs(new FakeUser($id)), new FakeHasher, new UserRepository($db), new ApiTokenRepository($db), new SignInRepository($db));
     }
 
     private function avatarOf(int $id): ?string

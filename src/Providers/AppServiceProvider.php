@@ -13,7 +13,8 @@ use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
-use App\Repositories\{ActivityRepository, ApiTokenRepository, TwoFactorRepository, UserRepository};
+use App\Repositories\{ActivityRepository, ApiTokenRepository, SignInRepository, TwoFactorRepository, UserRepository};
+use App\Tasks\PruneSignIns;
 use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
@@ -21,7 +22,8 @@ use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Admin\Updates\UpdateCheck;
 use Hydra\Auth\AuthenticateBearerMiddleware;
-use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, TwoFactorStoreInterface, UserProviderInterface};
+use Hydra\Auth\TrackSignInMiddleware;
+use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, SignInStoreInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
 use Hydra\Cache\CacheHealthCheck;
@@ -144,6 +146,9 @@ final class AppServiceProvider extends ServiceProvider
         // After the session, which a bearer request skips; ahead of everything
         // that asks the guard who this is.
         AuthenticateBearerMiddleware::class,
+        // After both, so it knows whether this is a sign-in or a token; it
+        // writes on the way out, so the request that signs in is recorded too.
+        TrackSignInMiddleware::class,
         RecordActivityMiddleware::class,
         RedirectUnauthenticatedMiddleware::class,
         VerifyCsrfTokenMiddleware::class,
@@ -236,6 +241,13 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(ApiTokenStoreInterface::class, function () use ($container) {
             return $container->get(ApiTokenRepository::class);
+        });
+
+        // Bound, the guard records every sign-in and checks it on each request,
+        // so one can be listed and revoked; TrackSignInMiddleware says when and
+        // from where it was last seen.
+        $container->singleton(SignInStoreInterface::class, function () use ($container) {
+            return $container->get(SignInRepository::class);
         });
 
         $container->singleton(LoggerInterface::class, function () use ($container) {
@@ -427,6 +439,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         $schedule = $container->get(Schedule::class);
         $schedule->run(PruneScheduledRuns::class)->dailyAt('03:00');
+        $schedule->run(PruneSignIns::class)->hourly();
         $schedule->drain(Worker::class)->everyMinute()->for(5);
 
         $listeners = $container->get(ListenerProvider::class);

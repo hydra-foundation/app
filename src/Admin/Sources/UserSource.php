@@ -15,6 +15,7 @@ use Hydra\Admin\Sources\TableSource;
 use Hydra\Auth\Contracts\ApiTokenStoreInterface;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Auth\Contracts\HasherInterface;
+use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
@@ -30,6 +31,7 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
         private readonly HasherInterface $hasher,
         private readonly UserRepository $users,
         private readonly ApiTokenStoreInterface $tokens,
+        private readonly SignInStoreInterface $signIns,
     ) {
         parent::__construct(
             $db,
@@ -133,8 +135,14 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             if ($user !== null) {
                 $this->tokens->revokeAll($user);
 
+                // Their sign-ins go with it: signed out by the stamp on their
+                // next request anyway, but a list of sign-ins should not show
+                // them until then. The admin's own row keeps the sign-in making
+                // this edit, which refresh() sees to.
                 if ((string) $this->guard->id() === (string) $key) {
                     $this->guard->refresh($user);
+                } else {
+                    $this->signIns->revokeAll($user);
                 }
             }
         }

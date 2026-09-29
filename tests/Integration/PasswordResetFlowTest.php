@@ -8,6 +8,7 @@ use App\Entities\Role;
 use App\Tests\Support\TestApp;
 use Hydra\Auth\ApiTokens;
 use Hydra\Auth\Contracts\ApiTokenStoreInterface;
+use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Core\Testing\FrozenClock;
 use Hydra\Http\Testing\Client;
@@ -150,6 +151,26 @@ final class PasswordResetFlowTest extends TestCase
 
         $this->assertSame([], $tokens->forUser($clerk));
         $this->assertCount(1, $tokens->forUser($other));
+    }
+
+    /** A reset is how an account is taken back; every browser signed in to it is signed out. */
+    public function test_a_reset_ends_every_sign_in_of_the_account(): void
+    {
+        $users = $this->app->get(UserProviderInterface::class);
+        $signIns = $this->app->get(SignInStoreInterface::class);
+        $clerk = $users->byIdentifier($this->id) ?? throw new \RuntimeException('not seeded');
+        $other = $users->byIdentifier($this->app->seed('other')) ?? throw new \RuntimeException('not seeded');
+        $signIns->create(str_repeat('a', 32), $clerk, $this->clock->now());
+        $signIns->create(str_repeat('b', 32), $other, $this->clock->now());
+
+        $this->http->get($this->requestLink());
+        $this->http->post('/reset-password', [
+            'password' => self::NEW_PASSWORD,
+            'password_confirmation' => self::NEW_PASSWORD,
+        ])->assertRedirect('/login');
+
+        $this->assertSame([], $signIns->forUser($clerk));
+        $this->assertCount(1, $signIns->forUser($other));
     }
 
     public function test_a_mismatched_confirmation_changes_nothing(): void
