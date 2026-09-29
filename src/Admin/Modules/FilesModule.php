@@ -11,7 +11,6 @@ use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Files\DeleteOrphans;
 use Hydra\Admin\Files\FileSource;
-use Hydra\Admin\Link;
 use Hydra\Admin\Screens\ActionScreen;
 use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ShowScreen;

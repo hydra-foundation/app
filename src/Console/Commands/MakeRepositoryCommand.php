@@ -6,7 +6,6 @@ namespace App\Console\Commands;
 
 use Hydra\Console\Attributes\AsCommand;
 use Hydra\Console\Contracts\OutputInterface;
-use Hydra\Console\ExitCode;
 
 /**
  * Generates a repository in App\Repositories: the application's own way into a

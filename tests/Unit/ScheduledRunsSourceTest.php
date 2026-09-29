@@ -10,7 +10,6 @@ use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Criteria;
 use Hydra\Admin\Testing\RowSourceContractTestCase;
 use Hydra\Database\PdoConnection;
-use PDO;
 use PHPUnit\Framework\Attributes\CoversClass;
 
 #[CoversClass(ScheduledRunsSource::class)]

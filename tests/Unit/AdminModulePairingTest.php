@@ -8,7 +8,6 @@ use App\Repositories\ApiTokenRepository;
 use App\Config\LogConfig;
 use DateTimeZone;
 use App\Providers\AppServiceProvider;
-use App\Tests\Support\CommandRun;
 use App\Tests\Support\Console;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Console\AdminCheckCommand;

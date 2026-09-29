@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
-use App\Tests\Support\CommandRun;
 use App\Tests\Support\Console;
 use Hydra\Console\Command;
 use Hydra\Console\ExitCode;

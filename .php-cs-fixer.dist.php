@@ -25,6 +25,8 @@ return (new PhpCsFixer\Config())
         // Hydra writes `new AuthConfig`, not `new AuthConfig()`.
         'new_with_parentheses' => false,
 
+        'no_unused_imports' => true,
+
         // ... and keeps an empty body on one line: `public function x(): void {}`.
         'single_line_empty_body' => true,
     ])

@@ -6,7 +6,6 @@ namespace App\Tests\Support;
 
 use Hydra\Console\ArrayInput;
 use Hydra\Console\Contracts\CommandInterface;
-use Hydra\Console\ExitCode;
 use Hydra\Console\Testing\FakeOutput;
 
 /**
