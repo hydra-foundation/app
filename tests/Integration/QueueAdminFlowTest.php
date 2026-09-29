@@ -294,6 +294,79 @@ final class QueueAdminFlowTest extends TestCase
         return [$held->id, $free];
     }
 
+    /**
+     * What waits and what gave up are one queue, so one sidebar entry: Failed
+     * jobs is a tab of Jobs, reached from a strip under the heading, with the
+     * Jobs entry lit on either tab.
+     */
+    public function test_failures_are_a_tab_of_the_queue_and_not_an_entry_of_their_own(): void
+    {
+        $this->login('boss');
+        $body = $this->body('/admin/failed-jobs');
+        $nav = $this->sidebar($body);
+
+        $this->assertMatchesRegularExpression('~class="nav-link active"\s+href="/admin/jobs"~', $nav);
+        $this->assertStringNotContainsString('href="/admin/failed-jobs"', $nav);
+        $this->assertMatchesRegularExpression('~class="admin-tabs"[^>]*aria-label="Jobs"~', $body);
+        $this->assertMatchesRegularExpression('~class="admin-tab"\s+href="/admin/jobs"[^>]*>Jobs</a>~', $body);
+        $this->assertMatchesRegularExpression('~class="admin-tab active"\s+href="/admin/failed-jobs"[^>]*>Failed jobs</a>~', $body);
+        $this->assertStringContainsString('>Queue<', $body);
+    }
+
+    public function test_the_jobs_waiting_carry_the_same_strip(): void
+    {
+        $this->login('boss');
+        $body = $this->body('/admin/jobs');
+
+        $this->assertMatchesRegularExpression('~class="admin-tab active"\s+href="/admin/jobs"~', $body);
+        $this->assertMatchesRegularExpression('~class="admin-tab"\s+href="/admin/failed-jobs"~', $body);
+    }
+
+    /**
+     * Two families make twelve modules ten entries. Listed in full, so a
+     * module that lost its entry, or a tab that grew one, fails here by name.
+     */
+    public function test_the_sidebar_has_an_entry_per_family(): void
+    {
+        $this->login('boss');
+        preg_match_all('~class="nav-link[^"]*"\s+href="([^"]+)"~', $this->sidebar($this->body('/admin/jobs')), $hrefs);
+
+        $this->assertSame(
+            [
+                '/admin/dashboard',
+                '/admin/system-health',
+                '/admin/users',
+                '/admin/files',
+                '/admin/activity',
+                '/admin/audit',
+                '/admin/logs',
+                '/admin/scheduler',
+                '/admin/jobs',
+                '/admin/settings',
+            ],
+            $hrefs[1],
+        );
+    }
+
+    public function test_a_failure_s_own_screen_keeps_the_strip(): void
+    {
+        $id = $this->failJob('mail server down');
+        $this->login('boss');
+
+        $this->assertMatchesRegularExpression(
+            '~class="admin-tab active"\s+href="/admin/failed-jobs"~',
+            $this->body("/admin/failed-jobs/{$id}"),
+        );
+    }
+
+    private function sidebar(string $body): string
+    {
+        $start = strpos($body, 'id="admin-nav"');
+        $this->assertNotFalse($start);
+
+        return substr($body, $start, (int) strpos($body, '</div>', $start) - $start);
+    }
+
     private function body(string $path): string
     {
         return $this->http->get($path)->assertOk()->body();

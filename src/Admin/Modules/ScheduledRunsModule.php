@@ -13,15 +13,18 @@ use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
 use Hydra\View\HtmlView;
 
-/** Every run the scheduler recorded, kept for SCHEDULE_KEEP_DAYS. Read-only: the runner writes it. */
+/**
+ * Every run the scheduler recorded, kept for SCHEDULE_KEEP_DAYS. Read-only: the
+ * runner writes it. A tab of Scheduler, since a schedule and its history are
+ * one thing to look at.
+ */
 final class ScheduledRunsModule implements ModuleInterface
 {
     public function define(): Definition
     {
         return Definition::make('scheduled-runs')
             ->title('Runs')
-            ->group('Monitoring')
-            ->icon('clock')
+            ->tabOf('scheduler')
             ->ability(AccessAdmin::class)
             ->source(ScheduledRunsSource::class)
             ->perPage(50)

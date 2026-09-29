@@ -21,7 +21,8 @@ use Hydra\View\HtmlView;
 
 /**
  * What ran out of tries. The table gives each failure's one-line reason; the
- * row gives the trace and the payload it was running with.
+ * row gives the trace and the payload it was running with. A tab of Jobs:
+ * what waits and what gave up are one queue, so one sidebar entry.
  */
 final class FailedJobsModule implements ModuleInterface
 {
@@ -29,8 +30,7 @@ final class FailedJobsModule implements ModuleInterface
     {
         return Definition::make('failed-jobs')
             ->title('Failed jobs')
-            ->group('Queue')
-            ->icon('exclamation-octagon')
+            ->tabOf('jobs')
             ->ability(AccessAdmin::class)
             ->source(FailedJobSource::class)
             ->perPage(25)

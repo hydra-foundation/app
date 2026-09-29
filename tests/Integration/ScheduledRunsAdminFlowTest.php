@@ -113,6 +113,25 @@ final class ScheduledRunsAdminFlowTest extends TestCase
         $this->http->post('/admin/scheduled-runs/1/delete')->assertStatus(404);
     }
 
+    /**
+     * The schedule and its history are one family: Runs is a tab of
+     * Scheduler, and keeps Scheduler's place in the sidebar and its group in
+     * the trail.
+     */
+    public function test_runs_are_a_tab_of_the_scheduler(): void
+    {
+        $this->login('boss');
+        $body = $this->body('/admin/scheduled-runs');
+        $start = (int) strpos($body, 'id="admin-nav"');
+        $nav = substr($body, $start, (int) strpos($body, '</div>', $start) - $start);
+
+        $this->assertMatchesRegularExpression('~class="nav-link active"\s+href="/admin/scheduler"~', $nav);
+        $this->assertStringNotContainsString('href="/admin/scheduled-runs"', $nav);
+        $this->assertMatchesRegularExpression('~class="admin-tab"\s+href="/admin/scheduler"[^>]*>Scheduler</a>~', $body);
+        $this->assertMatchesRegularExpression('~class="admin-tab active"\s+href="/admin/scheduled-runs"[^>]*>Runs</a>~', $body);
+        $this->assertMatchesRegularExpression('~class="admin-tab active"\s+href="/admin/scheduler"~', $this->body('/admin/scheduler'));
+    }
+
     private function record(string $task, Outcome $outcome, string $at, ?int $items = null, ?int $held = null, ?string $error = null): void
     {
         $this->app->get(DatabaseRunLog::class)->record(new TaskRun(
