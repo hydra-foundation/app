@@ -56,10 +56,6 @@ final class FilesModule implements ModuleInterface
             ->perPage(25)
             ->defaultSort('modified_at', 'desc')
             ->gone('That file is no longer on either disk.')
-            ->links(
-                Link::make('All'),
-                Link::make('Orphans')->where('status', FileSource::ORPHAN),
-            )
             ->fields(
                 Field::id()->labelled('ID')->onlyOn(Surface::Show),
                 Field::image('preview')->labelled('')->nameFrom('name')->fallbackIcon('file-earmark'),
