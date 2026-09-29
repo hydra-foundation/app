@@ -16,7 +16,7 @@ use Hydra\Admin\Surface;
 
 /**
  * Who a rate limit is refusing right now, how long for, and a way to let them
- * back in: the answer to "it says too many attempts" that used to be a wait.
+ * back in, with the lockouts that ended in the last quarter of an hour below: the answer to "it says too many attempts" that used to be a wait.
  * Its own entry rather than a tab of Access, since a lockout is not a way into
  * an account.
  */
@@ -43,6 +43,7 @@ final class RateLimitsModule implements ModuleInterface
                 Field::text('what')->labelled('What')->sortable(),
                 Field::text('who')->labelled('Who')->searchable(),
                 Field::text('budget')->labelled('Limit'),
+                Field::select('state', ['active' => 'Locked out', 'ended' => 'Ended'])->labelled('State'),
                 Field::datetime('locked_at')->labelled('Locked')->sortable()->relative(),
                 Field::datetime('until')->labelled('Ends')->sortable()->relative(),
             )
@@ -50,7 +51,8 @@ final class RateLimitsModule implements ModuleInterface
                 ShowScreen::make()->title('Lockout'),
                 DeleteScreen::make()
                     ->labelled('Let back in')
-                    ->confirm('Let this client back in? Its count starts again from zero.'),
+                    ->confirm('Let this client back in? Its count starts again from zero.')
+                    ->when(static fn (array $row): bool => $row['state'] === 'active'),
             );
     }
 }

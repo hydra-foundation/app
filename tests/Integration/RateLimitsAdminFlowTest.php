@@ -116,12 +116,49 @@ final class RateLimitsAdminFlowTest extends TestCase
         }
     }
 
-    public function test_a_lockout_that_has_run_out_is_not_listed(): void
+    /**
+     * A lockout under a one-minute limit can end seconds after it began, which
+     * is gone before anyone looks. Ended ones stay listed for a quarter of an
+     * hour, marked, and can't be let back in: they already are.
+     */
+    public function test_a_lockout_that_ended_lately_is_listed_as_ended(): void
     {
-        $this->lockouts->record(new Lockout('login', '192.0.2.1', new DateTimeImmutable('-20 minutes'), new DateTimeImmutable('-10 minutes'), 5, 600));
+        $this->lockouts->record(new Lockout('global', '192.0.2.1', new DateTimeImmutable('-11 minutes'), new DateTimeImmutable('-10 minutes'), 120, 60));
+        $this->login('boss');
+        $body = $this->body('/admin/rate-limits');
+
+        $this->assertStringContainsString('>192.0.2.1</td>', $body);
+        $this->assertStringContainsString('>Ended</td>', $body);
+        $this->assertStringNotContainsString('/admin/rate-limits/' . self::id('global', '192.0.2.1') . '/delete', $body);
+        $this->http->post('/admin/rate-limits/' . self::id('global', '192.0.2.1') . '/delete')
+            ->assertStatus(422)->assertSee('That lockout has already ended.');
+    }
+
+    public function test_one_that_is_still_in_force_says_so(): void
+    {
+        $this->lock('login', '192.0.2.44');
+        $this->login('boss');
+
+        $this->assertStringContainsString('>Locked out</td>', $this->body('/admin/rate-limits'));
+    }
+
+    public function test_a_lockout_that_ended_over_a_quarter_of_an_hour_ago_is_not_listed(): void
+    {
+        $this->lockouts->record(new Lockout('login', '192.0.2.1', new DateTimeImmutable('-30 minutes'), new DateTimeImmutable('-16 minutes'), 5, 600));
         $this->login('boss');
 
         $this->assertStringNotContainsString('>192.0.2.1</td>', $this->body('/admin/rate-limits'));
+        $this->http->htmx('div#admin-frame')->get('/admin/rate-limits/' . self::id('login', '192.0.2.1'))->assertStatus(404);
+    }
+
+    public function test_the_lockouts_still_in_force_come_first(): void
+    {
+        $this->lockouts->record(new Lockout('global', '192.0.2.1', new DateTimeImmutable('-2 minutes'), new DateTimeImmutable('-1 minute'), 120, 60));
+        $this->lock('login', '192.0.2.44');
+        $this->login('boss');
+        $body = $this->body('/admin/rate-limits');
+
+        $this->assertLessThan(strpos($body, '>192.0.2.1</td>'), strpos($body, '>192.0.2.44</td>'));
     }
 
     public function test_the_links_split_sign_in_limits_from_the_rest(): void

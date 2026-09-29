@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Sources;
 
 use App\Entities\User;
+use DateTimeImmutable;
 use Hydra\Admin\Contracts\DeleteSourceInterface;
 use Hydra\Admin\Contracts\DescribesColumnsInterface;
 use Hydra\Admin\Contracts\RowSourceInterface;
@@ -20,9 +21,12 @@ use Hydra\Throttle\RateLimiter;
 use Psr\Clock\ClockInterface;
 
 /**
- * The clients a rate limit is refusing right now, read through the lockout
- * store and never from the cache the counters live in. There are only ever a
- * handful, so paging, search and sort happen here rather than in SQL.
+ * The clients a rate limit is refusing right now, and those it stopped
+ * refusing in the last quarter of an hour, read through the lockout store and
+ * never from the cache the counters live in. The ended ones stay because a
+ * lockout under a one-minute limit can be over seconds after it began, before
+ * anyone has looked. There are only ever a handful, so paging, search and sort
+ * happen here rather than in SQL, with the ones still in force first.
  *
  * A row's id is base64url of "policy:identity". Never the identity as it is:
  * an address ending in ".com" at the end of a path is a file to nginx, and an
@@ -53,6 +57,9 @@ final class LockoutSource implements SourceInterface, RowSourceInterface, Descri
 
     private const SORTS = ['what', 'locked_at', 'until'];
 
+    /** How long an ended lockout stays listed, in seconds. */
+    private const RECENT = 900;
+
     public function __construct(
         private readonly LockoutStoreInterface $lockouts,
         private readonly RateLimiter $limiter,
@@ -64,7 +71,7 @@ final class LockoutSource implements SourceInterface, RowSourceInterface, Descri
     {
         return new SourceDescription(
             table: 'rate_limit_lockouts',
-            columns: ['id', 'policy', 'identity', 'what', 'who', 'budget', 'locked_at', 'until', 'kind'],
+            columns: ['id', 'policy', 'identity', 'what', 'who', 'budget', 'state', 'locked_at', 'until', 'kind'],
             sortable: self::SORTS,
             searchable: ['who'],
             filterable: ['kind'],
@@ -77,12 +84,12 @@ final class LockoutSource implements SourceInterface, RowSourceInterface, Descri
         [$policy, $identity] = self::decode($id) ?? [null, null];
         $lockout = $policy === null ? null : $this->lockouts->find($policy, $identity);
 
-        return $lockout === null || $lockout->until <= $this->clock->now() ? null : $this->row($lockout);
+        return $lockout === null || $lockout->until <= $this->since() ? null : $this->row($lockout);
     }
 
     public function page(Criteria $criteria): Page
     {
-        $rows = array_map($this->row(...), $this->lockouts->active($this->clock->now()));
+        $rows = array_map($this->row(...), $this->lockouts->active($this->since()));
 
         if (isset($criteria->filters['kind'])) {
             $rows = array_filter($rows, static fn (array $row): bool => $row['kind'] === $criteria->filters['kind']);
@@ -94,11 +101,9 @@ final class LockoutSource implements SourceInterface, RowSourceInterface, Descri
         }
 
         $sort = in_array($criteria->sort, self::SORTS, true) ? $criteria->sort : 'until';
-        usort($rows, static fn (array $a, array $b): int => [$a[$sort], $a['id']] <=> [$b[$sort], $b['id']]);
-
-        if ($criteria->direction === 'desc') {
-            $rows = array_reverse($rows);
-        }
+        $direction = $criteria->direction === 'desc' ? -1 : 1;
+        usort($rows, static fn (array $a, array $b): int => ($a['state'] === 'ended') <=> ($b['state'] === 'ended')
+            ?: $direction * ([$a[$sort], $a['id']] <=> [$b[$sort], $b['id']]));
 
         return new Page(array_slice($rows, $criteria->offset(), $criteria->perPage), count($rows), $criteria);
     }
@@ -106,7 +111,11 @@ final class LockoutSource implements SourceInterface, RowSourceInterface, Descri
     /** Letting a client back in: its counter and its record, through the limiter. */
     public function delete(string $id): void
     {
-        $row = $this->find($id) ?? throw WriteRejected::on('id', 'That lockout has already ended.');
+        $row = $this->find($id);
+
+        if ($row === null || $row['state'] === 'ended') {
+            throw WriteRejected::on('id', 'That lockout has already ended.');
+        }
 
         $this->limiter->release((string) $row['policy'], (string) $row['identity']);
     }
@@ -123,10 +132,17 @@ final class LockoutSource implements SourceInterface, RowSourceInterface, Descri
             'what' => $label,
             'who' => $byUser ? $this->username($lockout->identity) : $lockout->identity,
             'budget' => "{$lockout->limit} per " . self::span($lockout->window),
+            'state' => $lockout->until > $this->clock->now() ? 'active' : 'ended',
             'locked_at' => $lockout->lockedAt->getTimestamp(),
             'until' => $lockout->until->getTimestamp(),
             'kind' => in_array($lockout->policy, self::SIGN_IN, true) ? 'sign-in' : 'other',
         ];
+    }
+
+    /** Lockouts that ended before this are no longer listed. */
+    private function since(): DateTimeImmutable
+    {
+        return $this->clock->now()->modify('-' . self::RECENT . ' seconds');
     }
 
     /** The account's username, or the id as it was counted when it has gone. */
