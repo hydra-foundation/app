@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
+use App\Tasks\PruneLockouts;
 use App\Tasks\PruneSignIns;
 use App\Tests\Support\TestApp;
 use Hydra\Core\Testing\FrozenClock;
@@ -27,16 +28,17 @@ final class SchedulerFlowTest extends TestCase
         $this->app = TestApp::boot();
     }
 
-    public function test_runs_are_pruned_nightly_and_sign_ins_hourly_ahead_of_the_worker(): void
+    public function test_runs_and_lockouts_are_pruned_nightly_and_sign_ins_hourly_ahead_of_the_worker(): void
     {
         $tasks = $this->app->get(Schedule::class)->tasks();
 
         $this->assertSame(
-            [PruneScheduledRuns::class, PruneSignIns::class, Worker::class],
+            [PruneScheduledRuns::class, PruneSignIns::class, PruneLockouts::class, Worker::class],
             array_map(static fn (ScheduledTask $task): string => $task->class, $tasks),
         );
         $this->assertSame('0 3 * * *', $tasks[0]->expression()->expression);
         $this->assertSame('0 * * * *', $tasks[1]->expression()->expression);
+        $this->assertSame('10 3 * * *', $tasks[2]->expression()->expression);
     }
 
     public function test_a_tick_records_what_it_ran(): void

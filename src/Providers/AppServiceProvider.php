@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Admin\Modules\{AccessModule, ActivityModule, AuditModule, DashboardModule, FailedJobsModule, FilesModule, JobsModule, LogsModule, ScheduledRunsModule, SchedulerModule, SessionsModule, SettingsModule, SystemHealthModule, UsersModule};
+use App\Admin\Modules\{AccessModule, ActivityModule, AuditModule, DashboardModule, FailedJobsModule, FilesModule, JobsModule, LogsModule, RateLimitsModule, ScheduledRunsModule, SchedulerModule, SessionsModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\Api\MeController;
 use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController, TwoFactorChallengeController};
@@ -13,7 +13,8 @@ use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
-use App\Repositories\{ActivityRepository, ApiTokenRepository, SignInRepository, TwoFactorRepository, UserRepository};
+use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, SignInRepository, TwoFactorRepository, UserRepository};
+use App\Tasks\PruneLockouts;
 use App\Tasks\PruneSignIns;
 use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
@@ -68,6 +69,7 @@ use Hydra\Scheduler\Contracts\RunLogInterface;
 use Hydra\Scheduler\DatabaseRunLog;
 use Hydra\Scheduler\PruneScheduledRuns;
 use Hydra\Scheduler\Schedule;
+use Hydra\Throttle\Contracts\LockoutStoreInterface;
 use Hydra\Session\StartSessionMiddleware;
 use Hydra\Throttle\RateLimitMiddleware;
 use Hydra\View\Contracts\ViewInterface;
@@ -106,6 +108,7 @@ final class AppServiceProvider extends ServiceProvider
         UsersModule::class,
         AccessModule::class,
         SessionsModule::class,
+        RateLimitsModule::class,
         FilesModule::class,
         ActivityModule::class,
         AuditModule::class,
@@ -249,6 +252,12 @@ final class AppServiceProvider extends ServiceProvider
         // from where it was last seen.
         $container->singleton(SignInStoreInterface::class, function () use ($container) {
             return $container->get(SignInRepository::class);
+        });
+
+        // Bound, the rate limiter records each client it starts refusing, so
+        // Administration › Rate limits can list them and let them back in.
+        $container->singleton(LockoutStoreInterface::class, function () use ($container) {
+            return $container->get(LockoutRepository::class);
         });
 
         $container->singleton(LoggerInterface::class, function () use ($container) {
@@ -441,6 +450,7 @@ final class AppServiceProvider extends ServiceProvider
         $schedule = $container->get(Schedule::class);
         $schedule->run(PruneScheduledRuns::class)->dailyAt('03:00');
         $schedule->run(PruneSignIns::class)->hourly();
+        $schedule->run(PruneLockouts::class)->dailyAt('03:10');
         $schedule->drain(Worker::class)->everyMinute()->for(5);
 
         $listeners = $container->get(ListenerProvider::class);
