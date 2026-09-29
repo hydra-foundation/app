@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Auth\SignInWindow;
 use App\Tasks\PruneSignIns;
 use DateTimeImmutable;
 use Hydra\Auth\Testing\ArraySignInStore;
@@ -27,7 +28,7 @@ final class PruneSignInsTest extends TestCase
         $store->create(str_repeat('a', 32), new FakeUser(1), new DateTimeImmutable('2026-09-29 09:34:59'));
         $store->create(str_repeat('b', 32), new FakeUser(1), new DateTimeImmutable('2026-09-29 09:35:00'));
 
-        (new PruneSignIns($store, new FrozenClock('2026-09-29 10:00:00'), idleSeconds: 1440))->run();
+        (new PruneSignIns($store, new SignInWindow(new FrozenClock('2026-09-29 10:00:00'), idleSeconds: 1440)))->run();
 
         $this->assertNull($store->find(str_repeat('a', 32)));
         $this->assertNotNull($store->find(str_repeat('b', 32)), 'seen 25 minutes ago exactly: kept');
@@ -41,7 +42,7 @@ final class PruneSignInsTest extends TestCase
         $store->create(str_repeat('a', 32), new FakeUser(1), $now->modify('-' . ($lifetime + 61) . ' seconds'));
         $store->create(str_repeat('b', 32), new FakeUser(1), $now->modify('-' . ($lifetime + 60) . ' seconds'));
 
-        (new PruneSignIns($store, new FrozenClock($now)))->run();
+        (new PruneSignIns($store, new SignInWindow(new FrozenClock($now))))->run();
 
         $this->assertNull($store->find(str_repeat('a', 32)));
         $this->assertNotNull($store->find(str_repeat('b', 32)));
