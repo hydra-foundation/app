@@ -154,6 +154,26 @@ final class RecordActivityMiddlewareTest extends TestCase
         $this->assertNull($this->db->selectOne('SELECT * FROM activity'));
     }
 
+    /**
+     * Every signed-in user can read this table, and an admin looking up a
+     * leaked token pastes it into the query string. The same search comes back
+     * as the referer of whatever is clicked next.
+     */
+    public function test_a_token_in_the_query_or_the_referer_is_not_written_down(): void
+    {
+        $token = 'hyd_' . str_repeat('A', 43);
+
+        $this->middleware()->process(
+            $this->request(path: "/admin/access?q={$token}&sort=name")
+                ->withHeader('Referer', "https://example.com/admin/access?q={$token}"),
+            $this->handler(),
+        );
+
+        $row = $this->row();
+        $this->assertSame('q=hyd_…&sort=name', $row['query']);
+        $this->assertSame('https://example.com/admin/access?q=hyd_…', $row['referer']);
+    }
+
     public function test_a_dashboard_card_polling_itself_is_not_recorded(): void
     {
         // One row a minute per open tab, all of them naming the card that draws

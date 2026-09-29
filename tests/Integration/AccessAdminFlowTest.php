@@ -137,6 +137,18 @@ final class AccessAdminFlowTest extends TestCase
         $this->assertStringNotContainsString('>Unrelated</td>', $body);
     }
 
+    public function test_a_pasted_secret_is_not_kept_in_the_activity_log(): void
+    {
+        $leaked = $this->issue('alice', 'Leaked one');
+        $this->login('boss');
+
+        $this->body('/admin/access?q=' . $leaked->plain);
+
+        $recorded = json_encode($this->app->db()->select('SELECT query, referer FROM activity'), JSON_THROW_ON_ERROR);
+        $this->assertStringContainsString('q=hyd_\\u2026', $recorded);
+        $this->assertStringNotContainsString($leaked->plain, $recorded);
+    }
+
     public function test_a_well_formed_secret_nobody_holds_finds_nothing(): void
     {
         $this->issue('alice', 'Alice laptop');
