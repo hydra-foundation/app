@@ -195,7 +195,7 @@ final class AccessAdminFlowTest extends TestCase
     {
         $this->login('boss');
 
-        $this->http->htmx('div#admin-frame')->get('/admin/access/99')->assertStatus(404)->assertSee('That token has been revoked.');
+        $this->frame()->get('/admin/access/99')->assertStatus(404)->assertSee('That token has been revoked.');
     }
 
     public function test_access_is_admin_only(): void
@@ -281,6 +281,72 @@ final class AccessAdminFlowTest extends TestCase
         $this->assertNotNull($this->app->get(ApiTokens::class)->authenticate($issued->plain));
     }
 
+    public function test_each_token_offers_to_revoke_all_of_its_owners_and_asks_first(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->login('boss');
+        $body = $this->body('/admin/access');
+
+        $this->assertStringContainsString("hx-post=\"/admin/access/{$issued->token->id}/revoke-owner", $body);
+        $this->assertStringContainsString("hx-confirm=\"Revoke every API token this token&#039;s owner has?\"", $body);
+    }
+
+    public function test_revoking_all_of_an_owners_tokens_leaves_everyone_elses(): void
+    {
+        $first = $this->issue('alice', 'Laptop');
+        $second = $this->issue('alice', 'Phone');
+        $third = $this->issue('alice', 'CI');
+        $theirs = $this->issue('clerk', 'Clerk CI');
+        $this->login('boss');
+
+        $this->frame()->post("/admin/access/{$first->token->id}/revoke-owner")->assertOk()->assertSee('All 3 of alice&#039;s API tokens revoked.');
+
+        $tokens = $this->app->get(ApiTokens::class);
+        foreach ([$first, $second, $third] as $issued) {
+            $this->assertNull($tokens->authenticate($issued->plain));
+        }
+        $this->assertNotNull($tokens->authenticate($theirs->plain));
+    }
+
+    public function test_an_owner_with_one_token_is_told_so(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->login('boss');
+
+        $this->frame()->post("/admin/access/{$issued->token->id}/revoke-owner")->assertOk()->assertSee('alice&#039;s one API token revoked.');
+    }
+
+    public function test_revoking_all_of_an_owners_tokens_is_audited(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->login('boss');
+
+        $this->frame()->post("/admin/access/{$issued->token->id}/revoke-owner")->assertOk();
+
+        $rows = $this->app->db()->select('SELECT module, table_id, message FROM audit');
+        $this->assertSame([['module' => 'access', 'table_id' => (string) $issued->token->id, 'message' => 'admin.action: revoke-owner']], $rows);
+    }
+
+    public function test_revoking_all_from_a_token_already_gone_says_so(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $kept = $this->issue('alice', 'Phone');
+        $this->app->get(ApiTokenStoreInterface::class)->revoke($this->user('alice'), $issued->token->id);
+        $this->login('boss');
+
+        $this->frame()->post("/admin/access/{$issued->token->id}/revoke-owner")->assertStatus(422)->assertSee('That token has already been revoked.');
+        $this->assertNotNull($this->app->get(ApiTokens::class)->authenticate($kept->plain));
+    }
+
+    public function test_only_an_admin_may_revoke_all_of_an_owners_tokens(): void
+    {
+        $issued = $this->issue('alice', 'Laptop');
+        $this->login('clerk');
+
+        $this->frame()->post("/admin/access/{$issued->token->id}/revoke-owner")->assertStatus(403);
+        $this->assertNotNull($this->app->get(ApiTokens::class)->authenticate($issued->plain));
+    }
+
     private function issue(string $username, string $name, ?DateTimeImmutable $expires = null): IssuedApiToken
     {
         // Issued on the real clock, so an expiry is "in the future" to it.
@@ -296,6 +362,11 @@ final class AccessAdminFlowTest extends TestCase
         $id = $this->app->db()->selectOne('SELECT id FROM users WHERE username = ?', [$username])['id'] ?? throw new RuntimeException("{$username} is not seeded");
 
         return $this->app->get(UserProviderInterface::class)->byIdentifier((int) $id) ?? throw new RuntimeException("{$username} is not seeded");
+    }
+
+    private function frame(): Client
+    {
+        return $this->http->htmx('div#admin-frame');
     }
 
     private function body(string $path): string

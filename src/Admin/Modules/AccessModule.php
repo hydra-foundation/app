@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Admin\Modules;
 
+use App\Admin\Actions\RevokeOwnerTokens;
 use App\Admin\Sources\AccessTokenSource;
 use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
 use Hydra\Admin\Link;
+use Hydra\Admin\Screens\ActionScreen;
 use Hydra\Admin\Screens\DeleteScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
@@ -52,6 +54,10 @@ final class AccessModule implements ModuleInterface
                 DeleteScreen::make()
                     ->labelled('Revoke')
                     ->confirm('Revoke this token? Anything using it is refused from its next request.'),
+                ActionScreen::row('revoke-owner')
+                    ->labelled("Revoke all of the owner's tokens")
+                    ->confirm("Revoke every API token this token's owner has?")
+                    ->runs(RevokeOwnerTokens::class),
             );
     }
 }
