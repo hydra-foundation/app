@@ -13,7 +13,7 @@ use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
-use App\Repositories\{ActivityRepository, ApiTokenRepository, SignInRepository, TwoFactorRepository, UserRepository};
+use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneSignIns;
 use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
@@ -68,6 +68,7 @@ use Hydra\Scheduler\Contracts\RunLogInterface;
 use Hydra\Scheduler\DatabaseRunLog;
 use Hydra\Scheduler\PruneScheduledRuns;
 use Hydra\Scheduler\Schedule;
+use Hydra\Throttle\Contracts\LockoutStoreInterface;
 use Hydra\Session\StartSessionMiddleware;
 use Hydra\Throttle\RateLimitMiddleware;
 use Hydra\View\Contracts\ViewInterface;
@@ -249,6 +250,12 @@ final class AppServiceProvider extends ServiceProvider
         // from where it was last seen.
         $container->singleton(SignInStoreInterface::class, function () use ($container) {
             return $container->get(SignInRepository::class);
+        });
+
+        // Bound, the rate limiter records each client it starts refusing, so
+        // Administration › Rate limits can list them and let them back in.
+        $container->singleton(LockoutStoreInterface::class, function () use ($container) {
+            return $container->get(LockoutRepository::class);
         });
 
         $container->singleton(LoggerInterface::class, function () use ($container) {

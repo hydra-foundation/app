@@ -66,6 +66,18 @@ final class TestSchema
         );
 
         $pdo->exec(
+            'CREATE TABLE rate_limit_lockouts (
+                policy TEXT NOT NULL,
+                identity TEXT NOT NULL,
+                locked_at INTEGER NOT NULL,
+                until INTEGER NOT NULL,
+                lock_limit INTEGER NOT NULL,
+                lock_window INTEGER NOT NULL,
+                PRIMARY KEY (policy, identity)
+            )'
+        );
+
+        $pdo->exec(
             'CREATE TABLE sign_ins (
                 id TEXT PRIMARY KEY,
                 user_id INTEGER NOT NULL,
