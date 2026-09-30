@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y \
        intl \
        bcmath \
        opcache \
+       pcntl \
     && docker-php-ext-enable pdo_mysql
 
 # Install Redis extension
