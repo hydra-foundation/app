@@ -42,6 +42,8 @@ final class DashboardModule implements ModuleInterface
                             ->titled('Totals')
                             ->periodic()
                             ->requires(AccessAdmin::class)
+                            // Counts users among its figures, so a new one moves it.
+                            ->liveOn('module.users')
                             ->from(TotalsWidget::class),
                     )
                     ->widgets(
@@ -72,6 +74,7 @@ final class DashboardModule implements ModuleInterface
                             ->shaped(Shape::Rows)
                             ->periodic()
                             ->requires(AccessAdmin::class)
+                            ->liveOn('module.users')
                             ->from(NewestAccountsWidget::class),
                         Widget::make('changes', 'admin/widgets/changes')
                             ->titled('Recent changes')
