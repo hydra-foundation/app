@@ -6,6 +6,7 @@ namespace App\Tests\Integration;
 
 use App\Tests\Support\Jobs\RecordingJob;
 use App\Tests\Support\TestApp;
+use Hydra\Core\Testing\FrozenClock;
 use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Queue\Worker;
 use Hydra\Scheduler\Outcome;
@@ -14,6 +15,7 @@ use Hydra\Scheduler\Schedule;
 use Hydra\Scheduler\ScheduledTask;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
+use Psr\Clock\ClockInterface;
 
 #[CoversNothing]
 final class QueueFlowTest extends TestCase
@@ -40,6 +42,10 @@ final class QueueFlowTest extends TestCase
 
     public function test_a_pushed_job_is_handled_on_the_next_tick(): void
     {
+        // Off the hour, so the worker is the only task due: on the real clock
+        // the hourly PruneSignIns ran first one run in sixty.
+        $this->app->container()->instance(ClockInterface::class, new FrozenClock('2026-09-29 10:30:00'));
+
         $this->app->get(QueueInterface::class)->push(RecordingJob::class, ['user' => 7]);
 
         [$run] = $this->app->get(Runner::class)->run();
