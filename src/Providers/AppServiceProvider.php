@@ -15,6 +15,7 @@ use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
+use App\Listeners\PublishQueueChanges;
 use App\Listeners\RecordSentMailListener;
 use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, NotificationRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneLockouts;
@@ -74,6 +75,7 @@ use Hydra\Http\{
 use Hydra\Log\{ContextualLogger, FanOutLogger, RedactingLogger, StreamLogger};
 use Hydra\Mail\Events\MessageSent;
 use Hydra\Queue\Contracts\QueueInterface;
+use Hydra\Queue\Events\QueueChanged;
 use Hydra\Queue\{DatabaseQueue, Worker};
 use Hydra\Scheduler\Contracts\RunLogInterface;
 use Hydra\Scheduler\DatabaseRunLog;
@@ -86,6 +88,7 @@ use Hydra\View\Contracts\ViewInterface;
 use Hydra\View\PhpView;
 use PDO;
 use Psr\Clock\ClockInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -223,6 +226,7 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(ConnectionInterface::class),
                 $container->get(ClockInterface::class),
                 $container->get(PDO::class)->getAttribute(PDO::ATTR_DRIVER_NAME),
+                events: $container->get(EventDispatcherInterface::class),
             );
         });
 
@@ -244,6 +248,7 @@ final class AppServiceProvider extends ServiceProvider
                 $container,
                 $container->get(LoggerInterface::class),
                 reporter: $this->reporter($container),
+                events: $container->get(EventDispatcherInterface::class),
             );
         });
 
@@ -545,6 +550,12 @@ final class AppServiceProvider extends ServiceProvider
         // for Administration › Mail. Resolved at dispatch, like the audit.
         $listeners->listen(MessageSent::class, static function (MessageSent $event) use ($container): void {
             ($container->get(RecordSentMailListener::class))($event);
+        });
+
+        // Jobs and Failed jobs, whose rows the admin never writes. Resolved at
+        // dispatch, like the audit.
+        $listeners->listen(QueueChanged::class, static function (QueueChanged $event) use ($container): void {
+            ($container->get(PublishQueueChanges::class))($event);
         });
 
         $listeners->listen(PasswordReset::class, static function (PasswordReset $event) use ($container): void {
