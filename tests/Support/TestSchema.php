@@ -78,6 +78,21 @@ final class TestSchema
         );
 
         $pdo->exec(
+            'CREATE TABLE sent_mail (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sent_at INTEGER NOT NULL,
+                transport TEXT NOT NULL,
+                from_address TEXT NOT NULL,
+                to_addresses TEXT NOT NULL,
+                cc_addresses TEXT NOT NULL,
+                bcc_addresses TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                text_body TEXT NULL,
+                html_body TEXT NULL
+            )'
+        );
+
+        $pdo->exec(
             'CREATE TABLE sign_ins (
                 id TEXT PRIMARY KEY,
                 user_id INTEGER NOT NULL,

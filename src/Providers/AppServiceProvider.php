@@ -13,6 +13,7 @@ use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
+use App\Listeners\RecordSentMailListener;
 use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneLockouts;
 use App\Tasks\PruneSignIns;
@@ -63,6 +64,7 @@ use Hydra\Http\{
     TrustedProxies,
 };
 use Hydra\Log\{ContextualLogger, FanOutLogger, RedactingLogger, StreamLogger};
+use Hydra\Mail\Events\MessageSent;
 use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Queue\{DatabaseQueue, Worker};
 use Hydra\Scheduler\Contracts\RunLogInterface;
@@ -488,6 +490,12 @@ final class AppServiceProvider extends ServiceProvider
 
         $listeners->listen(RecoveryCodeUsed::class, static function (RecoveryCodeUsed $event) use ($container): void {
             ($container->get(MailRecoveryCodeUseListener::class))($event);
+        });
+
+        // Every message a transport accepted, queued or sent in the request,
+        // for Administration › Mail. Resolved at dispatch, like the audit.
+        $listeners->listen(MessageSent::class, static function (MessageSent $event) use ($container): void {
+            ($container->get(RecordSentMailListener::class))($event);
         });
 
         $listeners->listen(PasswordReset::class, static function (PasswordReset $event) use ($container): void {
