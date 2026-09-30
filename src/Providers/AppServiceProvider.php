@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Admin\Actions\FlushCache;
 use App\Admin\Modules\{AccessModule, ActivityModule, AuditModule, DashboardModule, FailedJobsModule, FilesModule, JobsModule, LogsModule, MailModule, RateLimitsModule, ScheduledRunsModule, SchedulerModule, SessionsModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\Api\MeController;
@@ -29,6 +30,7 @@ use Hydra\Auth\TrackSignInMiddleware;
 use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, SignInStoreInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
+use Hydra\Cache\CacheConfig;
 use Hydra\Cache\CacheHealthCheck;
 use Hydra\Cache\Contracts\StoreInterface;
 use Hydra\Core\Contracts\ContainerInterface;
@@ -262,6 +264,18 @@ final class AppServiceProvider extends ServiceProvider
         // Administration › Rate limits can list them and let them back in.
         $container->singleton(LockoutStoreInterface::class, function () use ($container) {
             return $container->get(LockoutRepository::class);
+        });
+
+        // Built by hand: autowiring fills an optional argument with its default,
+        // and a flush that cannot see the lockouts would leave Rate limits
+        // listing clients the emptied counters no longer refuse.
+        $container->singleton(FlushCache::class, function () use ($container) {
+            return new FlushCache(
+                $container->get(StoreInterface::class),
+                $container->get(CacheConfig::class),
+                $container->get(ClockInterface::class),
+                $container->bound(LockoutStoreInterface::class) ? $container->get(LockoutStoreInterface::class) : null,
+            );
         });
 
         $container->singleton(LoggerInterface::class, function () use ($container) {
