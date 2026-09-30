@@ -74,6 +74,11 @@ final class NotificationRepository implements NotificationStoreInterface
         );
     }
 
+    public function clearRead(int|string $userId): int
+    {
+        return $this->db->execute('DELETE FROM notifications WHERE user_id = ? AND read_at IS NOT NULL', [$userId]);
+    }
+
     /** Deletes notices read before $before, and says how many. Unread ones are kept however old. */
     public function prune(DateTimeImmutable $before): int
     {
