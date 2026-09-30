@@ -8,6 +8,8 @@ use App\Config\AppConfig;
 use App\Entities\User;
 use App\Mail\AddressChangedMail;
 use App\Repositories\UserRepository;
+use Hydra\Admin\Notifications\Notice;
+use Hydra\Admin\Notifications\Notifier;
 use Hydra\Mail\Contracts\MailerInterface;
 use Hydra\Queue\Contracts\JobInterface;
 
@@ -21,6 +23,7 @@ final class SendAddressChangedNotice implements JobInterface
         private readonly UserRepository $users,
         private readonly MailerInterface $mailer,
         private readonly AppConfig $app,
+        private readonly Notifier $notifier,
     ) {}
 
     public function handle(array $payload): void
@@ -33,5 +36,12 @@ final class SendAddressChangedNotice implements JobInterface
         }
 
         $this->mailer->send(AddressChangedMail::to($previous, $user, $this->app->name));
+
+        $this->notifier->notify($user->id, new Notice(
+            'Your email address changed',
+            "Mail now goes to {$user->email}. The old address was told too.",
+            '/admin/settings/account',
+            'account.email_changed',
+        ));
     }
 }

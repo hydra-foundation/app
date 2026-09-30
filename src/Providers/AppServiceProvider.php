@@ -16,8 +16,9 @@ use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
 use App\Listeners\RecordSentMailListener;
-use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, SignInRepository, TwoFactorRepository, UserRepository};
+use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, NotificationRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneLockouts;
+use App\Tasks\PruneNotifications;
 use App\Tasks\PruneSentMail;
 use App\Tasks\PruneSignIns;
 use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
@@ -25,6 +26,7 @@ use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
 use Hydra\Admin\LogAdminEventsListener;
+use Hydra\Admin\Notifications\NotificationStoreInterface;
 use Hydra\Admin\Updates\UpdateCheck;
 use Hydra\Auth\AuthenticateBearerMiddleware;
 use Hydra\Auth\TrackSignInMiddleware;
@@ -264,6 +266,16 @@ final class AppServiceProvider extends ServiceProvider
             return $container->get(TwoFactorRepository::class);
         });
 
+        // The bell's store. Bound, so the admin serves the bell's routes;
+        // one instance for both names, so the prune and the bell agree.
+        $container->singleton(NotificationRepository::class, function () use ($container) {
+            return new NotificationRepository($container->get(ConnectionInterface::class));
+        });
+
+        $container->singleton(NotificationStoreInterface::class, function () use ($container) {
+            return $container->get(NotificationRepository::class);
+        });
+
         $container->singleton(ApiTokenStoreInterface::class, function () use ($container) {
             return $container->get(ApiTokenRepository::class);
         });
@@ -485,6 +497,7 @@ final class AppServiceProvider extends ServiceProvider
         $schedule->run(PruneSignIns::class)->hourly();
         $schedule->run(PruneLockouts::class)->dailyAt('03:10');
         $schedule->run(PruneSentMail::class)->dailyAt('03:20');
+        $schedule->run(PruneNotifications::class)->dailyAt('03:30');
         $schedule->drain(Worker::class)->everyMinute()->for(5);
 
         // Who may listen to what: a topic registered nowhere is heard by

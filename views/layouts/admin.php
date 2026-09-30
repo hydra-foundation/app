@@ -15,4 +15,6 @@
     'footer' => trim($this->partial('partials/version')) . rtrim($this->partial('admin/partials/update-notice', ['update' => $updates->update()])),
     'banner' => trim($this->partial('partials/verify_email_banner')),
     'account' => trim($this->partial('partials/account')),
+    // The bell: where it asks for the signed-in user's notices.
+    'bell' => '/admin/notifications',
 ]) ?>

@@ -93,6 +93,19 @@ final class TestSchema
         );
 
         $pdo->exec(
+            'CREATE TABLE notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                kind TEXT NOT NULL,
+                title TEXT NOT NULL,
+                body TEXT NULL,
+                url TEXT NULL,
+                created_at INTEGER NOT NULL,
+                read_at INTEGER NULL
+            )'
+        );
+
+        $pdo->exec(
             'CREATE TABLE sign_ins (
                 id TEXT PRIMARY KEY,
                 user_id INTEGER NOT NULL,

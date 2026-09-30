@@ -18,6 +18,7 @@ use App\Console\Commands\MakeRepositoryCommand;
 use App\Console\Commands\MakeSourceCommand;
 use App\Console\Commands\MakeSourceTestCommand;
 use App\Console\Commands\MakeUserCommand;
+use App\Console\Commands\NotifyDemoCommand;
 use App\Console\Support\TableColumns;
 use Hydra\Admin\Console\AdminCheckCommand;
 use Hydra\Admin\Console\AdminRoutesCommand;
@@ -114,6 +115,7 @@ $application->addLazy([
     ScheduleRunCommand::class => static fn () => new ScheduleRunCommand($container->get(Runner::class)),
     SseServeCommand::class => static fn () => $container->get(SseServeCommand::class),
     BroadcastDemoCommand::class => static fn () => $container->get(BroadcastDemoCommand::class),
+    NotifyDemoCommand::class => static fn () => $container->get(NotifyDemoCommand::class),
     QueueFailedCommand::class => static fn () => new QueueFailedCommand($container->get(DatabaseQueue::class)),
     QueueRetryCommand::class => static fn () => new QueueRetryCommand($container->get(DatabaseQueue::class)),
     QueueForgetCommand::class => static fn () => new QueueForgetCommand($container->get(DatabaseQueue::class)),
