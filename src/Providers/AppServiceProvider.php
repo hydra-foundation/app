@@ -15,8 +15,9 @@ use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
+use App\Listeners\PublishQueueChanges;
 use App\Listeners\RecordSentMailListener;
-use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, NotificationRepository, SignInRepository, TwoFactorRepository, UserRepository};
+use App\Repositories\{ActivityRepository, ApiTokenRepository, AuditRepository, LockoutRepository, NotificationRepository, SentMailRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneLockouts;
 use App\Tasks\PruneNotifications;
 use App\Tasks\PruneSentMail;
@@ -25,6 +26,7 @@ use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, Verif
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
+use Hydra\Admin\Live\ModuleChanges;
 use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Admin\Notifications\NotificationStoreInterface;
 use Hydra\Admin\Updates\UpdateCheck;
@@ -33,7 +35,6 @@ use Hydra\Auth\TrackSignInMiddleware;
 use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, SignInStoreInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
-use Hydra\Broadcast\Contracts\BroadcasterInterface;
 use Hydra\Broadcast\TopicPolicy;
 use Hydra\Cache\CacheConfig;
 use Hydra\Cache\CacheHealthCheck;
@@ -74,6 +75,7 @@ use Hydra\Http\{
 use Hydra\Log\{ContextualLogger, FanOutLogger, RedactingLogger, StreamLogger};
 use Hydra\Mail\Events\MessageSent;
 use Hydra\Queue\Contracts\QueueInterface;
+use Hydra\Queue\Events\QueueChanged;
 use Hydra\Queue\{DatabaseQueue, Worker};
 use Hydra\Scheduler\Contracts\RunLogInterface;
 use Hydra\Scheduler\DatabaseRunLog;
@@ -86,6 +88,7 @@ use Hydra\View\Contracts\ViewInterface;
 use Hydra\View\PhpView;
 use PDO;
 use Psr\Clock\ClockInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -223,6 +226,7 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(ConnectionInterface::class),
                 $container->get(ClockInterface::class),
                 $container->get(PDO::class)->getAttribute(PDO::ATTR_DRIVER_NAME),
+                events: $container->get(EventDispatcherInterface::class),
             );
         });
 
@@ -244,17 +248,18 @@ final class AppServiceProvider extends ServiceProvider
                 $container,
                 $container->get(LoggerInterface::class),
                 reporter: $this->reporter($container),
+                events: $container->get(EventDispatcherInterface::class),
             );
         });
 
         // Bound by hand, not autowired: PHP-DI passes an optional constructor
         // parameter by, so an autowired repository would never be handed the
-        // broadcaster, and make:user and the settings screens would change
-        // users without a single open list hearing of it.
+        // admin's ModuleChanges, and make:user and the settings screens would
+        // change users without a single open list hearing of it.
         $container->singleton(UserRepository::class, function () use ($container) {
             return new UserRepository(
                 $container->get(ConnectionInterface::class),
-                $container->get(BroadcasterInterface::class),
+                $container->get(ModuleChanges::class),
             );
         });
 
@@ -278,6 +283,30 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(ApiTokenStoreInterface::class, function () use ($container) {
             return $container->get(ApiTokenRepository::class);
+        });
+
+        // Bound by hand, like UserRepository: autowiring would skip the
+        // optional ModuleChanges, and Sessions, Mail and Audit would never
+        // hear of the rows written outside the admin.
+        $container->singleton(SignInRepository::class, function () use ($container) {
+            return new SignInRepository(
+                $container->get(ConnectionInterface::class),
+                $container->get(ModuleChanges::class),
+            );
+        });
+
+        $container->singleton(SentMailRepository::class, function () use ($container) {
+            return new SentMailRepository(
+                $container->get(ConnectionInterface::class),
+                $container->get(ModuleChanges::class),
+            );
+        });
+
+        $container->singleton(AuditRepository::class, function () use ($container) {
+            return new AuditRepository(
+                $container->get(ConnectionInterface::class),
+                $container->get(ModuleChanges::class),
+            );
         });
 
         // Bound, the guard records every sign-in and checks it on each request,
@@ -545,6 +574,12 @@ final class AppServiceProvider extends ServiceProvider
         // for Administration › Mail. Resolved at dispatch, like the audit.
         $listeners->listen(MessageSent::class, static function (MessageSent $event) use ($container): void {
             ($container->get(RecordSentMailListener::class))($event);
+        });
+
+        // Jobs and Failed jobs, whose rows the admin never writes. Resolved at
+        // dispatch, like the audit.
+        $listeners->listen(QueueChanged::class, static function (QueueChanged $event) use ($container): void {
+            ($container->get(PublishQueueChanges::class))($event);
         });
 
         $listeners->listen(PasswordReset::class, static function (PasswordReset $event) use ($container): void {

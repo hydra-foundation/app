@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Entities\Audit;
+use Hydra\Admin\Live\ModuleChanges;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
@@ -34,7 +35,14 @@ final class AuditRepository
         'message' => 255,
     ];
 
-    public function __construct(private readonly ConnectionInterface $db) {}
+    /**
+     * @param ModuleChanges $changes tells open Audit lists a row was recorded:
+     *        one per admin write or account change, a rate worth watching.
+     */
+    public function __construct(
+        private readonly ConnectionInterface $db,
+        private readonly ModuleChanges $changes = new ModuleChanges,
+    ) {}
 
     public function record(Audit $audit): void
     {
@@ -50,6 +58,7 @@ final class AuditRepository
             $this->clip('username', $audit->username),
             $this->clip('message', $audit->message)
         ]);
+        $this->changes->publish('audit');
     }
 
     private function clip(string $column, ?string $value): ?string

@@ -8,7 +8,7 @@ use App\Entities\Role;
 use App\Entities\User;
 use Hydra\Auth\Contracts\EmailUserProviderInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
-use Hydra\Broadcast\Contracts\BroadcasterInterface;
+use Hydra\Admin\Live\ModuleChanges;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
@@ -22,14 +22,14 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
     private const COLUMNS = 'id, username, email, email_verified_at, password_hash, role, created_at, avatar, avatar_name';
 
     /**
-     * @param BroadcasterInterface|null $broadcaster tells open Users lists a
-     *        row changed. Every write through here publishes, so a new way to
-     *        change a user cannot forget to; the admin's own writes go through
+     * @param ModuleChanges $changes tells open Users lists a row changed.
+     *        Every write through here publishes, so a new way to change a
+     *        user cannot forget to; the admin's own writes go through
      *        UserSource and are published by the admin.
      */
     public function __construct(
         private readonly ConnectionInterface $db,
-        private readonly ?BroadcasterInterface $broadcaster = null,
+        private readonly ModuleChanges $changes = new ModuleChanges,
     ) {}
 
     public function byIdentifier(int|string $id): ?User
@@ -128,7 +128,7 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
     /** Open Users lists refetch. The id only: a broadcast never carries the row. */
     private function changed(int $id): void
     {
-        $this->broadcaster?->publish('module.users', 'changed', ['id' => $id]);
+        $this->changes->publish('users', $id);
     }
 
     private function changedIf(int $id, bool $happened): bool
