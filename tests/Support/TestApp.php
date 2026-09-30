@@ -18,7 +18,9 @@ use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Auth\SessionGuard;
 use Hydra\Authorization\AuthorizationServiceProvider;
 use Hydra\Broadcast\BroadcastServiceProvider;
+use Hydra\Broadcast\Hub\HubStatus;
 use Hydra\Broadcast\Testing\FakeBroadcastServiceProvider;
+use Hydra\Broadcast\Testing\FakeHubStatus;
 use Hydra\Cache\ArrayStore;
 use Hydra\Cache\Testing\ArrayCacheServiceProvider;
 use Hydra\Core\Application;
@@ -132,6 +134,12 @@ final class TestApp
 
         // The admin footer asks the release feed, and a suite must not.
         $container->instance(UpdateCheck::class, new UpdateCheck(new FakeReleaseFeed, new ArrayStore, '0.0.0'));
+
+        // The hub's status lives on Redis, which no test here has: this one
+        // says nothing until a test writes a report into it.
+        $hubStatus = new FakeHubStatus;
+        $container->instance(FakeHubStatus::class, $hubStatus);
+        $container->instance(HubStatus::class, $hubStatus);
 
         $pdo = TestSchema::connect();
         $container->instance(PDO::class, $pdo);

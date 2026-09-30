@@ -7,6 +7,7 @@ namespace App\Admin\Modules;
 use App\Admin\Actions\FlushCache;
 use App\Admin\Widgets\DatabaseWidget;
 use App\Admin\Widgets\MigrationsWidget;
+use App\Admin\Widgets\SseHubWidget;
 use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
@@ -81,6 +82,15 @@ final class SystemHealthModule implements ModuleInterface
                             ->shaped(Shape::Lines)
                             ->refreshEvery(self::REFRESH)
                             ->from(MigrationsWidget::class),
+                        // Completes the row: whether pages update live.
+                        Widget::make('sse', 'admin/partials/widget-health')
+                            ->titled('Live updates')
+                            ->withIcon('broadcast')
+                            ->spanning(4)
+                            ->reserving(3)
+                            ->shaped(Shape::Lines)
+                            ->refreshEvery(self::REFRESH)
+                            ->from(SseHubWidget::class),
                         Widget::make('resources', 'admin/partials/widget-gauges')
                             ->titled('Disk and memory')
                             ->withIcon('hdd')
