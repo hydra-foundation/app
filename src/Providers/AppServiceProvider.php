@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Admin\Modules\{AccessModule, ActivityModule, AuditModule, DashboardModule, FailedJobsModule, FilesModule, JobsModule, LogsModule, RateLimitsModule, ScheduledRunsModule, SchedulerModule, SessionsModule, SettingsModule, SystemHealthModule, UsersModule};
+use App\Admin\Modules\{AccessModule, ActivityModule, AuditModule, DashboardModule, FailedJobsModule, FilesModule, JobsModule, LogsModule, MailModule, RateLimitsModule, ScheduledRunsModule, SchedulerModule, SessionsModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\Api\MeController;
 use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController, TwoFactorChallengeController};
@@ -13,8 +13,10 @@ use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
+use App\Listeners\RecordSentMailListener;
 use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneLockouts;
+use App\Tasks\PruneSentMail;
 use App\Tasks\PruneSignIns;
 use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
@@ -63,6 +65,7 @@ use Hydra\Http\{
     TrustedProxies,
 };
 use Hydra\Log\{ContextualLogger, FanOutLogger, RedactingLogger, StreamLogger};
+use Hydra\Mail\Events\MessageSent;
 use Hydra\Queue\Contracts\QueueInterface;
 use Hydra\Queue\{DatabaseQueue, Worker};
 use Hydra\Scheduler\Contracts\RunLogInterface;
@@ -109,6 +112,7 @@ final class AppServiceProvider extends ServiceProvider
         AccessModule::class,
         SessionsModule::class,
         RateLimitsModule::class,
+        MailModule::class,
         FilesModule::class,
         ActivityModule::class,
         AuditModule::class,
@@ -451,6 +455,7 @@ final class AppServiceProvider extends ServiceProvider
         $schedule->run(PruneScheduledRuns::class)->dailyAt('03:00');
         $schedule->run(PruneSignIns::class)->hourly();
         $schedule->run(PruneLockouts::class)->dailyAt('03:10');
+        $schedule->run(PruneSentMail::class)->dailyAt('03:20');
         $schedule->drain(Worker::class)->everyMinute()->for(5);
 
         $listeners = $container->get(ListenerProvider::class);
@@ -488,6 +493,12 @@ final class AppServiceProvider extends ServiceProvider
 
         $listeners->listen(RecoveryCodeUsed::class, static function (RecoveryCodeUsed $event) use ($container): void {
             ($container->get(MailRecoveryCodeUseListener::class))($event);
+        });
+
+        // Every message a transport accepted, queued or sent in the request,
+        // for Administration › Mail. Resolved at dispatch, like the audit.
+        $listeners->listen(MessageSent::class, static function (MessageSent $event) use ($container): void {
+            ($container->get(RecordSentMailListener::class))($event);
         });
 
         $listeners->listen(PasswordReset::class, static function (PasswordReset $event) use ($container): void {

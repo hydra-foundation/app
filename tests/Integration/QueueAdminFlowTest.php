@@ -323,7 +323,7 @@ final class QueueAdminFlowTest extends TestCase
     }
 
     /**
-     * Two families make twelve modules ten entries. Listed in full, so a
+     * Three families make sixteen modules thirteen entries. Listed in full, so a
      * module that lost its entry, or a tab that grew one, fails here by name.
      */
     public function test_the_sidebar_has_an_entry_per_family(): void
@@ -338,6 +338,7 @@ final class QueueAdminFlowTest extends TestCase
                 '/admin/users',
                 '/admin/access',
                 '/admin/rate-limits',
+                '/admin/mail',
                 '/admin/files',
                 '/admin/activity',
                 '/admin/audit',
