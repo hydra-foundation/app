@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Modules;
 
 use App\Admin\Widgets\DatabaseWidget;
+use App\Admin\Widgets\MigrationsWidget;
 use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
@@ -69,6 +70,15 @@ final class SystemHealthModule implements ModuleInterface
                             ->reserving(3)
                             ->shaped(Shape::Lines)
                             ->from(UpdatesWidget::class),
+                        // Beside Updates: both are what to look at after a deploy.
+                        Widget::make('migrations', 'admin/partials/widget-health')
+                            ->titled('Migrations')
+                            ->withIcon('database-up')
+                            ->spanning(4)
+                            ->reserving(4)
+                            ->shaped(Shape::Lines)
+                            ->refreshEvery(self::REFRESH)
+                            ->from(MigrationsWidget::class),
                         Widget::make('resources', 'admin/partials/widget-gauges')
                             ->titled('Disk and memory')
                             ->withIcon('hdd')
