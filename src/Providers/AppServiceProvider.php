@@ -245,11 +245,19 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
-        $container->singleton(UserProviderInterface::class, function () use ($container) {
+        // Bound by hand, not autowired: PHP-DI passes an optional constructor
+        // parameter by, so an autowired repository would never be handed the
+        // broadcaster, and make:user and the settings screens would change
+        // users without a single open list hearing of it.
+        $container->singleton(UserRepository::class, function () use ($container) {
             return new UserRepository(
                 $container->get(ConnectionInterface::class),
                 $container->get(BroadcasterInterface::class),
             );
+        });
+
+        $container->singleton(UserProviderInterface::class, function () use ($container) {
+            return $container->get(UserRepository::class);
         });
 
         $container->singleton(TwoFactorStoreInterface::class, function () use ($container) {

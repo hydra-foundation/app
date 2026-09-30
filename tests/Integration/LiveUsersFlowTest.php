@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Entities\Role;
+use App\Repositories\UserRepository;
 use App\Tests\Support\TestApp;
+use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Broadcast\Envelope;
 use Hydra\Broadcast\Testing\FakeBroadcaster;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -56,6 +58,18 @@ final class LiveUsersFlowTest extends TestCase
             'changed',
             static fn (Envelope $e): bool => ($e->data['action'] ?? null) === 'admin.row_created',
         );
+    }
+
+    public function test_a_user_made_outside_the_admin_is_published_too(): void
+    {
+        // Resolved as make:user and the settings screens resolve it. Built by
+        // hand, the repository was always handed the broadcaster; autowired,
+        // it once was not.
+        $this->app->get(UserRepository::class)->create('outsider', 'outsider@example.com', 'x');
+        $this->app->get(UserProviderInterface::class);
+
+        $this->app->get(FakeBroadcaster::class)->assertPublished('module.users', 'changed', times: 1);
+        $this->assertSame($this->app->get(UserRepository::class), $this->app->get(UserProviderInterface::class));
     }
 
     public function test_an_admin_is_granted_the_users_topic(): void
