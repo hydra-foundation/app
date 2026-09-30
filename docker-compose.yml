@@ -71,6 +71,9 @@ services:
     user: www-data
     working_dir: /var/www/html/app
     command: ["php", "bin/console", "sse:serve"]
+    # The php:fpm base says SIGQUIT, which is php-fpm's graceful stop; the hub
+    # stops cleanly on either, and SIGTERM says what is meant.
+    stop_signal: SIGTERM
     volumes:
       - ../:/var/www/html
       - ./docker/php/prod.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro

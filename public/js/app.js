@@ -98,7 +98,9 @@
  * every topic, since events may have been missed.
  *
  * Nothing here errors when there is no hub, as under `php -S`: after five
- * closes in a row without the stream ever opening, it stops trying.
+ * tries without the stream ever opening, it stops. Once a stream has opened,
+ * it keeps trying every 30 seconds at most, so a tab left open through a
+ * deploy that restarts the hub comes back by itself.
  */
 (function () {
     'use strict';
@@ -112,6 +114,7 @@
     let failures = 0;
     let timer = null;
     let stopped = false;
+    let opened = false;
 
     function topicsOf(element) {
         return (element.getAttribute(ATTR) || '').split(/\s+/).filter(Boolean);
@@ -150,7 +153,7 @@
         close();
         failures += 1;
 
-        if (failures >= GIVE_UP_AFTER) {
+        if (!opened && failures >= GIVE_UP_AFTER) {
             stopped = true;
 
             return;
@@ -199,7 +202,10 @@
 
         source = new EventSource(grant.url);
 
-        source.addEventListener('open', function () { failures = 0; });
+        source.addEventListener('open', function () {
+            failures = 0;
+            opened = true;
+        });
 
         topics.forEach(function (topic) {
             source.addEventListener(topic, function (event) {
