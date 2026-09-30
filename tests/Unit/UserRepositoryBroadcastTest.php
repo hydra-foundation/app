@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Repositories\UserRepository;
 use App\Tests\Support\TestSchema;
+use Hydra\Admin\Live\ModuleChanges;
 use Hydra\Broadcast\Envelope;
 use Hydra\Broadcast\Testing\FakeBroadcaster;
 use Hydra\Database\PdoConnection;
@@ -33,7 +34,7 @@ final class UserRepositoryBroadcastTest extends TestCase
         $this->pdo->exec("INSERT INTO users (username, email, password_hash) VALUES ('will', 'will@example.com', 'x')");
         $this->will = (int) $this->pdo->lastInsertId();
         $this->broadcaster = new FakeBroadcaster;
-        $this->users = new UserRepository(new PdoConnection($this->pdo), $this->broadcaster);
+        $this->users = new UserRepository(new PdoConnection($this->pdo), new ModuleChanges($this->broadcaster));
     }
 
     public function test_creating_a_user_publishes_its_id(): void

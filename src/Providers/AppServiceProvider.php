@@ -25,6 +25,7 @@ use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, Verif
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Admin\Contracts\TimezoneInterface;
 use Hydra\Admin\Events\AdminEvent;
+use Hydra\Admin\Live\ModuleChanges;
 use Hydra\Admin\LogAdminEventsListener;
 use Hydra\Admin\Notifications\NotificationStoreInterface;
 use Hydra\Admin\Updates\UpdateCheck;
@@ -33,7 +34,6 @@ use Hydra\Auth\TrackSignInMiddleware;
 use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, SignInStoreInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
-use Hydra\Broadcast\Contracts\BroadcasterInterface;
 use Hydra\Broadcast\TopicPolicy;
 use Hydra\Cache\CacheConfig;
 use Hydra\Cache\CacheHealthCheck;
@@ -249,12 +249,12 @@ final class AppServiceProvider extends ServiceProvider
 
         // Bound by hand, not autowired: PHP-DI passes an optional constructor
         // parameter by, so an autowired repository would never be handed the
-        // broadcaster, and make:user and the settings screens would change
-        // users without a single open list hearing of it.
+        // admin's ModuleChanges, and make:user and the settings screens would
+        // change users without a single open list hearing of it.
         $container->singleton(UserRepository::class, function () use ($container) {
             return new UserRepository(
                 $container->get(ConnectionInterface::class),
-                $container->get(BroadcasterInterface::class),
+                $container->get(ModuleChanges::class),
             );
         });
 
