@@ -2,7 +2,9 @@
 <?php /** @var \App\View\Avatars $avatars */ ?>
 <?php /* Who is signed in, for the admin's account slot: the picture (or the
    icon) and the name, both leading to where the picture is changed. Drawn
-   twice by the shell, once per width, so it carries no id. */ ?>
+   twice by the shell, once per width, so it carries no id. Named after the
+   admin's own slot so a frame swap sends it out of band too, and a picture
+   changed in Settings or the Users module shows without a reload. */ ?>
 <?php $user = $avatars->user() ?>
 <?php if ($user !== null): ?>
     <?php $picture = $avatars->current() ?>

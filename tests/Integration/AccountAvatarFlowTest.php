@@ -176,6 +176,18 @@ final class AccountAvatarFlowTest extends TestCase
         $this->assertStringContainsString(htmlspecialchars($url), $account);
     }
 
+    public function test_a_new_picture_reaches_the_chrome_without_a_reload(): void
+    {
+        $body = $this->app->http()->withFiles(['avatar' => $this->png()])
+            ->post('/admin/settings/account', ['intent' => 'avatar'], ['HX-Request' => 'true', 'HX-Target' => 'div#admin-frame'])
+            ->assertOk()->body();
+        $url = htmlspecialchars('/admin/file?key=' . rawurlencode((string) $this->avatar()));
+
+        foreach (['topbar', 'sidebar'] as $place) {
+            $this->assertMatchesRegularExpression('~id="admin-account-' . $place . '"[^>]*hx-swap-oob="true"[^>]*>.*?' . preg_quote($url, '~') . '~s', $body);
+        }
+    }
+
     /** @return list<array<string, mixed>> */
     private function audits(): array
     {

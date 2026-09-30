@@ -23,12 +23,13 @@ final class UserAvatarFlowTest extends TestCase
     private const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
     private TestApp $app;
+    private int $boss;
     private int $clerk;
 
     protected function setUp(): void
     {
         $this->app = TestApp::boot();
-        $this->app->seed('boss', Role::Admin);
+        $this->boss = $this->app->seed('boss', Role::Admin);
         $this->clerk = $this->app->seed('clerk', Role::User);
         $this->app->login('boss')->assertStatus(302);
     }
@@ -130,6 +131,26 @@ final class UserAvatarFlowTest extends TestCase
         $this->app->http()->post('/logout');
 
         $this->app->http()->get($url)->assertStatus(302);
+    }
+
+    public function test_an_admin_giving_themselves_a_picture_sees_it_in_the_chrome_at_once(): void
+    {
+        // The save renders the list in the same request, from a guard that
+        // read the row before the write, and the account slot sits outside the
+        // frame: both have to be put right for the picture to show.
+        $body = $this->app->http()->withFiles(['avatar' => $this->png()])->post("/admin/users/{$this->boss}/edit", [
+            'username' => 'boss',
+            'email' => 'boss@example.com',
+            'role' => Role::Admin->value,
+        ], ['HX-Request' => 'true', 'HX-Target' => 'div#admin-frame'])->assertOk()->body();
+
+        $avatar = $this->app->get(UserRepository::class)->byIdentifier($this->boss)?->avatar;
+        $this->assertNotNull($avatar);
+        $url = htmlspecialchars('/admin/file?key=' . rawurlencode($avatar));
+
+        foreach (['topbar', 'sidebar'] as $place) {
+            $this->assertMatchesRegularExpression('~id="admin-account-' . $place . '"[^>]*hx-swap-oob="true"[^>]*>.*?' . preg_quote($url, '~') . '~s', $body);
+        }
     }
 
     /** @param array<string, string> $extra */

@@ -125,26 +125,34 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             WHERE id=?', $this->table, implode(', ', $columns));
         $this->db->execute($sql, $params);
 
+        $own = (string) $this->guard->id() === (string) $key;
+        $user = $own || ($data['password'] ?? '') !== '' ? $this->users->byIdentifier($key) : null;
+
+        if ($user === null) {
+            return;
+        }
+
         // A new password ends every session the account has, the one making
         // this edit included when it is the admin's own row, and every API
         // token: a password set because the account was taken over must not
         // leave the intruder a bearer token that still works.
         if (($data['password'] ?? '') !== '') {
-            $user = $this->users->byIdentifier($key);
+            $this->tokens->revokeAll($user);
 
-            if ($user !== null) {
-                $this->tokens->revokeAll($user);
-
-                // Their sign-ins go with it: signed out by the stamp on their
-                // next request anyway, but a list of sign-ins should not show
-                // them until then. The admin's own row keeps the sign-in making
-                // this edit, which refresh() sees to.
-                if ((string) $this->guard->id() === (string) $key) {
-                    $this->guard->refresh($user);
-                } else {
-                    $this->signIns->revokeAll($user);
-                }
+            // Their sign-ins go with it: signed out by the stamp on their next
+            // request anyway, but a list of sign-ins should not show them until
+            // then. The admin's own row keeps the sign-in making this edit,
+            // which refresh() below sees to.
+            if (!$own) {
+                $this->signIns->revokeAll($user);
             }
+        }
+
+        // The guard holds the row it read at the start of the request, and the
+        // screen this save renders draws the account slot from it: without the
+        // refresh an admin's own new picture or name would show the old one.
+        if ($own) {
+            $this->guard->refresh($user);
         }
     }
 
