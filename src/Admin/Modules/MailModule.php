@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace App\Admin\Modules;
 
+use App\Admin\Actions\SendTestEmail;
 use App\Admin\Sources\SentMailSource;
 use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
 use Hydra\Admin\Field;
+use Hydra\Admin\Screens\ActionScreen;
 use Hydra\Admin\Screens\ShowScreen;
 use Hydra\Admin\Surface;
 use Hydra\View\HtmlView;
 
 /**
- * Mail that went out and what it said, read-only. A send that failed is a
- * failed job, with its retry, and is not listed here a second time.
+ * Mail that went out and what it said, read-only, and a button that says
+ * whether the transport works. A send that failed is a failed job, with its
+ * retry, and is not listed here a second time.
  *
  * Bodies are shown as text, HTML included: a stored message is whatever the
  * app put in it, and rendering it would hand the admin page to that markup.
@@ -47,6 +50,10 @@ final class MailModule implements ModuleInterface
             )
             ->screens(
                 ShowScreen::make()->title('Message'),
+                ActionScreen::module('test')
+                    ->labelled('Send a test email')
+                    ->confirm('Send a test email to your own address now?')
+                    ->runs(SendTestEmail::class),
             );
     }
 

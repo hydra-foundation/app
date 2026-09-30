@@ -9,8 +9,15 @@ use App\Repositories\SentMailRepository;
 use App\Tests\Support\TestApp;
 use DateTimeImmutable;
 use Hydra\Http\Testing\Client;
+use Hydra\Mail\Address;
+use Hydra\Mail\Contracts\MailerInterface;
+use Hydra\Mail\Contracts\TransportInterface;
 use Hydra\Mail\Events\MessageSent;
+use Hydra\Mail\Exceptions\TransportException;
+use Hydra\Mail\Mailer;
 use Hydra\Mail\Message;
+use Hydra\Mail\Transports\ArrayTransport;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
@@ -140,6 +147,94 @@ final class MailAdminFlowTest extends TestCase
 
         $this->http->get('/admin/mail')->assertStatus(403);
         $this->http->get('/admin/mail/1')->assertStatus(403);
+    }
+
+    public function test_the_list_offers_a_test_email(): void
+    {
+        $this->login('boss');
+        $body = $this->body('/admin/mail');
+
+        $this->assertStringContainsString('hx-post="/admin/mail/test"', $body);
+        $this->assertStringContainsString('>Send a test email</button>', $body);
+    }
+
+    public function test_a_test_email_goes_to_the_admin_at_once_and_is_logged(): void
+    {
+        $transport = $this->realMailer(new ArrayTransport);
+        $this->login('boss');
+
+        $this->frame()->post('/admin/mail/test')->assertOk()->assertSee('Test email sent to boss@example.com.');
+
+        $this->assertCount(1, $transport->messages());
+        $sent = $transport->messages()[0];
+        $this->assertTrue($sent->isFor('boss@example.com'));
+        $this->assertSame('Test email from Hydra', $sent->getSubject());
+        $this->assertStringContainsString('boss', (string) $sent->getText());
+        $this->assertSame(0, $this->app->queued(), 'sent in the request, not queued');
+
+        $rows = $this->app->db()->select('SELECT to_addresses, subject FROM sent_mail');
+        $this->assertSame([['to_addresses' => 'boss <boss@example.com>', 'subject' => 'Test email from Hydra']], $rows);
+    }
+
+    public function test_a_transport_that_fails_says_why_and_logs_nothing(): void
+    {
+        $this->realMailer(new class implements TransportInterface {
+            public function send(Message $message): void
+            {
+                throw new TransportException('The SMTP server refused the credentials: 535 Authentication failed');
+            }
+        });
+        $this->login('boss');
+
+        $this->frame()->post('/admin/mail/test')
+            ->assertStatus(422)
+            ->assertSee('The SMTP server refused the credentials: 535 Authentication failed');
+
+        $this->assertSame([], $this->app->db()->select('SELECT id FROM sent_mail'));
+    }
+
+    public function test_a_mailer_with_no_sender_configured_says_so(): void
+    {
+        $this->app->container()->instance(MailerInterface::class, new Mailer(new ArrayTransport));
+        $this->login('boss');
+
+        $this->frame()->post('/admin/mail/test')
+            ->assertStatus(422)
+            ->assertSee('The message has no sender, and MAIL_FROM_ADDRESS is not set.');
+    }
+
+    public function test_only_an_admin_may_send_a_test(): void
+    {
+        $transport = $this->realMailer(new ArrayTransport);
+        $this->login('clerk');
+
+        $this->http->post('/admin/mail/test')->assertStatus(403);
+        $this->assertSame([], $transport->messages());
+    }
+
+    /**
+     * The suite's mailer is a fake that sends and announces nothing; the test
+     * button is about the real one, so it gets the real one over $transport.
+     *
+     * @template T of TransportInterface
+     * @param T $transport
+     * @return T
+     */
+    private function realMailer(TransportInterface $transport): TransportInterface
+    {
+        $this->app->container()->instance(MailerInterface::class, new Mailer(
+            $transport,
+            new Address('app@example.com'),
+            $this->app->get(EventDispatcherInterface::class),
+            'array',
+        ));
+
+        return $transport;
+    }
+
+    private function frame(): Client
+    {
+        return $this->http->htmx('div#admin-frame');
     }
 
     private function sent(string $to, string $subject, string $when = 'now'): void
