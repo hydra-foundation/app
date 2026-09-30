@@ -23,6 +23,7 @@
     "require": {
         "php": ">=8.2",
         "hydrakit/core": "^0.17",
+        "hydrakit/broadcast": "^0.17",
         "hydrakit/cache": "^0.17",
         "hydrakit/http": "^0.17",
         "hydrakit/validation": "^0.17",

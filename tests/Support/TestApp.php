@@ -17,6 +17,8 @@ use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
 use Hydra\Auth\SessionGuard;
 use Hydra\Authorization\AuthorizationServiceProvider;
+use Hydra\Broadcast\BroadcastServiceProvider;
+use Hydra\Broadcast\Testing\FakeBroadcastServiceProvider;
 use Hydra\Cache\ArrayStore;
 use Hydra\Cache\Testing\ArrayCacheServiceProvider;
 use Hydra\Core\Application;
@@ -86,6 +88,8 @@ final class TestApp
             ->register(new ArrayCacheServiceProvider)
             ->register(new MailServiceProvider)
             ->register(new FakeMailServiceProvider)
+            ->register(new BroadcastServiceProvider)
+            ->register(new FakeBroadcastServiceProvider)
             ->register(new ThrottleServiceProvider)
             ->register(new HttpServiceProvider(
                 controllers: AppServiceProvider::CONTROLLERS,

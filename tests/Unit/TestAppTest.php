@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Bootstrap;
 use App\Tests\Support\TestApp;
+use Hydra\Broadcast\Testing\FakeBroadcastServiceProvider;
 use Hydra\Cache\CacheServiceProvider;
 use Hydra\Cache\Testing\ArrayCacheServiceProvider;
 use Hydra\Core\Application;
@@ -27,6 +28,7 @@ final class TestAppTest extends TestCase
         FixedSignerServiceProvider::class => SignerServiceProvider::class,
         ArrayCacheServiceProvider::class => CacheServiceProvider::class,
         FakeMailServiceProvider::class => null,
+        FakeBroadcastServiceProvider::class => null,
     ];
 
     public function test_the_harness_boots_the_providers_bootstrap_does_in_the_same_order(): void

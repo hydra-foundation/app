@@ -11,6 +11,7 @@ use Hydra\Core\Application;
 use Hydra\Core\Environment;
 use Hydra\Admin\AdminServiceProvider;
 use Hydra\Auth\AuthenticateMiddleware;
+use Hydra\Broadcast\BroadcastServiceProvider;
 use Hydra\Core\Security\SignerServiceProvider;
 use Hydra\Filesystem\FilesystemServiceProvider;
 use Hydra\Kernel\HttpServiceProvider;
@@ -37,6 +38,7 @@ final class Bootstrap
             ->register(new SignerServiceProvider)
             ->register(new CacheServiceProvider)
             ->register(new MailServiceProvider)
+            ->register(new BroadcastServiceProvider)
             // After the cache: the limiter counts into that store.
             ->register(new ThrottleServiceProvider)
             ->register(new HttpServiceProvider(
