@@ -16,6 +16,7 @@ use App\Listeners\MailRecoveryCodeUseListener;
 use App\Listeners\RecordSentMailListener;
 use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneLockouts;
+use App\Tasks\PruneSentMail;
 use App\Tasks\PruneSignIns;
 use App\View\{Avatars, ThemeResolver, Themes, TimezoneResolver, Timezones, VerificationBanner};
 use Hydra\Admin\AdminServiceProvider;
@@ -454,6 +455,7 @@ final class AppServiceProvider extends ServiceProvider
         $schedule->run(PruneScheduledRuns::class)->dailyAt('03:00');
         $schedule->run(PruneSignIns::class)->hourly();
         $schedule->run(PruneLockouts::class)->dailyAt('03:10');
+        $schedule->run(PruneSentMail::class)->dailyAt('03:20');
         $schedule->drain(Worker::class)->everyMinute()->for(5);
 
         $listeners = $container->get(ListenerProvider::class);
