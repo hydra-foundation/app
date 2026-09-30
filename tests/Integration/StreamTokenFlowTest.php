@@ -50,11 +50,8 @@ final class StreamTokenFlowTest extends TestCase
 
     public function test_several_topics_are_granted_together_once_each(): void
     {
-        // An admin, because from 0.19 module.{slug} is the admin's to grant,
-        // and it grants the Users module's topic to those who may open it.
-        // The rule below is for 0.18, where nothing else grants it.
+        // module.users is the admin's to grant, and it grants it to admins.
         $this->signIn(Role::Admin);
-        $this->app->get(TopicPolicy::class)->allow('module.{slug}', static fn (): bool => true);
 
         $body = self::json($this->token('demo, module.users,demo')->assertOk());
         $grant = $this->app->get(StreamToken::class)->open(substr((string) $body['url'], strlen('/stream?token=')));

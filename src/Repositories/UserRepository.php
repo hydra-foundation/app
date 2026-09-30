@@ -8,6 +8,7 @@ use App\Entities\Role;
 use App\Entities\User;
 use Hydra\Auth\Contracts\EmailUserProviderInterface;
 use Hydra\Auth\Contracts\UserProviderInterface;
+use Hydra\Broadcast\Contracts\BroadcasterInterface;
 use Hydra\Database\Contracts\ConnectionInterface;
 
 /**
@@ -20,7 +21,16 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
 {
     private const COLUMNS = 'id, username, email, email_verified_at, password_hash, role, created_at, avatar, avatar_name';
 
-    public function __construct(private readonly ConnectionInterface $db) {}
+    /**
+     * @param BroadcasterInterface|null $broadcaster tells open Users lists a
+     *        row changed. Every write through here publishes, so a new way to
+     *        change a user cannot forget to; the admin's own writes go through
+     *        UserSource and are published by the admin.
+     */
+    public function __construct(
+        private readonly ConnectionInterface $db,
+        private readonly ?BroadcasterInterface $broadcaster = null,
+    ) {}
 
     public function byIdentifier(int|string $id): ?User
     {
@@ -65,13 +75,17 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
             [$username, $email, $passwordHash, $role->value],
         );
 
-        return (int) $this->db->lastInsertId();
+        $id = (int) $this->db->lastInsertId();
+        $this->changed($id);
+
+        return $id;
     }
 
     /** Spends every outstanding reset token for this user, since each is bound to the old hash. */
     public function updatePassword(int $id, string $passwordHash): void
     {
         $this->db->execute('UPDATE users SET password_hash = ? WHERE id = ?', [$passwordHash, $id]);
+        $this->changed($id);
     }
 
     /**
@@ -84,6 +98,7 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
             'UPDATE users SET avatar = ?, avatar_name = ? WHERE id = ?',
             [$avatar, $avatar === null ? null : $name, $id],
         );
+        $this->changed($id);
     }
 
     /**
@@ -92,10 +107,10 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
      */
     public function changeEmail(int $id, string $from, string $to): bool
     {
-        return $this->db->execute(
+        return $this->changedIf($id, $this->db->execute(
             'UPDATE users SET email = ?, email_verified_at = CURRENT_TIMESTAMP WHERE id = ? AND email = ?',
             [$to, $id, $from],
-        ) > 0;
+        ) > 0);
     }
 
     /**
@@ -104,9 +119,24 @@ final class UserRepository implements UserProviderInterface, EmailUserProviderIn
      */
     public function markVerified(int $id, string $email): bool
     {
-        return $this->db->execute(
+        return $this->changedIf($id, $this->db->execute(
             'UPDATE users SET email_verified_at = CURRENT_TIMESTAMP WHERE id = ? AND email = ? AND email_verified_at IS NULL',
             [$id, $email],
-        ) > 0;
+        ) > 0);
+    }
+
+    /** Open Users lists refetch. The id only: a broadcast never carries the row. */
+    private function changed(int $id): void
+    {
+        $this->broadcaster?->publish('module.users', 'changed', ['id' => $id]);
+    }
+
+    private function changedIf(int $id, bool $happened): bool
+    {
+        if ($happened) {
+            $this->changed($id);
+        }
+
+        return $happened;
     }
 }
