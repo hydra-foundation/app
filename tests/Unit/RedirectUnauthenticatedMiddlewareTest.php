@@ -51,6 +51,30 @@ final class RedirectUnauthenticatedMiddlewareTest extends TestCase
         $this->assertSame('/login', $response->getHeaderLine('Location'));
     }
 
+    public function test_a_script_asking_for_json_keeps_its_401(): void
+    {
+        // A page's fetch() would follow a redirect and parse the login form.
+        $e = new AuthenticationException;
+
+        try {
+            $this->middleware()->process($this->request()->withHeader('Accept', 'application/json'), $this->throwingHandler($e));
+            $this->fail('A JSON request must get the 401.');
+        } catch (AuthenticationException $caught) {
+            $this->assertSame($e, $caught);
+        }
+    }
+
+    public function test_a_browser_that_also_accepts_json_is_still_redirected(): void
+    {
+        $response = $this->middleware()->process(
+            $this->request()->withHeader('Accept', 'text/html,application/json;q=0.9'),
+            $this->throwingHandler(new AuthenticationException),
+        );
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/login', $response->getHeaderLine('Location'));
+    }
+
     public function test_token_mismatch_without_an_issued_token_redirects_to_login(): void
     {
         // The expired-session POST: the old session (and its token) is gone,

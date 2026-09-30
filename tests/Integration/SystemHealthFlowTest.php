@@ -6,6 +6,8 @@ namespace App\Tests\Integration;
 
 use App\Entities\Role;
 use App\Tests\Support\TestApp;
+use Hydra\Broadcast\Hub\HubReport;
+use Hydra\Broadcast\Testing\FakeHubStatus;
 use Hydra\Cache\CacheConfig;
 use Hydra\Cache\Contracts\StoreInterface;
 use Hydra\Database\MigrationRunner;
@@ -80,6 +82,26 @@ final class SystemHealthFlowTest extends TestCase
             ->assertSee('1 pending')
             ->assertSee('run ./hydra migrate:run')
             ->assertSee('20261001_000000_add_x.sql');
+    }
+
+    public function test_the_live_updates_card_comes_after_migrations(): void
+    {
+        $this->login('boss');
+
+        $this->assertMatchesRegularExpression(
+            '~id="admin-widget-migrations".*?id="admin-widget-sse"~s',
+            $this->http->get('/admin/system-health')->assertOk()->body(),
+        );
+    }
+
+    public function test_the_live_updates_card_reads_the_hubs_report(): void
+    {
+        $this->app->get(FakeHubStatus::class)->publish(new HubReport(7, time() - 60, 4, true, time()), 30);
+        $this->login('boss');
+
+        $this->http->get('/admin/system-health/w/sse')->assertOk()
+            ->assertSee('Running')
+            ->assertSee('Streams');
     }
 
     public function test_only_an_admin_may_read_it(): void

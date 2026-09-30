@@ -18,6 +18,7 @@
 #
 #   ./bin/dev up -d --build         # base + dev (xdebug, dev.ini), recommended
 #   ./bin/dev logs -f scheduler     # what schedule:run did each minute
+#   ./bin/dev logs -f sse           # the SSE hub: streams opened, Redis lost
 #   docker compose up -d            # base only, production-shaped
 
 services:
@@ -53,6 +54,30 @@ services:
       - ./docker/php/prod.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
     depends_on:
       - db
+      - redis
+    networks:
+      - net
+
+  # The SSE hub: browsers' event streams, held here because a stream held by
+  # php-fpm keeps a worker busy for as long as the tab is open. It listens on
+  # 8080 inside the network only; nginx proxies /stream to it. www-data, not
+  # root like the scheduler: it writes nothing but the log.
+  sse:
+    build:
+      context: ./docker/php
+      args:
+        BUILD_MODE: ${BUILD_MODE:-prod}
+    init: true
+    user: www-data
+    working_dir: /var/www/html/app
+    command: ["php", "bin/console", "sse:serve"]
+    # The php:fpm base says SIGQUIT, which is php-fpm's graceful stop; the hub
+    # stops cleanly on either, and SIGTERM says what is meant.
+    stop_signal: SIGTERM
+    volumes:
+      - ../:/var/www/html
+      - ./docker/php/prod.ini:/usr/local/etc/php/conf.d/zz-env.ini:ro
+    depends_on:
       - redis
     networks:
       - net

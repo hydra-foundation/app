@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b4f65c2a8b3ef6691b9ae1b7f4239b82",
+    "content-hash": "9d0623c073a09ae2c5c34ec19805bfd5",
     "packages": [
         {
             "name": "hydrakit/admin",
@@ -177,6 +177,65 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "source": "https://github.com/hydra-foundation/authorization/tree/v0.18.0"
+            },
+            "time": "2026-09-30T15:49:50+00:00"
+        },
+        {
+            "name": "hydrakit/broadcast",
+            "version": "v0.18.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hydra-foundation/broadcast.git",
+                "reference": "34d33dde638dddb39fc0b3564e0a31dc60b97d55"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hydra-foundation/broadcast/zipball/34d33dde638dddb39fc0b3564e0a31dc60b97d55",
+                "reference": "34d33dde638dddb39fc0b3564e0a31dc60b97d55",
+                "shasum": ""
+            },
+            "require": {
+                "hydrakit/cache": "^0.18",
+                "hydrakit/console": "^0.18",
+                "hydrakit/core": "^0.18",
+                "php": ">=8.2",
+                "psr/clock": "^1.0",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "hydrakit/log": "^0.18",
+                "phpunit/phpunit": "^11.0"
+            },
+            "suggest": {
+                "ext-pcntl": "Lets sse:serve close its streams and clear its status on SIGTERM.",
+                "ext-redis": "Required by the redis driver (BROADCAST_DRIVER=redis)."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.18.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Hydra\\Broadcast\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Hleucka",
+                    "email": "william.hleucka@gmail.com"
+                }
+            ],
+            "description": "Tell other processes that something changed: a publisher over Redis pub/sub, listen tokens, and an SSE hub that fans broadcasts out to browsers.",
+            "homepage": "https://hydra.williamhleucka.com",
+            "support": {
+                "issues": "https://github.com/hydra-foundation/broadcast/issues",
+                "source": "https://github.com/hydra-foundation/broadcast/tree/v0.18.0"
             },
             "time": "2026-09-30T15:49:50+00:00"
         },

@@ -8,6 +8,7 @@ use App\Admin\Actions\FlushCache;
 use App\Admin\Modules\{AccessModule, ActivityModule, AuditModule, DashboardModule, FailedJobsModule, FilesModule, JobsModule, LogsModule, MailModule, RateLimitsModule, ScheduledRunsModule, SchedulerModule, SessionsModule, SettingsModule, SystemHealthModule, UsersModule};
 use App\Config\{AppConfig, CspConfig, DbConfig, LogConfig, RouteConfig};
 use App\Controllers\Api\MeController;
+use App\Controllers\StreamTokenController;
 use App\Controllers\{AdminController, AuthController, EmailChangeController, EmailVerificationController, HomeController, PasswordResetController, TwoFactorChallengeController};
 use App\Http\Middleware\{RecordActivityMiddleware, RedirectUnauthenticatedMiddleware};
 use App\Listeners\AuditAccountEventsListener;
@@ -30,6 +31,7 @@ use Hydra\Auth\TrackSignInMiddleware;
 use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, SignInStoreInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
+use Hydra\Broadcast\TopicPolicy;
 use Hydra\Cache\CacheConfig;
 use Hydra\Cache\CacheHealthCheck;
 use Hydra\Cache\Contracts\StoreInterface;
@@ -102,6 +104,7 @@ final class AppServiceProvider extends ServiceProvider
         EmailChangeController::class,
         AdminController::class,
         MeController::class,
+        StreamTokenController::class,
     ];
 
     /**
@@ -471,6 +474,10 @@ final class AppServiceProvider extends ServiceProvider
         $schedule->run(PruneLockouts::class)->dailyAt('03:10');
         $schedule->run(PruneSentMail::class)->dailyAt('03:20');
         $schedule->drain(Worker::class)->everyMinute()->for(5);
+
+        // Who may listen to what: a topic registered nowhere is heard by
+        // nobody. `demo` is the home page's example; any signed-in user.
+        $container->get(TopicPolicy::class)->allow('demo', static fn (): bool => true);
 
         $listeners = $container->get(ListenerProvider::class);
         $audit = new LogAuthEventsListener($container->get(LoggerInterface::class));

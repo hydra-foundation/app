@@ -7,6 +7,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Bootstrap;
 use App\Config\AppConfig;
+use App\Console\Commands\BroadcastDemoCommand;
 use App\Console\Commands\MakeAbilityCommand;
 use App\Console\Commands\MakeAdminCommand;
 use App\Console\Commands\MakeControllerCommand;
@@ -20,6 +21,7 @@ use App\Console\Commands\MakeUserCommand;
 use App\Console\Support\TableColumns;
 use Hydra\Admin\Console\AdminCheckCommand;
 use Hydra\Admin\Console\AdminRoutesCommand;
+use Hydra\Broadcast\Console\SseServeCommand;
 use Hydra\View\Contracts\ViewInterface;
 use Hydra\Admin\ModuleRegistry;
 use Hydra\Console\Commands\KeyGenerateCommand;
@@ -110,6 +112,8 @@ $application->addLazy([
     MakeRepositoryCommand::class => $repository,
     MakeAdminCommand::class => static fn () => new MakeAdminCommand($source(), $module(), $sourceTest(), $entity(), $repository()),
     ScheduleRunCommand::class => static fn () => new ScheduleRunCommand($container->get(Runner::class)),
+    SseServeCommand::class => static fn () => $container->get(SseServeCommand::class),
+    BroadcastDemoCommand::class => static fn () => $container->get(BroadcastDemoCommand::class),
     QueueFailedCommand::class => static fn () => new QueueFailedCommand($container->get(DatabaseQueue::class)),
     QueueRetryCommand::class => static fn () => new QueueRetryCommand($container->get(DatabaseQueue::class)),
     QueueForgetCommand::class => static fn () => new QueueForgetCommand($container->get(DatabaseQueue::class)),

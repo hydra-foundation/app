@@ -34,7 +34,13 @@ final class RedirectUnauthenticatedMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         } catch (AuthenticationException $e) {
             // A client with no browser to send anywhere: the 401 is the answer.
-            if ($request->hasHeader('Authorization') || str_starts_with($request->getUri()->getPath(), self::API_PREFIX)) {
+            // So is a page's own fetch() asking for JSON, which would follow
+            // the redirect and get the login form where it expected data.
+            if (
+                $request->hasHeader('Authorization')
+                || str_starts_with($request->getUri()->getPath(), self::API_PREFIX)
+                || self::wantsJson($request)
+            ) {
                 throw $e;
             }
 
@@ -46,6 +52,14 @@ final class RedirectUnauthenticatedMiddleware implements MiddlewareInterface
 
             return $this->redirectToLogin();
         }
+    }
+
+    /** Asks for JSON and not for a page: a script, not a person at a browser. */
+    private static function wantsJson(ServerRequestInterface $request): bool
+    {
+        $accept = $request->getHeaderLine('Accept');
+
+        return str_contains($accept, 'application/json') && !str_contains($accept, 'text/html');
     }
 
     private function redirectToLogin(): ResponseInterface
