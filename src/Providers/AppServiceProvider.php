@@ -31,6 +31,7 @@ use Hydra\Auth\TrackSignInMiddleware;
 use Hydra\Auth\Contracts\{ApiTokenStoreInterface, GuardInterface, SignInStoreInterface, TwoFactorStoreInterface, UserProviderInterface};
 use Hydra\Auth\Events\{Attempting, EmailVerified, LoggedIn, LoggedOut, LoginFailed, PasswordReset, PasswordResetLinkSent, RecoveryCodeUsed, TwoFactorChallenged, TwoFactorFailed};
 use Hydra\Auth\LogAuthEventsListener;
+use Hydra\Broadcast\Contracts\BroadcasterInterface;
 use Hydra\Broadcast\TopicPolicy;
 use Hydra\Cache\CacheConfig;
 use Hydra\Cache\CacheHealthCheck;
@@ -245,7 +246,10 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         $container->singleton(UserProviderInterface::class, function () use ($container) {
-            return new UserRepository($container->get(ConnectionInterface::class));
+            return new UserRepository(
+                $container->get(ConnectionInterface::class),
+                $container->get(BroadcasterInterface::class),
+            );
         });
 
         $container->singleton(TwoFactorStoreInterface::class, function () use ($container) {

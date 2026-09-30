@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
+use App\Entities\Role;
 use App\Tests\Support\TestApp;
 use Hydra\Broadcast\StreamToken;
 use Hydra\Broadcast\TopicPolicy;
@@ -49,8 +50,8 @@ final class StreamTokenFlowTest extends TestCase
 
     public function test_several_topics_are_granted_together_once_each(): void
     {
-        $this->signIn();
-        $this->app->get(TopicPolicy::class)->allow('module.{slug}', static fn (): bool => true);
+        // module.users is the admin's to grant, and it grants it to admins.
+        $this->signIn(Role::Admin);
 
         $body = self::json($this->token('demo, module.users,demo')->assertOk());
         $grant = $this->app->get(StreamToken::class)->open(substr((string) $body['url'], strlen('/stream?token=')));
@@ -103,9 +104,9 @@ final class StreamTokenFlowTest extends TestCase
         $this->token('demo')->assertStatus(429);
     }
 
-    private function signIn(): int
+    private function signIn(Role $role = Role::DEFAULT): int
     {
-        $id = $this->app->seed('listener');
+        $id = $this->app->seed('listener', $role);
         $this->app->login('listener')->assertStatus(302);
 
         return $id;
