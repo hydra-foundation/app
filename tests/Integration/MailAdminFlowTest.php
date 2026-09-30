@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
+use App\Config\AppConfig;
 use App\Entities\Role;
 use App\Repositories\SentMailRepository;
 use App\Tests\Support\TestApp;
@@ -168,12 +169,12 @@ final class MailAdminFlowTest extends TestCase
         $this->assertCount(1, $transport->messages());
         $sent = $transport->messages()[0];
         $this->assertTrue($sent->isFor('boss@example.com'));
-        $this->assertSame('Test email from Hydra', $sent->getSubject());
+        $this->assertSame('Test email from ' . $this->appName(), $sent->getSubject());
         $this->assertStringContainsString('boss', (string) $sent->getText());
         $this->assertSame(0, $this->app->queued(), 'sent in the request, not queued');
 
         $rows = $this->app->db()->select('SELECT to_addresses, subject FROM sent_mail');
-        $this->assertSame([['to_addresses' => 'boss <boss@example.com>', 'subject' => 'Test email from Hydra']], $rows);
+        $this->assertSame([['to_addresses' => 'boss <boss@example.com>', 'subject' => 'Test email from ' . $this->appName()]], $rows);
     }
 
     public function test_a_transport_that_fails_says_why_and_logs_nothing(): void
@@ -230,6 +231,12 @@ final class MailAdminFlowTest extends TestCase
         ));
 
         return $transport;
+    }
+
+    /** Whatever the environment named the app: CI's config tests leave APP_NAME=x behind. */
+    private function appName(): string
+    {
+        return $this->app->get(AppConfig::class)->name;
     }
 
     private function frame(): Client
