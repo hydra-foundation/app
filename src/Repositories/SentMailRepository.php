@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use DateTimeImmutable;
+use Hydra\Admin\Live\ModuleChanges;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Mail\Address;
 use Hydra\Mail\Events\MessageSent;
@@ -24,7 +25,11 @@ final class SentMailRepository
 {
     private const COLUMNS = 'id, sent_at, transport, from_address, to_addresses, cc_addresses, bcc_addresses, subject, text_body, html_body';
 
-    public function __construct(private readonly ConnectionInterface $db) {}
+    /** @param ModuleChanges $changes tells open Mail lists a message was recorded or pruned. */
+    public function __construct(
+        private readonly ConnectionInterface $db,
+        private readonly ModuleChanges $changes = new ModuleChanges,
+    ) {}
 
     public function record(MessageSent $sent, DateTimeImmutable $at): void
     {
@@ -46,6 +51,7 @@ final class SentMailRepository
                 $message->getHtml(),
             ],
         );
+        $this->changes->publish('mail');
     }
 
     /** @return array<string, mixed>|null */
@@ -57,7 +63,13 @@ final class SentMailRepository
     /** @return int how many messages sent before $before were deleted */
     public function prune(DateTimeImmutable $before): int
     {
-        return $this->db->execute('DELETE FROM sent_mail WHERE sent_at < ?', [$before->getTimestamp()]);
+        $pruned = $this->db->execute('DELETE FROM sent_mail WHERE sent_at < ?', [$before->getTimestamp()]);
+
+        if ($pruned > 0) {
+            $this->changes->publish('mail');
+        }
+
+        return $pruned;
     }
 
     /** @param list<Address> $addresses */

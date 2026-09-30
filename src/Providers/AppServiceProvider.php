@@ -17,7 +17,7 @@ use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
 use App\Listeners\PublishQueueChanges;
 use App\Listeners\RecordSentMailListener;
-use App\Repositories\{ActivityRepository, ApiTokenRepository, LockoutRepository, NotificationRepository, SignInRepository, TwoFactorRepository, UserRepository};
+use App\Repositories\{ActivityRepository, ApiTokenRepository, AuditRepository, LockoutRepository, NotificationRepository, SentMailRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneLockouts;
 use App\Tasks\PruneNotifications;
 use App\Tasks\PruneSentMail;
@@ -283,6 +283,30 @@ final class AppServiceProvider extends ServiceProvider
 
         $container->singleton(ApiTokenStoreInterface::class, function () use ($container) {
             return $container->get(ApiTokenRepository::class);
+        });
+
+        // Bound by hand, like UserRepository: autowiring would skip the
+        // optional ModuleChanges, and Sessions, Mail and Audit would never
+        // hear of the rows written outside the admin.
+        $container->singleton(SignInRepository::class, function () use ($container) {
+            return new SignInRepository(
+                $container->get(ConnectionInterface::class),
+                $container->get(ModuleChanges::class),
+            );
+        });
+
+        $container->singleton(SentMailRepository::class, function () use ($container) {
+            return new SentMailRepository(
+                $container->get(ConnectionInterface::class),
+                $container->get(ModuleChanges::class),
+            );
+        });
+
+        $container->singleton(AuditRepository::class, function () use ($container) {
+            return new AuditRepository(
+                $container->get(ConnectionInterface::class),
+                $container->get(ModuleChanges::class),
+            );
         });
 
         // Bound, the guard records every sign-in and checks it on each request,

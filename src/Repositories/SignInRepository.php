@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Hydra\Admin\Live\ModuleChanges;
 use Hydra\Auth\Contracts\AuthenticatableInterface;
 use Hydra\Auth\Contracts\SignInStoreInterface;
 use Hydra\Auth\SignIn;
@@ -20,7 +21,16 @@ final class SignInRepository implements SignInStoreInterface
 {
     private const COLUMNS = 'id, user_id, created_at, last_seen_at, ip, user_agent';
 
-    public function __construct(private readonly ConnectionInterface $db) {}
+    /**
+     * @param ModuleChanges $changes tells open Sessions lists that a sign-in
+     *        began or ended. Never on a touch: every request makes one, and a
+     *        list that refetched on each would refetch without end. No id
+     *        travels: a sign-in's id is what a session holds to name it.
+     */
+    public function __construct(
+        private readonly ConnectionInterface $db,
+        private readonly ModuleChanges $changes = new ModuleChanges,
+    ) {}
 
     public function create(string $id, AuthenticatableInterface $user, DateTimeImmutable $at): SignIn
     {
@@ -28,6 +38,7 @@ final class SignInRepository implements SignInStoreInterface
             'INSERT INTO sign_ins (id, user_id, created_at, last_seen_at) VALUES (?, ?, ?, ?)',
             [$id, $this->userId($user), $at->getTimestamp(), $at->getTimestamp()],
         );
+        $this->changes->publish('sessions');
 
         return new SignIn($id, $this->userId($user), self::at($at->getTimestamp()), self::at($at->getTimestamp()));
     }
@@ -59,16 +70,29 @@ final class SignInRepository implements SignInStoreInterface
 
     public function revoke(string $id): bool
     {
-        return $this->db->execute('DELETE FROM sign_ins WHERE id = ?', [$id]) > 0;
+        $revoked = $this->db->execute('DELETE FROM sign_ins WHERE id = ?', [$id]) > 0;
+
+        if ($revoked) {
+            $this->changes->publish('sessions');
+        }
+
+        return $revoked;
     }
 
     public function revokeAll(AuthenticatableInterface $user, ?string $except = null): int
     {
-        return $except === null
+        $revoked = $except === null
             ? $this->db->execute('DELETE FROM sign_ins WHERE user_id = ?', [$this->userId($user)])
             : $this->db->execute('DELETE FROM sign_ins WHERE user_id = ? AND id <> ?', [$this->userId($user), $except]);
+
+        if ($revoked > 0) {
+            $this->changes->publish('sessions');
+        }
+
+        return $revoked;
     }
 
+    /** Not published: what it deletes is already outside the window the list shows. */
     public function prune(DateTimeImmutable $before): int
     {
         return $this->db->execute('DELETE FROM sign_ins WHERE last_seen_at < ?', [$before->getTimestamp()]);
