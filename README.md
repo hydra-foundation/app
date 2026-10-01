@@ -45,13 +45,11 @@ Open **http://localhost:8080** (the port is `APP_PORT` in `.env`).
 `./bin/dev` also opens `storage/logs`, `storage/uploads` and `storage/public` to
 every user (mode 1777): PHP-FPM writes the log and uploaded files as www-data,
 and the scheduler writes the log as root. It also links `public/storage` to the
-public disk so nginx can serve it. Under the prod compose files, do the same
-once:
+public disk so nginx can serve it.
 
-```bash
-chmod 1777 storage/logs storage/uploads storage/public
-./hydra storage:link
-```
+**In production:** `./bin/prod` runs the same stack behind Caddy on the host.
+The whole path, from an empty server to https and shipping a change, is
+https://hydra.williamhleucka.com/docs/deploy.html.
 
 **Without Docker (public site only):**
 

@@ -7,7 +7,8 @@
 #
 # Loads:
 #   - docker-compose.yml          (base)
-#   - docker-compose.prod.yml     (Traefik + TLS, restart policies, resource limits)
+#   - docker-compose.prod.yml     (nginx on 127.0.0.1:APP_PORT for the host's proxy,
+#                                  restart policies, resource limits)
 
 set -euo pipefail
 

@@ -1,32 +1,50 @@
 # Template for a personal, machine-specific compose override.
 #
 # Copy to docker-compose.local.yml (gitignored) to enable it; ./bin/dev loads
-# that file automatically when present. Use it for niceties that depend on YOUR
-# machine and shouldn't be committed. The example below routes the app through
-# a shared Traefik proxy so it answers on *.localhost, alongside the host port
-# docker-compose.dev.yml already publishes.
+# that file automatically when present. Use it for what depends on YOUR
+# machine and shouldn't be committed.
 #
 #   cp docker-compose.local.yml.example docker-compose.local.yml
 #   ./bin/dev up -d
 #
-# Requires:
-#   - A shared Traefik stack (it owns the external `proxy` network) running
-#     first, e.g. the stack at ~/Projects/traefik.
-#   - DEV_HOSTNAME set in .env (e.g. DEV_HOSTNAME=hydra → http://hydra.localhost).
-#     nginx accepts *.localhost, so admin.<host>.localhost also routes correctly.
+# Two such things are below. Keep the ones you use and delete the rest.
 
 services:
-  nginx:
-    networks:
-      - net
-      - proxy
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=proxy
-      - traefik.http.routers.${DEV_HOSTNAME:?DEV_HOSTNAME must be set in .env}.rule=HostRegexp(`^(.+\.)?${DEV_HOSTNAME}\.localhost$`)
-      - traefik.http.routers.${DEV_HOSTNAME}.entrypoints=web
-      - traefik.http.services.${DEV_HOSTNAME}.loadbalancer.server.port=80
+  # Working on the framework itself, beside a ../hydra checkout.
+  #
+  # composer.dev.json installs every hydrakit/* package as a symlink into
+  # ../hydra/packages, and the stack only mounts this project. This mounts the
+  # checkout beside it, at the same relative place inside the container, so
+  # the symlinks resolve there too. An application made with create-project
+  # has no ../hydra and does not want this: Docker would create an empty one.
+  php:
+    volumes:
+      - ../hydra:/var/www/html/hydra
+  scheduler:
+    volumes:
+      - ../hydra:/var/www/html/hydra
+  sse:
+    volumes:
+      - ../hydra:/var/www/html/hydra
 
-networks:
-  proxy:
-    external: true
+  # Routing the app through a shared Traefik proxy, so it answers on
+  # *.localhost alongside the host port docker-compose.dev.yml publishes.
+  # Needs a Traefik stack that owns the external `proxy` network, running
+  # first, and DEV_HOSTNAME in .env (DEV_HOSTNAME=hydra answers on
+  # http://hydra.localhost; nginx accepts *.localhost, so admin.hydra.localhost
+  # routes too). Uncomment this and the networks block at the end.
+  #
+  # nginx:
+  #   networks:
+  #     - net
+  #     - proxy
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.docker.network=proxy
+  #     - traefik.http.routers.${DEV_HOSTNAME:?DEV_HOSTNAME must be set in .env}.rule=HostRegexp(`^(.+\.)?${DEV_HOSTNAME}\.localhost$`)
+  #     - traefik.http.routers.${DEV_HOSTNAME}.entrypoints=web
+  #     - traefik.http.services.${DEV_HOSTNAME}.loadbalancer.server.port=80
+
+# networks:
+#   proxy:
+#     external: true

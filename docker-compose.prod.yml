@@ -1,6 +1,7 @@
 # Production overrides
-# Use with: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-# A host-level reverse proxy (e.g. Caddy/Traefik) handles TLS on 80/443.
+# Use with: ./bin/prod up -d --build
+# Caddy on the host terminates TLS on 80/443 and forwards to the loopback port
+# nginx publishes below. https://hydra.williamhleucka.com/docs/deploy.html
 
 # BUILD_MODE and prod.ini are not repeated here: they are what the base already
 # does. What is left is what only production wants — restart policies, memory
@@ -36,17 +37,17 @@ services:
 
   nginx:
     restart: unless-stopped
+    # Loopback only. Docker's publish goes around the host firewall, so a bare
+    # port would be on the internet; this way only the host's proxy reaches it.
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:80"
     environment:
-      # The reverse proxy in front of this stack: one address or CIDR block.
-      # Only this peer's X-Forwarded-For is believed; everything else keeps the
-      # address nginx actually accepted. Set NGINX_TRUSTED_PROXY in .env to the
-      # proxy's address on the Docker network, NOT to the bridge subnet: a
-      # published port makes external callers arrive from the bridge gateway,
-      # so a subnet-wide range would let any client name itself.
-      NGINX_TRUSTED_PROXY: ${NGINX_TRUSTED_PROXY:?set NGINX_TRUSTED_PROXY to the reverse proxy address}
+      # Optional. Unset, the address nginx believes X-Forwarded-For from is
+      # the Docker network's gateway, read at start by real-ip.sh: where the
+      # host's proxy arrives from through the port above.
+      NGINX_TRUSTED_PROXY: ${NGINX_TRUSTED_PROXY:-}
     volumes:
-      # envsubst renders templates/*.template into conf.d/ at container start.
-      - ./docker/nginx/real-ip.conf.template:/etc/nginx/templates/real-ip.conf.template:ro
+      - ./docker/nginx/real-ip.sh:/docker-entrypoint.d/30-real-ip.sh:ro
     deploy:
       resources:
         limits:
@@ -65,8 +66,14 @@ services:
     # evictable counter is a budget anyone can clear: fill the instance and
     # every limit in the application resets. Under pressure Redis instead
     # refuses the write, the store raises, and the limiter fails closed.
+    # The password the application sends (REDIS_PASSWORD in .env), required
+    # here: the app AUTHs whenever it is set, and a server without one refuses
+    # every command that does. REDISCLI_AUTH lets the healthcheck's redis-cli in.
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
     command: >
       redis-server
+      --requirepass ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
       --maxmemory 128mb
       --maxmemory-policy noeviction
       --save 900 1
