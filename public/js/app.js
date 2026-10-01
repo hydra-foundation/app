@@ -95,7 +95,8 @@
  * whenever the hub closes the stream: that is how an expired token (the hub
  * answers 204) and a restarted hub are both recovered from. After the hub
  * reconnects to Redis it sends hub.resync, passed on as {event: 'resync'} to
- * every topic, since events may have been missed.
+ * every topic, since events may have been missed, and the same when a stream
+ * that was lost (an expired token, a dropped connection) opens again.
  *
  * Nothing here errors when there is no hub, as under `php -S`: after five
  * tries without the stream ever opening, it stops. Once a stream has opened,
@@ -115,6 +116,7 @@
     let timer = null;
     let stopped = false;
     let opened = false;
+    let lost = false;
 
     function topicsOf(element) {
         return (element.getAttribute(ATTR) || '').split(/\s+/).filter(Boolean);
@@ -202,9 +204,17 @@
 
         source = new EventSource(grant.url);
 
+        /* After a loss, anything published before this stream opened was
+           missed: an expiry alone leaves a few seconds with no stream. A swap
+           that only widened the grant lost nothing, and its lists are fresh. */
         source.addEventListener('open', function () {
             failures = 0;
             opened = true;
+
+            if (lost) {
+                lost = false;
+                topics.forEach(function (topic) { dispatch(topic, { event: 'resync', data: {} }); });
+            }
         });
 
         topics.forEach(function (topic) {
@@ -228,6 +238,8 @@
         /* CONNECTING is the browser retrying a dropped connection with the
            same token, which it may; CLOSED is a refusal it will not retry. */
         source.addEventListener('error', function () {
+            lost = true;
+
             if (source && source.readyState === EventSource.CLOSED) {
                 retry();
             }
