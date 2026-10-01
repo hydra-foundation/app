@@ -87,4 +87,7 @@ skeleton fails before it is released rather than after.
 
 ---
 
-Everything else (commands, architecture, configuration, migrations, tests) lives in the wiki (coming soon?)
+Everything else (commands, architecture, configuration, migrations, tests)
+lives in the wiki: https://hydra.williamhleucka.com/docs/. `AGENTS.md` is the
+short form for coding agents: the commands, where things go, and one way to
+do each thing.
