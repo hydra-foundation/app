@@ -8,7 +8,7 @@ Every command and path in backticks below is checked by
 ## Commands
 
 ```bash
-cp .env.example .env              # once; runs as-is
+cp .env.example .env              # once; Docker also needs the three DB_ passwords set
 composer install
 php bin/console key:generate      # writes APP_KEY into .env
 ./bin/dev up -d --build           # PHP-FPM, nginx, MariaDB, Redis, the SSE hub
@@ -94,6 +94,7 @@ The generators that read a table (`make:source`, `make:module`, `make:entity`,
 
 - Start: https://hydra.williamhleucka.com/docs/index.html
 - Install and run: https://hydra.williamhleucka.com/docs/install.html
+- Production, behind Caddy: https://hydra.williamhleucka.com/docs/deploy.html
 - Routing, requests, errors: https://hydra.williamhleucka.com/docs/routing.html
 - Templates: https://hydra.williamhleucka.com/docs/templates.html
 - Validation: https://hydra.williamhleucka.com/docs/validation.html
