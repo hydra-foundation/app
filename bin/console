@@ -12,6 +12,7 @@ use App\Console\Commands\MakeAbilityCommand;
 use App\Console\Commands\MakeAdminCommand;
 use App\Console\Commands\MakeControllerCommand;
 use App\Console\Commands\MakeEntityCommand;
+use App\Console\Commands\MakeJobCommand;
 use App\Console\Commands\MakeListenerCommand;
 use App\Console\Commands\MakeModuleCommand;
 use App\Console\Commands\MakeRepositoryCommand;
@@ -69,6 +70,7 @@ $application->add(
     new MakeControllerCommand(__DIR__ . '/../src/Controllers'),
     new MakeAbilityCommand(__DIR__ . '/../src/Authorization'),
     new MakeListenerCommand(__DIR__ . '/../src/Listeners'),
+    new MakeJobCommand(__DIR__ . '/../src/Jobs'),
 );
 
 // The table-shaped generators read the schema to fill in a column list, so
