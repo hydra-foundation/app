@@ -52,9 +52,13 @@ Start from the generator; it writes the house style. Then follow the page.
 | A table | `./hydra make:migration create_invoices` | mirror it in `tests/Support/TestSchema.php` |
 | An admin screen over a table | `./hydra make:admin invoices` | register in `MODULES`; docs/module.html |
 | A page or endpoint | `./hydra make:controller invoice` | register in `CONTROLLERS`; docs/routing.html |
-| Something that happens after an event | `./hydra make:listener AuditWrites` | register in `boot()` as a closure; docs/admin.html#events |
+| Something that happens after an event | `./hydra make:listener AuditWrites` | register in `boot()` as a closure; docs/events.html |
 | Work that should not hold up a request | `./hydra make:job SendInvoice` | push ids, not objects; docs/queue.html |
 | Who may do what | `./hydra make:ability ManageInvoices` | docs/auth.html |
+| Take an upload | `PublicStorageInterface` or `StorageInterface` (private) | docs/files.html |
+| Limit one endpoint | a middleware with its own `RateLimitPolicy` | docs/rate-limits.html |
+| Keep an expensive value a while | `StoreInterface`: `get`, `put` with a TTL, `forget` on write | docs/cache.html |
+| A message after a redirect | `SessionInterface::flash()` / `flashed()` | docs/sessions.html |
 | A list that updates itself | `ModuleChanges::publish('invoices', $id)` | publish after the write commits; docs/live.html |
 
 The generators that read a table (`make:source`, `make:module`, `make:entity`,
@@ -94,8 +98,16 @@ The generators that read a table (`make:source`, `make:module`, `make:entity`,
 - Templates: https://hydra.williamhleucka.com/docs/templates.html
 - Validation: https://hydra.williamhleucka.com/docs/validation.html
 - Database and migrations: https://hydra.williamhleucka.com/docs/database.html
+- Files and uploads: https://hydra.williamhleucka.com/docs/files.html
+- Sessions: https://hydra.williamhleucka.com/docs/sessions.html
+- Cache: https://hydra.williamhleucka.com/docs/cache.html
+- Rate limits: https://hydra.williamhleucka.com/docs/rate-limits.html
+- Events and listeners: https://hydra.williamhleucka.com/docs/events.html
+- Logging: https://hydra.williamhleucka.com/docs/logging.html
 - A module, step by step: https://hydra.williamhleucka.com/docs/module.html
-- The admin: https://hydra.williamhleucka.com/docs/admin.html
+- The admin: https://hydra.williamhleucka.com/docs/admin.html, its sources
+  (https://hydra.williamhleucka.com/docs/sources.html) and dashboards
+  (https://hydra.williamhleucka.com/docs/dashboards.html)
 - Auth: https://hydra.williamhleucka.com/docs/auth.html
 - Live updates: https://hydra.williamhleucka.com/docs/live.html
 - Mail, queue, scheduler: https://hydra.williamhleucka.com/docs/mail.html,
