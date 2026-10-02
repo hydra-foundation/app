@@ -60,6 +60,7 @@ Start from the generator; it writes the house style. Then follow the page.
 | Keep an expensive value a while | `StoreInterface`: `get`, `put` with a TTL, `forget` on write | docs/cache.html |
 | A message after a redirect | `SessionInterface::flash()` / `flashed()` | docs/sessions.html |
 | A list that updates itself | `ModuleChanges::publish('invoices', $id)` | publish after the write commits; docs/live.html |
+| Link a stylesheet or script | `$this->asset('/css/app.css')` in the template | its name carries the file's hash, so nginx keeps it a year; docs/templates.html |
 
 The generators that read a table (`make:source`, `make:module`, `make:entity`,
 `make:repository`, `make:source-test`) need the database: run them through

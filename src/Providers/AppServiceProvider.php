@@ -84,6 +84,7 @@ use Hydra\Scheduler\Schedule;
 use Hydra\Throttle\Contracts\LockoutStoreInterface;
 use Hydra\Session\StartSessionMiddleware;
 use Hydra\Throttle\RateLimitMiddleware;
+use Hydra\View\Assets;
 use Hydra\View\Contracts\ViewInterface;
 use Hydra\View\PhpView;
 use PDO;
@@ -387,6 +388,10 @@ final class AppServiceProvider extends ServiceProvider
                     'verification' => $container->get(VerificationBanner::class),
                     'avatars' => $container->get(Avatars::class),
                 ],
+                // The layout links its stylesheets and scripts through
+                // asset(), so their names carry their content's hash and nginx
+                // can keep them a year (see docker/nginx/default.conf).
+                assets: new Assets(dirname(__DIR__, 2) . '/public'),
             );
         });
 

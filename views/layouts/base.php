@@ -19,16 +19,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Zilla+Slab:wght@600&family=DM+Mono:wght@400;500&display=swap">
-    <link rel="stylesheet" href="/css/vendor/bootstrap.min.css" />
-    <link rel="stylesheet" href="/css/vendor/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="<?= $this->e($this->asset('/css/vendor/bootstrap.min.css')) ?>" />
+    <link rel="stylesheet" href="<?= $this->e($this->asset('/css/vendor/bootstrap-icons.min.css')) ?>" />
+    <link rel="stylesheet" href="<?= $this->e($this->asset('/css/base.css')) ?>" />
     <?php /* Every palette on disk is linked and the data-theme attribute picks
        one, so switching is a repaint rather than a new stylesheet. Order does
        not matter: each is scoped to its own name. */ ?>
     <?php foreach ($themes->names() as $name): ?>
-    <link rel="stylesheet" href="/css/themes/<?= $this->e($name) ?>.css" />
+    <link rel="stylesheet" href="<?= $this->e($this->asset("/css/themes/{$name}.css")) ?>" />
     <?php endforeach ?>
-    <link rel="stylesheet" href="/css/app.css?t=20260926" />
+    <link rel="stylesheet" href="<?= $this->e($this->asset('/css/app.css')) ?>" />
     <?php /* Screens that carry their own stylesheet append it here, after the
        shared theme so it can build on the tokens rather than fight them. */ ?>
     <?= $this->section('meta', '') ?>
@@ -52,11 +52,11 @@
     <?php if ($csp->enabled): ?>
     <meta name="htmx-config" content='extensions:"hx-csp",safeEval:true'>
     <?php endif ?>
-    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/htmx.min.js" defer></script>
-    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/hx-csp.js" defer></script>
-    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/app.js" defer></script>
-    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/qr.js" defer></script>
-    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="/js/vendor/bootstrap.bundle.min.js" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="<?= $this->e($this->asset('/js/vendor/htmx.min.js')) ?>" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="<?= $this->e($this->asset('/js/vendor/hx-csp.js')) ?>" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="<?= $this->e($this->asset('/js/app.js')) ?>" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="<?= $this->e($this->asset('/js/qr.js')) ?>" defer></script>
+    <script nonce="<?= $this->e($this->cspNonce()) ?>" src="<?= $this->e($this->asset('/js/vendor/bootstrap.bundle.min.js')) ?>" defer></script>
 </head>
 <body hx-nonce="<?= $this->e($this->cspNonce()) ?>" hx-headers:inherited='{"X-CSRF-Token": "<?= $this->e($this->csrfToken()) ?>"}'>
     <?php /* Where a failed htmx request lands. The error renderer swaps into it

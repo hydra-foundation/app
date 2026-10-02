@@ -184,7 +184,9 @@ final class TwoFactorSettingsFlowTest extends TestCase
 
     public function test_the_policy_lets_the_qr_library_load(): void
     {
-        $response = $this->http->get(self::URL)->assertOk()->assertSee('/js/qr.js');
+        $response = $this->http->get(self::URL)->assertOk();
+
+        $this->assertMatchesRegularExpression('#src="/js/qr\.[0-9a-f]{10}\.js"#', $response->body());
 
         $this->assertStringContainsString('https://cdnjs.cloudflare.com', $response->header('Content-Security-Policy'));
     }
