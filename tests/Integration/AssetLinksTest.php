@@ -24,7 +24,13 @@ final class AssetLinksTest extends TestCase
 
     public function test_every_local_stylesheet_and_script_is_fingerprinted(): void
     {
-        $body = TestApp::boot()->http()->get('/login')->assertOk()->body();
+        $app = TestApp::boot();
+        $response = $app->http()->get('/login');
+
+        // A bad asset() path throws while the layout renders, which reaches
+        // here as a bare 500; the log has the AssetNotFound that says why.
+        $this->assertSame(200, $response->status(), implode("\n", $app->log()->messages()));
+        $body = $response->body();
 
         preg_match_all('#(?:href|src)="(/(?:css|js)/[^"]*)"#', $body, $matches);
         $urls = $matches[1];
