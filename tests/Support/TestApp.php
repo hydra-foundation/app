@@ -51,6 +51,7 @@ use Hydra\Throttle\ThrottleServiceProvider;
 use PDO;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
+use Hydra\Seo\SiteMeta;
 
 /**
  * The application as {@see \App\Bootstrap} composes it, booted for a flow test.
@@ -65,6 +66,9 @@ final class TestApp
 {
     /** The password every seeded account holds. */
     public const PASSWORD = 'correct-horse-battery-staple';
+
+    /** APP_URL for every test: the process environment's is rewritten by the config tests. */
+    public const URL = 'http://hydra.test';
 
     private function __construct(
         private readonly Application $application,
@@ -125,6 +129,7 @@ final class TestApp
 
         // Every flow that signs in pays the hash cost, and none is about bcrypt.
         $container->instance(AuthConfig::class, new AuthConfig(hashCost: 4));
+        $container->instance(SiteMeta::class, AppServiceProvider::siteMeta(self::URL, 'Hydra'));
 
         // A flag of its own: `down` on the machine running the suite would
         // otherwise answer every flow in it with a 503.

@@ -61,6 +61,7 @@ Start from the generator; it writes the house style. Then follow the page.
 | A message after a redirect | `SessionInterface::flash()` / `flashed()` | docs/sessions.html |
 | A list that updates itself | `ModuleChanges::publish('invoices', $id)` | publish after the write commits; docs/live.html |
 | Link a stylesheet or script | `$this->asset('/css/app.css')` in the template | its name carries the file's hash, so nginx keeps it a year; docs/templates.html |
+| A page search engines and link previews should see | pass `'meta' => $site->page('Title', 'Description', '/path')` to the view (`SiteMeta` from the container) | a page without one is noindex; docs/seo.html |
 
 The generators that read a table (`make:source`, `make:module`, `make:entity`,
 `make:repository`, `make:source-test`) need the database: run them through

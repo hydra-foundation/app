@@ -1,8 +1,7 @@
 <?php /** @var \App\View\Template $this */ ?>
 <?php /** @var \DateTimeImmutable|null $demo */ ?>
+<?php /** @var \Hydra\Seo\Meta $meta */ ?>
 <?php $this->extends('layouts/base') ?>
-
-<?php $this->start('title') ?>Home · Hydra<?php $this->stop() ?>
 
 <div class="page">
     <h1 class="page-title">Welcome to Hydra</h1>

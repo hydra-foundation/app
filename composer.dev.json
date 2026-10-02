@@ -38,6 +38,7 @@
         "hydrakit/validation": "*",
         "hydrakit/queue": "*",
         "hydrakit/scheduler": "*",
+        "hydrakit/seo": "*",
         "hydrakit/session": "*",
         "hydrakit/throttle": "*",
         "hydrakit/csrf": "*",

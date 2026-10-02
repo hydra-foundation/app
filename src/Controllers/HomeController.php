@@ -8,6 +8,7 @@ use Hydra\Auth\AuthenticateMiddleware;
 use Hydra\Auth\Contracts\GuardInterface;
 use Hydra\Http\Attributes\Route;
 use Hydra\Http\Responder;
+use Hydra\Seo\SiteMeta;
 use Hydra\View\Contracts\ViewInterface;
 use Psr\Clock\ClockInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -23,6 +24,7 @@ final class HomeController extends Controller
         ViewInterface $view,
         private readonly GuardInterface $guard,
         private readonly ClockInterface $clock,
+        private readonly SiteMeta $site,
     ) {
         parent::__construct($respond, $view);
     }
@@ -30,7 +32,12 @@ final class HomeController extends Controller
     #[Route('/')]
     public function index(): Response
     {
-        return $this->render('home', ['demo' => $this->guard->check() ? $this->clock->now() : null]);
+        return $this->render('home', [
+            'demo' => $this->guard->check() ? $this->clock->now() : null,
+            // The one public page, so the one that asks to be indexed and
+            // previewed; every page without a Meta is noindex (layouts/base).
+            'meta' => $this->site->page('Home', 'A small PHP framework created by Will Hleucka.', '/'),
+        ]);
     }
 
     /** The live box on its own, which it fetches to replace itself on sse:demo. */

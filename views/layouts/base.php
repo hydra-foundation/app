@@ -10,7 +10,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php /* A page that passes a Meta gets its title, canonical URL and the
+       tags a link preview reads. Every other page (sign-in, the admin) keeps
+       the title its view captured and asks not to be indexed: the default is
+       private, and a page opts in to search by saying what it is. */ ?>
+    <?php if (isset($meta)): ?>
+    <?= $meta ?>
+    <?php else: ?>
     <title><?= $this->section('title', 'Hydra') ?></title>
+    <meta name="robots" content="noindex">
+    <?php endif ?>
     <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">

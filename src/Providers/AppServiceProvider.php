@@ -84,6 +84,8 @@ use Hydra\Scheduler\Schedule;
 use Hydra\Throttle\Contracts\LockoutStoreInterface;
 use Hydra\Session\StartSessionMiddleware;
 use Hydra\Throttle\RateLimitMiddleware;
+use Hydra\Seo\Image;
+use Hydra\Seo\SiteMeta;
 use Hydra\View\Assets;
 use Hydra\View\Contracts\ViewInterface;
 use Hydra\View\PhpView;
@@ -91,6 +93,8 @@ use PDO;
 use Psr\Clock\ClockInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Where this application is assembled: every binding, the route sources, the
@@ -340,6 +344,12 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         $container->singleton(RequestId::class, fn () => new RequestId);
+
+        $container->singleton(SiteMeta::class, function () use ($container): SiteMeta {
+            $app = $container->get(AppConfig::class);
+
+            return self::siteMeta($app->url, $app->name);
+        });
 
         $container->singleton(Themes::class, function (): Themes {
             return new Themes(dirname(__DIR__, 2) . '/public/css/themes');
@@ -633,5 +643,28 @@ final class AppServiceProvider extends ServiceProvider
         return $container->bound(ExceptionReporterInterface::class)
             ? $container->get(ExceptionReporterInterface::class)
             : null;
+    }
+
+    /**
+     * What every public page's head shares: the site's address and name, and
+     * the image a link preview shows when a page has none of its own. Static so
+     * the tests build it the same way from pinned values, since APP_URL is
+     * process environment that other tests rewrite.
+     */
+    public static function siteMeta(string $url, string $name): SiteMeta
+    {
+        try {
+            return new SiteMeta(
+                baseUrl: $url,
+                siteName: $name,
+                defaultImage: new Image('/icons/android-chrome-512x512.png', 512, 512, $name),
+            );
+        } catch (InvalidArgumentException) {
+            // SiteMeta names its own argument; whoever reads this edits .env.
+            throw new RuntimeException(sprintf(
+                'APP_URL must be the site\'s scheme and host, like https://example.com, with no path or trailing slash; got "%s".',
+                $url,
+            ));
+        }
     }
 }

@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin
+
+# An application with public pages lists them in a sitemap and names it here,
+# with its absolute URL, e.g.:
+# Sitemap: https://example.com/sitemap.xml
