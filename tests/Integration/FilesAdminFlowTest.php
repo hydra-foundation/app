@@ -72,6 +72,18 @@ final class FilesAdminFlowTest extends TestCase
         $this->assertTrue($this->stored($avatar));
     }
 
+    public function test_files_narrow_to_the_days_they_were_modified_on(): void
+    {
+        $old = $this->stray(40 * 86_400);
+        $new = $this->stray(60);
+        $since = gmdate('Y-m-d', time() - 2 * 86_400);
+
+        $recent = $this->app->http()->get('/admin/files?modified_at_from=' . $since)->assertOk()->body();
+
+        $this->assertStringContainsString(basename($new), $recent);
+        $this->assertStringNotContainsString(basename($old), $recent);
+    }
+
     public function test_a_stray_file_stored_today_is_not_offered_for_deletion(): void
     {
         $stray = $this->stray(60);

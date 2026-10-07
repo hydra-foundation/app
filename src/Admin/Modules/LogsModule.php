@@ -40,7 +40,7 @@ final class LogsModule implements ModuleInterface
             ->gone('That line is no longer in the part of the log this reads.')
             ->fields(
                 Field::id()->labelled('Byte offset')->onlyOn(Surface::Show),
-                Field::datetime('time')->relative(),
+                Field::datetime('time')->relative()->filterable(),
                 Field::select('level', self::LEVELS)->filterable(),
                 Field::text('message')->searchable()->truncate(120, Surface::List),
                 Field::text('detail')->labelled('Exception')->onlyOn(Surface::Show)

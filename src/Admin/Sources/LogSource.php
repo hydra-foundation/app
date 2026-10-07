@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Sources;
 
+use DateTimeImmutable;
 use App\Config\LogConfig;
 use Hydra\Admin\Widgets\Readable;
 use Hydra\Admin\Contracts\DescribesColumnsInterface;
@@ -63,7 +64,7 @@ final class LogSource implements SourceInterface, RowSourceInterface, DescribesC
             columns: self::COLUMNS,
             sortable: [],
             searchable: ['message'],
-            filterable: ['level', 'request_id'],
+            filterable: ['level', 'request_id', 'time'],
             defaultSort: 'id',
         );
     }
@@ -96,6 +97,12 @@ final class LogSource implements SourceInterface, RowSourceInterface, DescribesC
             if ((string) ($row[$column] ?? '') !== $value) {
                 return false;
             }
+        }
+
+        $time = $criteria->ranges['time'] ?? null;
+
+        if ($time !== null && !$time->contains(new DateTimeImmutable('@' . $row['time']))) {
+            return false;
         }
 
         return $criteria->search === null || stripos((string) $row['message'], $criteria->search) !== false;

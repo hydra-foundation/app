@@ -63,7 +63,7 @@ final class FilesModule implements ModuleInterface
                 Field::number('size')->sortable()
                     ->format(static fn (mixed $value): string => (string) Readable::bytes((float) $value)),
                 Field::select('disk', self::DISKS)->filterable(),
-                Field::datetime('modified_at')->labelled('Modified')->sortable()->relative(),
+                Field::datetime('modified_at')->labelled('Modified')->sortable()->relative()->filterable(),
                 Field::select('status', self::STATUSES)->filterable()
                     ->format(self::status(...), Surface::List),
                 Field::file('download')->labelled('Download')->nameFrom('name')->onlyOn(Surface::Show),

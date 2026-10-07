@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Config\LogConfig;
 use App\Entities\Role;
 use App\Tests\Support\TestApp;
+use Hydra\Core\Testing\FrozenClock;
 use Hydra\Http\Testing\Client;
 use Hydra\Log\StreamLogger;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -81,6 +82,20 @@ final class LogsAdminFlowTest extends TestCase
         $this->login('clerk');
 
         $this->http->get('/admin/logs')->assertStatus(403);
+    }
+
+    public function test_the_lines_narrow_to_the_days_they_were_written_on(): void
+    {
+        $stream = fopen($this->path, 'a');
+        (new StreamLogger($stream, new FrozenClock('2026-01-05 12:00 UTC')))->notice('Rotated the keys');
+        fclose($stream);
+        $this->login('boss');
+
+        $january = $this->body('/admin/logs?time_from=2026-01-01&time_to=2026-01-31');
+
+        $this->assertStringContainsString('Rotated the keys', $january);
+        $this->assertStringNotContainsString('Slow query', $january);
+        $this->assertStringContainsString('name="time_from"', $january);
     }
 
     public function test_the_level_the_request_and_the_text_each_narrow_the_list(): void
