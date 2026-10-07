@@ -15,6 +15,12 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libssl-dev \
     mariadb-client \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
+    # GD reads JPEG, PNG, GIF and WebP and writes WebP: hydrakit/image's
+    # variants. EXIF tells it which way up a phone photo is.
+    && docker-php-ext-configure gd --with-jpeg --with-webp \
     && docker-php-ext-install \
        pdo \
        pdo_mysql \
@@ -25,6 +31,8 @@ RUN apt-get update && apt-get install -y \
        bcmath \
        opcache \
        pcntl \
+       gd \
+       exif \
     && docker-php-ext-enable pdo_mysql
 
 # Install Redis extension
