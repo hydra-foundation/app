@@ -39,7 +39,7 @@ final class SessionsModule implements ModuleInterface
                 Field::text('you')->labelled('')->emptyAs(''),
                 Field::text('ip')->labelled('IP address')->searchable(),
                 Field::text('user_agent')->labelled('Browser')->truncate(60, Surface::List),
-                Field::datetime('created_at')->labelled('Signed in')->sortable()->relative(),
+                Field::datetime('created_at')->labelled('Signed in')->sortable()->relative()->filterable(),
                 Field::datetime('last_seen_at')->labelled('Last seen')->sortable()->relative(),
             )
             ->screens(

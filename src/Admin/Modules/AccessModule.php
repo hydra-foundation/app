@@ -46,7 +46,7 @@ final class AccessModule implements ModuleInterface
                 Field::text('owner_email')->labelled('Email')->onlyOn(Surface::Show),
                 Field::text('name')->sortable()->searchable(),
                 Field::select('state', ['active' => 'Active', 'expired' => 'Expired']),
-                Field::datetime('created_at')->labelled('Created')->sortable()->relative(),
+                Field::datetime('created_at')->labelled('Created')->sortable()->relative()->filterable(),
                 Field::datetime('last_used_at')->labelled('Last used')->sortable()->relative()->emptyAs('Never'),
                 Field::datetime('expires_at')->labelled('Expires')->sortable()->relative()->emptyAs('Never'),
             )

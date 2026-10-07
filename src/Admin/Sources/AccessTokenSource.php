@@ -62,7 +62,7 @@ final class AccessTokenSource implements SourceInterface, RowSourceInterface, De
             columns: ['id', 'user_id', 'owner', 'owner_email', 'name', 'state', 'created_at', 'last_used_at', 'expires_at'],
             sortable: array_keys(self::SORTS),
             searchable: ['owner', 'owner_email', 'name'],
-            filterable: ['state'],
+            filterable: ['state', 'created_at'],
             defaultSort: 'created_at',
         );
     }
@@ -155,6 +155,12 @@ final class AccessTokenSource implements SourceInterface, RowSourceInterface, De
             $clauses[] = self::STATE . ' = ?';
             $params[] = $this->now();
             $params[] = $criteria->filters['state'];
+        }
+
+        // Unix seconds, as the token store writes them.
+        if (isset($criteria->ranges['created_at'])) {
+            [$clauses[], $bounds] = $criteria->ranges['created_at']->condition('t.created_at', 'U');
+            $params = [...$params, ...$bounds];
         }
 
         return [$clauses === [] ? '1=1' : implode(' AND ', $clauses), $params];

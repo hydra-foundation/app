@@ -58,6 +58,20 @@ final class SessionsAdminFlowTest extends TestCase
         $this->assertStringContainsString('>198.51.100.2</td>', $body);
     }
 
+    public function test_sign_ins_narrow_to_the_days_they_began_on(): void
+    {
+        $old = $this->signIn('alice', 'a', '203.0.113.7', 'Firefox');
+        $this->signIn('clerk', 'c', '198.51.100.2', 'Safari');
+        $this->app->db()->execute('UPDATE sign_ins SET created_at = ? WHERE id = ?', [(new DateTimeImmutable('2026-01-05 12:00 UTC'))->getTimestamp(), $old->id]);
+        $this->login('boss');
+
+        $january = $this->body('/admin/sessions?created_at_from=2026-01-01&created_at_to=2026-01-31');
+
+        $this->assertStringContainsString('>alice</td>', $january);
+        $this->assertStringNotContainsString('>clerk</td>', $january);
+        $this->assertStringContainsString('name="created_at_from"', $january);
+    }
+
     public function test_a_sign_in_idle_past_the_window_is_not_listed(): void
     {
         $this->signIn('alice', 'a', '203.0.113.7', 'Firefox', new DateTimeImmutable('-2 hours'));

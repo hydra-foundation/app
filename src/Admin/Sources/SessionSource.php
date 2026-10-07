@@ -57,7 +57,7 @@ final class SessionSource implements SourceInterface, RowSourceInterface, Descri
             columns: ['id', 'user_id', 'owner', 'owner_email', 'you', 'ip', 'user_agent', 'created_at', 'last_seen_at'],
             sortable: array_keys(self::SORTS),
             searchable: ['owner', 'owner_email', 'ip'],
-            filterable: [],
+            filterable: ['created_at'],
             defaultSort: 'last_seen_at',
         );
     }
@@ -123,6 +123,12 @@ final class SessionSource implements SourceInterface, RowSourceInterface, Descri
             foreach (self::SEARCHED as $_) {
                 $params[] = $criteria->searchPattern();
             }
+        }
+
+        // Unix seconds, as the sign-in store writes them.
+        if (isset($criteria->ranges['created_at'])) {
+            [$clauses[], $bounds] = $criteria->ranges['created_at']->condition('s.created_at', 'U');
+            $params = [...$params, ...$bounds];
         }
 
         return [implode(' AND ', $clauses), $params];

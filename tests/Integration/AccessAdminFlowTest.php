@@ -109,6 +109,19 @@ final class AccessAdminFlowTest extends TestCase
         $this->assertStringContainsString('>Expired</td>', $expired);
     }
 
+    public function test_tokens_narrow_to_the_days_they_were_made_on(): void
+    {
+        $old = $this->issue('alice', 'Made in January');
+        $this->issue('alice', 'Made today');
+        $this->app->db()->execute('UPDATE api_tokens SET created_at = ? WHERE id = ?', [(new DateTimeImmutable('2026-01-05 12:00 UTC'))->getTimestamp(), $old->token->id]);
+        $this->login('boss');
+
+        $january = $this->body('/admin/access?created_at_from=2026-01-01&created_at_to=2026-01-31');
+
+        $this->assertStringContainsString('>Made in January</td>', $january);
+        $this->assertStringNotContainsString('>Made today</td>', $january);
+    }
+
     public function test_the_list_sorts_by_when_a_token_was_last_used(): void
     {
         $old = $this->issue('alice', 'Used long ago');
