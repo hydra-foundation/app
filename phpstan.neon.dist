@@ -5,10 +5,10 @@ parameters:
         - public
         - tests
 
-    # The skeleton claims >=8.2, so a project generated from it has to analyse
-    # clean on 8.2 as well as on whatever the developer runs locally.
+    # The skeleton claims >=8.4, so a project generated from it has to analyse
+    # clean on 8.4 as well as on whatever the developer runs locally.
     phpVersion:
-        min: 80200
+        min: 80400
         max: 80500
 
     # A PHPDoc type is a promise, not a runtime guarantee: a row out of the

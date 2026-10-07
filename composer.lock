@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "24480e553a9b72ec162a46bb0a92080f",
+    "content-hash": "aff651983660f8e05340e42c05466e05",
     "packages": [
         {
             "name": "hydrakit/admin",
@@ -6484,13 +6484,13 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.2"
+        "php": ">=8.4"
     },
     "platform-dev": {
         "ext-pdo_sqlite": "*"
     },
     "platform-overrides": {
-        "php": "8.2.0"
+        "php": "8.4.0"
     },
     "plugin-api-version": "2.9.0"
 }

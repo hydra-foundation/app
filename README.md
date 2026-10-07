@@ -12,7 +12,7 @@ Documentation: [hydra.williamhleucka.com/docs](https://hydra.williamhleucka.com/
 
 ## Requirements
 
-- **PHP 8.2+** and **Composer**
+- **PHP 8.4+** and **Composer**
 - **Docker** + Compose (for the full stack: PHP-FPM, nginx, MariaDB, Redis)
 
 `composer.json` pins `config.platform.php` to the oldest version above, so the
@@ -79,7 +79,7 @@ composer qa                      # static analysis, style, tests
 
 The three also run on their own as `composer stan`, `composer lint` and
 `composer test`; `composer lint:fix` applies the style fixes instead of
-reporting them. CI runs the same tools on PHP 8.2 through 8.5, and once more
+reporting them. CI runs the same tools on PHP 8.4 and 8.5, and once more
 against the framework's `main` branch, so a change upstream that breaks the
 skeleton fails before it is released rather than after.
 

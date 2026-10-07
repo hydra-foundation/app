@@ -21,7 +21,7 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.4",
         "hydrakit/core": "^0.26",
         "hydrakit/broadcast": "^0.26",
         "hydrakit/cache": "^0.26",
@@ -69,7 +69,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.2.0"
+            "php": "8.4.0"
         }
     },
     "minimum-stability": "stable",
