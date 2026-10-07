@@ -43,7 +43,7 @@ final class FailedJobsModule implements ModuleInterface
                     ->format(static fn (mixed $value): string => (new FailedJob(0, '', '', (string) $value, 0))->reason(), Surface::List)
                     ->format(self::preformatted(...), Surface::Show),
                 Field::text('payload')->onlyOn(Surface::Show)->format(self::preformatted(...)),
-                Field::datetime('failed_at')->labelled('Failed')->sortable()->relative(),
+                Field::datetime('failed_at')->labelled('Failed')->sortable()->relative()->filterable(),
             )
             ->screens(
                 ShowScreen::make()->title('Failed job'),

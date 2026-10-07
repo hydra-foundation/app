@@ -7,6 +7,7 @@ namespace App\Tests\Unit;
 use App\Admin\Sources\AuditSource;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
+use Hydra\Admin\DateRange;
 use Hydra\Admin\Criteria;
 use Hydra\Admin\Testing\RowSourceContractTestCase;
 use Hydra\Database\PdoConnection;
@@ -46,11 +47,11 @@ final class AuditSourceTest extends RowSourceContractTestCase
             ['users', '3', 'barbara', 'deleted account'],
         ];
 
-        foreach ($rows as [$table, $id, $username, $message]) {
+        foreach ($rows as $n => [$table, $id, $username, $message]) {
             $this->pdo->prepare(
-                'INSERT INTO audit (module, table_id, old_value, new_value, user_id, username, message)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)',
-            )->execute([$table, $id, '{"role":"user"}', '{"role":"admin"}', 1, $username, $message]);
+                'INSERT INTO audit (module, table_id, old_value, new_value, user_id, username, message, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            )->execute([$table, $id, '{"role":"user"}', '{"role":"admin"}', 1, $username, $message, sprintf('2026-10-0%d 12:00:00', $n + 1)]);
         }
 
         $this->source = new AuditSource(new PdoConnection($this->pdo));
@@ -61,6 +62,13 @@ final class AuditSourceTest extends RowSourceContractTestCase
     {
         // Three of the five rows, so a dropped filter reads as five.
         return ['module' => 'users'];
+    }
+
+    /** @return array<string, DateRange> */
+    protected function rangeValues(): array
+    {
+        // One change a day from the 1st, so the 2nd and 3rd hold two of five.
+        return ['created_at' => $this->days('2026-10-02', '2026-10-03')];
     }
 
     protected function source(): SourceInterface

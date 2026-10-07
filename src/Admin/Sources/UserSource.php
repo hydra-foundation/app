@@ -39,7 +39,7 @@ final class UserSource extends TableSource implements UpdateSourceInterface, Cre
             columns: ['id', 'avatar', 'avatar_name', 'username', 'email', 'role', 'created_at'],
             sortable: ['id', 'username', 'email', 'role', 'created_at'],
             searchable: ['username', 'email'],
-            filterable: ['role'],
+            filterable: ['role', 'created_at'],
         );
     }
 

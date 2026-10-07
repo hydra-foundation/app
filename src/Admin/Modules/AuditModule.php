@@ -44,7 +44,7 @@ final class AuditModule implements ModuleInterface
                 Field::text('message')->searchable(),
                 Field::text('old_value')->labelled('Before')->truncate(32),
                 Field::text('new_value')->labelled('After')->truncate(32),
-                Field::datetime('created_at')->labelled('Changed')->sortable()->relative(),
+                Field::datetime('created_at')->labelled('Changed')->sortable()->relative()->filterable(),
             )
             ->screens(
                 ShowScreen::make()->title('Change'),

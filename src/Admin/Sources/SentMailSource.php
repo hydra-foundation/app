@@ -21,6 +21,8 @@ final class SentMailSource extends TableSource
             columns: ['id', 'sent_at', 'transport', 'from_address', 'to_addresses', 'cc_addresses', 'bcc_addresses', 'subject', 'text_body', 'html_body'],
             sortable: ['id', 'sent_at', 'transport', 'to_addresses', 'subject'],
             searchable: ['to_addresses', 'subject'],
+            filterable: ['sent_at'],
+            unixTime: ['sent_at'],
         );
     }
 }

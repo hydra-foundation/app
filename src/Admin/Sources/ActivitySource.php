@@ -23,7 +23,7 @@ final class ActivitySource extends TableSource
             ],
             sortable: ['id', 'username', 'method', 'path', 'status', 'duration_ms', 'ip', 'created_at'],
             searchable: ['username', 'path', 'ip'],
-            filterable: ['method', 'status', 'request_id'],
+            filterable: ['method', 'status', 'request_id', 'created_at'],
         );
     }
 }

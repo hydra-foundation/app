@@ -44,7 +44,7 @@ final class MailModule implements ModuleInterface
                 Field::text('bcc_addresses')->labelled('Bcc')->onlyOn(Surface::Show)->emptyAs('None'),
                 Field::text('subject')->sortable()->searchable()->truncate(64, Surface::List)->emptyAs('(no subject)'),
                 Field::text('transport')->sortable(),
-                Field::datetime('sent_at')->labelled('Sent')->sortable()->relative(),
+                Field::datetime('sent_at')->labelled('Sent')->sortable()->relative()->filterable(),
                 Field::text('text_body')->labelled('Text')->onlyOn(Surface::Show)->emptyAs('None')->format(self::preformatted(...)),
                 Field::text('html_body')->labelled('HTML')->onlyOn(Surface::Show)->emptyAs('None')->format(self::preformatted(...)),
             )

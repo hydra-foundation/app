@@ -20,7 +20,7 @@ final class AuditSource extends TableSource
             columns: ['id', 'module', 'table_id', 'old_value', 'new_value', 'user_id', 'username', 'message', 'created_at'],
             sortable: ['id', 'module', 'table_id', 'old_value', 'new_value', 'username', 'created_at'],
             searchable: ['module', 'table_id', 'username', 'message'],
-            filterable: ['module'],
+            filterable: ['module', 'created_at'],
         );
     }
 }

@@ -26,7 +26,8 @@ final class ScheduledRunsSource extends TableSource
             columns: ['id', 'task', 'outcome', 'items', 'held_minutes', 'error', 'started_at', 'duration_ms'],
             sortable: ['id', 'task', 'outcome', 'items', 'started_at', 'duration_ms'],
             searchable: ['error'],
-            filterable: ['task', 'outcome'],
+            filterable: ['task', 'outcome', 'started_at'],
+            unixTime: ['started_at'],
         );
     }
 

@@ -10,6 +10,7 @@ use App\Repositories\SignInRepository;
 use App\Repositories\UserRepository;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
+use Hydra\Admin\DateRange;
 use Hydra\Admin\Testing\WritableSourceContractTestCase;
 use Hydra\Admin\Exceptions\WriteRejected;
 use Hydra\Auth\Contracts\GuardInterface;
@@ -47,13 +48,22 @@ final class UserSourceTest extends WritableSourceContractTestCase
         // filter that ran from a filter that was dropped.
         $users = ['ada' => 'admin', 'grace' => 'admin', 'alan' => 'user', 'edsger' => 'user', 'barbara' => 'user'];
 
+        $day = 1;
+
         foreach ($users as $username => $role) {
-            $this->pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)')
-                ->execute([$username, "{$username}@example.com", 'hashed-secret', $role]);
+            $this->pdo->prepare('INSERT INTO users (username, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)')
+                ->execute([$username, "{$username}@example.com", 'hashed-secret', $role, sprintf('2026-10-0%d 12:00:00', $day++)]);
         }
 
         $db = new PdoConnection($this->pdo);
         $this->source = new UserSource($db, $this->guard(), new FakeHasher, new UserRepository($db), new ApiTokenRepository($db), new SignInRepository($db));
+    }
+
+    /** @return array<string, DateRange> */
+    protected function rangeValues(): array
+    {
+        // One sign-up a day from the 1st, so the 2nd and 3rd hold two of five.
+        return ['created_at' => $this->days('2026-10-02', '2026-10-03')];
     }
 
     protected function source(): SourceInterface

@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Entities\Role;
 use App\Jobs\SendVerificationLink;
 use App\Tests\Support\TestApp;
+use DateTimeImmutable;
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Http\Testing\Client;
 use Hydra\Queue\DatabaseQueue;
@@ -115,6 +116,20 @@ final class QueueAdminFlowTest extends TestCase
         $this->assertStringContainsString('>RuntimeException: address rejected</td>', $body);
         $this->assertLessThan(strpos($body, 'mail server down'), strpos($body, 'address rejected'));
         $this->assertStringNotContainsString('#0 ', $body);
+    }
+
+    public function test_failures_narrow_to_the_days_they_failed_on(): void
+    {
+        $old = $this->failJob('mail server down');
+        $this->failJob('address rejected');
+        $this->app->pdo()->prepare('UPDATE failed_jobs SET failed_at = ? WHERE id = ?')
+            ->execute([(new DateTimeImmutable('2026-01-05 12:00 UTC'))->getTimestamp(), $old]);
+        $this->login('boss');
+
+        $january = $this->body('/admin/failed-jobs?failed_at_from=2026-01-01&failed_at_to=2026-01-31');
+
+        $this->assertStringContainsString('mail server down', $january);
+        $this->assertStringNotContainsString('address rejected', $january);
     }
 
     public function test_the_failures_are_admin_only(): void

@@ -7,6 +7,7 @@ namespace App\Tests\Unit;
 use App\Admin\Sources\ActivitySource;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
+use Hydra\Admin\DateRange;
 use Hydra\Admin\Testing\RowSourceContractTestCase;
 use Hydra\Database\PdoConnection;
 use PDO;
@@ -41,8 +42,8 @@ final class ActivitySourceTest extends RowSourceContractTestCase
 
         foreach ($rows as $n => [$username, $method, $path, $status, $ip]) {
             $this->pdo->prepare(
-                'INSERT INTO activity (username, method, path, status, duration_ms, ip, request_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            )->execute([$username, $method, $path, $status, 5, $ip, 'req-' . $n]);
+                'INSERT INTO activity (username, method, path, status, duration_ms, ip, request_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            )->execute([$username, $method, $path, $status, 5, $ip, 'req-' . $n, sprintf('2026-10-0%d 12:00:00', $n + 1)]);
         }
 
         $this->source = new ActivitySource(new PdoConnection($this->pdo));
@@ -53,6 +54,13 @@ final class ActivitySourceTest extends RowSourceContractTestCase
     {
         // Three GETs and two 200s of the five, so neither reads as unfiltered.
         return ['method' => 'GET', 'status' => '200', 'request_id' => 'req-2'];
+    }
+
+    /** @return array<string, DateRange> */
+    protected function rangeValues(): array
+    {
+        // One request a day from the 1st, so the 2nd and 3rd hold two of five.
+        return ['created_at' => $this->days('2026-10-02', '2026-10-03')];
     }
 
     protected function source(): SourceInterface

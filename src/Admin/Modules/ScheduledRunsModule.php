@@ -34,7 +34,7 @@ final class ScheduledRunsModule implements ModuleInterface
                 Field::id()->onlyOn(Surface::Show),
                 Field::text('task')->filterable()->format(self::task(...)),
                 Field::select('outcome', SchedulerModule::OUTCOMES)->filterable(),
-                Field::datetime('started_at')->labelled('Started')->relative()->sortable(),
+                Field::datetime('started_at')->labelled('Started')->relative()->sortable()->filterable(),
                 Field::number('duration_ms')->labelled('Took')->grouped()->suffix(' ms')->sortable(),
                 Field::number('items')->sortable(),
                 Field::number('held_minutes')->labelled('Held for')->suffix(' min')->onlyOn(Surface::Show),

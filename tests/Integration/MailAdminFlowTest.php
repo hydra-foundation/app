@@ -64,6 +64,20 @@ final class MailAdminFlowTest extends TestCase
         $this->assertMatchesRegularExpression('~href="/admin/rate-limits".*?href="/admin/mail".*?href="/admin/files"~s', $this->body('/admin/mail'));
     }
 
+    public function test_mail_narrows_to_the_days_it_was_sent_on(): void
+    {
+        // Weeks apart, so the reader's zone cannot move either across the range.
+        $this->sent('ada@example.com', 'Reset your password', '2026-01-05 12:00 UTC');
+        $this->sent('bob@example.com', 'Verify your email', '2026-03-10 12:00 UTC');
+        $this->login('boss');
+
+        $january = $this->body('/admin/mail?sent_at_from=2026-01-01&sent_at_to=2026-01-31');
+
+        $this->assertStringContainsString('>Reset your password</td>', $january);
+        $this->assertStringNotContainsString('>Verify your email</td>', $january);
+        $this->assertStringContainsString('name="sent_at_from"', $january);
+    }
+
     public function test_search_finds_mail_by_recipient_and_by_subject(): void
     {
         $this->sent('ada@example.com', 'Reset your password');

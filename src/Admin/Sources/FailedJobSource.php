@@ -24,6 +24,8 @@ final class FailedJobSource extends TableSource implements DeleteSourceInterface
             columns: ['id', 'job', 'payload', 'exception', 'failed_at'],
             sortable: ['id', 'job', 'failed_at'],
             searchable: ['job'],
+            filterable: ['failed_at'],
+            unixTime: ['failed_at'],
         );
     }
 

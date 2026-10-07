@@ -45,7 +45,7 @@ final class UsersModule implements ModuleInterface
                 Field::text('username')->sortable()->searchable(),
                 Field::text('email')->sortable()->searchable(),
                 Field::select('role', Role::options())->sortable(),
-                Field::datetime('created_at')->labelled("Created")->sortable()->relative(),
+                Field::datetime('created_at')->labelled("Created")->sortable()->relative()->filterable(),
             )
             ->screens(
                 ShowScreen::make()->title('User'),

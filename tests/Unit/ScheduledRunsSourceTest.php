@@ -8,6 +8,7 @@ use App\Admin\Sources\ScheduledRunsSource;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Criteria;
+use Hydra\Admin\DateRange;
 use Hydra\Admin\Testing\RowSourceContractTestCase;
 use Hydra\Database\PdoConnection;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -36,7 +37,7 @@ final class ScheduledRunsSourceTest extends RowSourceContractTestCase
         foreach ($rows as $n => [$task, $outcome, $items, $held, $error]) {
             $pdo->prepare(
                 'INSERT INTO scheduled_runs (task, outcome, items, held_minutes, error, started_at, duration_ms) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            )->execute([$task, $outcome, $items, $held, $error, 1790000000 + $n * 60, 10]);
+            )->execute([$task, $outcome, $items, $held, $error, 1790000000 + $n * 86400, 10]);
         }
 
         $this->source = new ScheduledRunsSource(new PdoConnection($pdo));
@@ -70,6 +71,13 @@ final class ScheduledRunsSourceTest extends RowSourceContractTestCase
     protected function filterValues(): array
     {
         return ['task' => self::PRUNE, 'outcome' => 'failed', 'idle' => '1'];
+    }
+
+    /** @return array<string, DateRange> */
+    protected function rangeValues(): array
+    {
+        // One run a day from 14:13 UTC on 21 September, so these two days hold two of six.
+        return ['started_at' => $this->days('2026-09-22', '2026-09-23')];
     }
 
     protected function source(): SourceInterface
