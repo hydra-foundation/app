@@ -43,8 +43,9 @@ use Hydra\Core\Contracts\ContainerInterface;
 use Hydra\Core\Contracts\ExceptionReporterInterface;
 use Hydra\Core\Environment;
 use Hydra\Core\Providers\ServiceProvider;
+use Hydra\Core\Security\Signer;
 use Hydra\Core\Versions;
-use Hydra\Csrf\{CsrfGuard, VerifyCsrfTokenMiddleware};
+use Hydra\Csrf\{CsrfGuard, Honeypot, VerifyCsrfTokenMiddleware};
 use Hydra\Database\Contracts\ConnectionInterface;
 use Hydra\Database\{DatabaseHealthCheck, MigrationRunner, PdoConnection};
 use Hydra\Event\ListenerProvider;
@@ -402,7 +403,19 @@ final class AppServiceProvider extends ServiceProvider
                 // asset(), so their names carry their content's hash and nginx
                 // can keep them a year (see docker/nginx/default.conf).
                 assets: new Assets(dirname(__DIR__, 2) . '/public'),
+                // What $this->honeypot() prints in a public form. No skeleton
+                // form uses it: login and password reset are the forms a
+                // password manager fills, and a lockout there costs more than
+                // the spam it would stop.
+                honeypot: $container->get(Honeypot::class),
             );
+        });
+
+        // Bound by hand: its limits are optional constructor arguments, which
+        // autowiring would skip, and the signer has to be the app's, under
+        // APP_KEY, for a start time to survive a key rotation.
+        $container->singleton(Honeypot::class, function () use ($container) {
+            return new Honeypot($container->get(Signer::class), $container->get(ClockInterface::class));
         });
 
         // X-Frame-Options is the superseded spelling of frame-ancestors, so the

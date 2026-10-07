@@ -302,6 +302,17 @@ code, kbd, samp, pre {
     color: var(--muted);
 }
 
+/* $this->honeypot()'s trap: off screen rather than display:none, which the
+   simplest bots read as "skip this field". aria-hidden and tabindex on the
+   markup keep it from screen readers and the keyboard. */
+.form-trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 /* Alerts ------------------------------------------------------------------- */
 
 .alert {
