@@ -96,6 +96,9 @@ use Hydra\View\PhpView;
 use PDO;
 use Psr\Clock\ClockInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Hydra\Image\ImageOptions;
+use Hydra\Image\Preset;
+use Hydra\View\Contracts\ImagesInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
@@ -144,6 +147,23 @@ final class AppServiceProvider extends ServiceProvider
         FailedJobsModule::class,
         SettingsModule::class,
     ];
+
+    /**
+     * The sizes pictures are made at, by name: `$this->image($src, 'content',
+     * alt: …)`. Widths are what a layout draws them at, doubled for sharp
+     * screens; add a preset for each new place a picture appears.
+     */
+    public static function images(): ImageOptions
+    {
+        return new ImageOptions([
+            // In the text of a page: as wide as the column, its own shape.
+            'content' => Preset::widths(480, 960, 1440),
+            // A banner or a card's picture, cut to 16:9 from the centre.
+            'cover' => Preset::widths(640, 1280)->crop(16, 9),
+            // A small square: a list, an avatar-sized preview.
+            'thumb' => Preset::widths(160, 320)->crop(1, 1),
+        ]);
+    }
 
     /**
      * The app's middleware stack, outermost first
@@ -418,6 +438,9 @@ final class AppServiceProvider extends ServiceProvider
                 // What $this->markdown() renders with: hydrakit/commonmark,
                 // registered in Bootstrap. Untrusted unless a call says so.
                 markdown: $container->get(MarkdownInterface::class),
+                // What $this->image() sizes pictures with: hydrakit/image,
+                // registered in Bootstrap with the presets below.
+                images: $container->get(ImagesInterface::class),
             );
         });
 

@@ -53,6 +53,7 @@
         "hydrakit/database": "*",
         "hydrakit/view": "*",
         "hydrakit/commonmark": "*",
+        "hydrakit/image": "*",
         "hydrakit/nyholm": "*",
         "hydrakit/console": "*",
         "hydrakit/php-di": "*",

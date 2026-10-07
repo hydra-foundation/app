@@ -24,6 +24,7 @@ use Hydra\Broadcast\Testing\FakeHubStatus;
 use Hydra\Cache\ArrayStore;
 use Hydra\Cache\Testing\ArrayCacheServiceProvider;
 use Hydra\CommonMark\CommonMarkServiceProvider;
+use Hydra\Image\ImageServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Clock\ClockServiceProvider;
 use Hydra\Core\Contracts\ContainerInterface;
@@ -114,6 +115,7 @@ final class TestApp
                 publicPath: sys_get_temp_dir() . '/hydra-app-public-' . getmypid(),
             ))
             ->register(new CommonMarkServiceProvider)
+            ->register(new ImageServiceProvider(AppServiceProvider::images()))
             ->register(new AppServiceProvider)
             ->register(new AdminServiceProvider(
                 modules: AppServiceProvider::MODULES,

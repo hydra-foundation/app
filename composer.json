@@ -44,6 +44,7 @@
         "hydrakit/database": "^0.30",
         "hydrakit/view": "^0.30",
         "hydrakit/commonmark": "^0.30",
+        "hydrakit/image": "^0.30",
         "hydrakit/nyholm": "^0.30",
         "hydrakit/console": "^0.30",
         "hydrakit/php-di": "^0.30",
