@@ -61,11 +61,13 @@ use Hydra\Http\{
     ErrorHandlerMiddleware,
     ForceHttpsMiddleware,
     HealthMiddleware,
+    HttpCacheMiddleware,
     Maintenance,
     MaintenanceMiddleware,
     HtmxRedirectMiddleware,
     NegotiatingErrorRenderer,
     ParseBodyMiddleware,
+    Release,
     RequestId,
     RequestIdMiddleware,
     RequestLoggingMiddleware,
@@ -94,6 +96,7 @@ use Hydra\View\PhpView;
 use PDO;
 use Psr\Clock\ClockInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 use RuntimeException;
@@ -151,6 +154,9 @@ final class AppServiceProvider extends ServiceProvider
         // plain-http probe with a 301, and of the access log it would flood.
         HealthMiddleware::class,
         RequestLoggingMiddleware::class,
+        // Outside the session and the error handler, so it sees every
+        // response: no-store unless a controller says otherwise, and 304s.
+        HttpCacheMiddleware::class,
         SecurityHeadersMiddleware::class,
         CspMiddleware::class,
         ForceHttpsMiddleware::class,
@@ -482,6 +488,24 @@ final class AppServiceProvider extends ServiceProvider
                 $container->get(RequestId::class),
                 trustIncoming: true,
                 clients: $container->get(ClientIpResolver::class),
+            );
+        });
+
+        $container->singleton(Release::class, function () use ($container) {
+            $config = $container->get(AppConfig::class);
+
+            return new Release(
+                $config->release !== '' ? $config->release : ($container->get(Versions::class)->commit() ?? 'unknown'),
+                // A template edited in development doesn't move the commit.
+                conditional: !$config->debug,
+            );
+        });
+
+        $container->singleton(HttpCacheMiddleware::class, function () use ($container) {
+            return new HttpCacheMiddleware(
+                $container->get(StreamFactoryInterface::class),
+                $container->get(Release::class),
+                $container->get(LoggerInterface::class),
             );
         });
 

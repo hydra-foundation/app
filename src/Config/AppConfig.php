@@ -21,6 +21,8 @@ final readonly class AppConfig
         public bool $trustForwardedProto,
         /** @var list<string> Addresses/CIDR blocks whose forwarding headers we believe. */
         public array $trustedProxies = [],
+        /** What a deploy is called, mixed into every ETag; '' uses the git commit. */
+        public string $release = '',
     ) {}
 
     public static function fromEnvironment(Environment $env): self
@@ -45,6 +47,7 @@ final readonly class AppConfig
             // socket peer is the client, the only safe default, because
             // anything else lets a direct caller name itself.
             trustedProxies: $env->list('TRUSTED_PROXIES'),
+            release: $env->string('APP_RELEASE'),
         );
     }
 }
