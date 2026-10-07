@@ -4,33 +4,33 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cfd8cf47d1d57a483410ca2e3ecb585e",
+    "content-hash": "24480e553a9b72ec162a46bb0a92080f",
     "packages": [
         {
             "name": "hydrakit/admin",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/admin.git",
-                "reference": "dda93d6f748b4542c79201be95cf65d6c189a062"
+                "reference": "61ec932c15a6c259239f6a186cb1259b75150a91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/admin/zipball/dda93d6f748b4542c79201be95cf65d6c189a062",
-                "reference": "dda93d6f748b4542c79201be95cf65d6c189a062",
+                "url": "https://api.github.com/repos/hydra-foundation/admin/zipball/61ec932c15a6c259239f6a186cb1259b75150a91",
+                "reference": "61ec932c15a6c259239f6a186cb1259b75150a91",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/auth": "^0.25",
-                "hydrakit/authorization": "^0.25",
-                "hydrakit/cache": "^0.25",
-                "hydrakit/console": "^0.25",
-                "hydrakit/core": "^0.25",
-                "hydrakit/database": "^0.25",
-                "hydrakit/filesystem": "^0.25",
-                "hydrakit/http": "^0.25",
-                "hydrakit/validation": "^0.25",
-                "hydrakit/view": "^0.25",
+                "hydrakit/auth": "^0.26",
+                "hydrakit/authorization": "^0.26",
+                "hydrakit/cache": "^0.26",
+                "hydrakit/console": "^0.26",
+                "hydrakit/core": "^0.26",
+                "hydrakit/database": "^0.26",
+                "hydrakit/filesystem": "^0.26",
+                "hydrakit/http": "^0.26",
+                "hydrakit/validation": "^0.26",
+                "hydrakit/view": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0",
                 "psr/event-dispatcher": "^1.0",
@@ -38,8 +38,8 @@
                 "psr/log": "^3.0"
             },
             "require-dev": {
-                "hydrakit/broadcast": "^0.25",
-                "hydrakit/event": "^0.25",
+                "hydrakit/broadcast": "^0.26",
+                "hydrakit/event": "^0.26",
                 "nyholm/psr7": "^1.8",
                 "phpunit/phpunit": "^11.0"
             },
@@ -49,7 +49,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -70,29 +70,29 @@
             "description": "A composable admin backend for Hydra apps: declare a module, get routes and htmx screens.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/admin/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/admin/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/auth",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/auth.git",
-                "reference": "9987162936f40bb07f383cb61175227df7f626ac"
+                "reference": "f1ba939651e6110e6f85340c1c1ba04bf41f03c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/auth/zipball/9987162936f40bb07f383cb61175227df7f626ac",
-                "reference": "9987162936f40bb07f383cb61175227df7f626ac",
+                "url": "https://api.github.com/repos/hydra-foundation/auth/zipball/f1ba939651e6110e6f85340c1c1ba04bf41f03c1",
+                "reference": "f1ba939651e6110e6f85340c1c1ba04bf41f03c1",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "^0.25",
-                "hydrakit/http": "^0.25",
-                "hydrakit/session": "^0.25",
-                "hydrakit/throttle": "^0.25",
+                "hydrakit/core": "^0.26",
+                "hydrakit/http": "^0.26",
+                "hydrakit/session": "^0.26",
+                "hydrakit/throttle": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0",
                 "psr/event-dispatcher": "^1.0",
@@ -102,14 +102,14 @@
                 "psr/log": "^3.0"
             },
             "require-dev": {
-                "hydrakit/event": "^0.25",
+                "hydrakit/event": "^0.26",
                 "nyholm/psr7": "^1.8",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -130,28 +130,28 @@
             "description": "Authentication for Hydra: identity only, behind a swappable guard.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/auth/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/auth/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/authorization",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/authorization.git",
-                "reference": "dd24357cc129cae7b6ab30d595966c9d31adabd9"
+                "reference": "9f4b5887cc76aae10583fc13b6778f38f96d0664"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/authorization/zipball/dd24357cc129cae7b6ab30d595966c9d31adabd9",
-                "reference": "dd24357cc129cae7b6ab30d595966c9d31adabd9",
+                "url": "https://api.github.com/repos/hydra-foundation/authorization/zipball/9f4b5887cc76aae10583fc13b6778f38f96d0664",
+                "reference": "9f4b5887cc76aae10583fc13b6778f38f96d0664",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/auth": "^0.25",
-                "hydrakit/core": "^0.25",
-                "hydrakit/http": "^0.25",
+                "hydrakit/auth": "^0.26",
+                "hydrakit/core": "^0.26",
+                "hydrakit/http": "^0.26",
                 "php": ">=8.2"
             },
             "require-dev": {
@@ -160,7 +160,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -181,34 +181,34 @@
             "description": "Ability-based authorization for Hydra, on top of hydrakit/auth.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/authorization/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/authorization/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/broadcast",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/broadcast.git",
-                "reference": "32db64b55e03fa09678901c5831e54eb18e229f7"
+                "reference": "7f4b1e30664520b54afc243f5d5f0ffdae0a55db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/broadcast/zipball/32db64b55e03fa09678901c5831e54eb18e229f7",
-                "reference": "32db64b55e03fa09678901c5831e54eb18e229f7",
+                "url": "https://api.github.com/repos/hydra-foundation/broadcast/zipball/7f4b1e30664520b54afc243f5d5f0ffdae0a55db",
+                "reference": "7f4b1e30664520b54afc243f5d5f0ffdae0a55db",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/cache": "^0.25",
-                "hydrakit/console": "^0.25",
-                "hydrakit/core": "^0.25",
+                "hydrakit/cache": "^0.26",
+                "hydrakit/console": "^0.26",
+                "hydrakit/core": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0",
                 "psr/log": "^3.0"
             },
             "require-dev": {
-                "hydrakit/log": "^0.25",
+                "hydrakit/log": "^0.26",
                 "phpunit/phpunit": "^11.0"
             },
             "suggest": {
@@ -218,7 +218,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -240,26 +240,26 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "issues": "https://github.com/hydra-foundation/broadcast/issues",
-                "source": "https://github.com/hydra-foundation/broadcast/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/broadcast/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/cache",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/cache.git",
-                "reference": "7e106c280ffccf271e04ef716e880471a91a606e"
+                "reference": "74cb61dc38a7ab7bb50e08b6b6c612c68f023fd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/cache/zipball/7e106c280ffccf271e04ef716e880471a91a606e",
-                "reference": "7e106c280ffccf271e04ef716e880471a91a606e",
+                "url": "https://api.github.com/repos/hydra-foundation/cache/zipball/74cb61dc38a7ab7bb50e08b6b6c612c68f023fd8",
+                "reference": "74cb61dc38a7ab7bb50e08b6b6c612c68f023fd8",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "^0.25",
+                "hydrakit/core": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0"
             },
@@ -272,7 +272,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -293,22 +293,22 @@
             "description": "A small key/value store behind one contract, with the atomic counters rate limiting needs.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/cache/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/cache/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/console",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/console.git",
-                "reference": "82d99c17a9a014997e2ec9b41ef32d9568d0f155"
+                "reference": "f26ed9aa95db8728750615ca5ea29593e4991f22"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/console/zipball/82d99c17a9a014997e2ec9b41ef32d9568d0f155",
-                "reference": "82d99c17a9a014997e2ec9b41ef32d9568d0f155",
+                "url": "https://api.github.com/repos/hydra-foundation/console/zipball/f26ed9aa95db8728750615ca5ea29593e4991f22",
+                "reference": "f26ed9aa95db8728750615ca5ea29593e4991f22",
                 "shasum": ""
             },
             "require": {
@@ -317,13 +317,13 @@
             },
             "require-dev": {
                 "ext-pdo_sqlite": "*",
-                "hydrakit/core": "^0.25",
+                "hydrakit/core": "^0.26",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -344,22 +344,22 @@
             "description": "The generic console commands every Hydra app needs, and the contracts a command is written against.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/console/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/console/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/core",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/core.git",
-                "reference": "b8b094f508f24826ad469d045374db6d4e2d8079"
+                "reference": "d2a83b9eae732169733283e44511cbc92be07d92"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/core/zipball/b8b094f508f24826ad469d045374db6d4e2d8079",
-                "reference": "b8b094f508f24826ad469d045374db6d4e2d8079",
+                "url": "https://api.github.com/repos/hydra-foundation/core/zipball/d2a83b9eae732169733283e44511cbc92be07d92",
+                "reference": "d2a83b9eae732169733283e44511cbc92be07d92",
                 "shasum": ""
             },
             "require": {
@@ -375,7 +375,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -396,29 +396,31 @@
             "description": "Application object, container and service-provider contracts, and typed environment loading. Interfaces only.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/core/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/core/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/csrf",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/csrf.git",
-                "reference": "21beeec2d0785e0606b528c032ccb8bb813dd396"
+                "reference": "4587ba243b59e8fbe798ffedc618cc075e602914"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/csrf/zipball/21beeec2d0785e0606b528c032ccb8bb813dd396",
-                "reference": "21beeec2d0785e0606b528c032ccb8bb813dd396",
+                "url": "https://api.github.com/repos/hydra-foundation/csrf/zipball/4587ba243b59e8fbe798ffedc618cc075e602914",
+                "reference": "4587ba243b59e8fbe798ffedc618cc075e602914",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "^0.25",
-                "hydrakit/http": "^0.25",
-                "hydrakit/session": "^0.25",
+                "hydrakit/core": "^0.26",
+                "hydrakit/http": "^0.26",
+                "hydrakit/session": "^0.26",
+                "hydrakit/validation": "^0.26",
                 "php": ">=8.2",
+                "psr/clock": "^1.0",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0"
@@ -430,7 +432,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -451,29 +453,29 @@
             "description": "Synchronizer-token CSRF protection as PSR-15 middleware.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/csrf/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/csrf/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/database",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/database.git",
-                "reference": "9c6d3b1abef878118e214dfdd5475a2c9239009d"
+                "reference": "3a105f14c1e487a5ff22a92fba7e3923dc1b81d1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/database/zipball/9c6d3b1abef878118e214dfdd5475a2c9239009d",
-                "reference": "9c6d3b1abef878118e214dfdd5475a2c9239009d",
+                "url": "https://api.github.com/repos/hydra-foundation/database/zipball/3a105f14c1e487a5ff22a92fba7e3923dc1b81d1",
+                "reference": "3a105f14c1e487a5ff22a92fba7e3923dc1b81d1",
                 "shasum": ""
             },
             "require": {
                 "ext-pdo": "*",
-                "hydrakit/console": "^0.25",
-                "hydrakit/core": "^0.25",
-                "hydrakit/validation": "^0.25",
+                "hydrakit/console": "^0.26",
+                "hydrakit/core": "^0.26",
+                "hydrakit/validation": "^0.26",
                 "php": ">=8.2"
             },
             "require-dev": {
@@ -483,7 +485,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -504,26 +506,26 @@
             "description": "A thin PDO data-access seam and a raw-SQL migration runner.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/database/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/database/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/event",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/event.git",
-                "reference": "ed45d0fdc8967672a225655f57f93332d83c41d0"
+                "reference": "b0a9561c0b107b0f994db9e484711016f69dffb3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/event/zipball/ed45d0fdc8967672a225655f57f93332d83c41d0",
-                "reference": "ed45d0fdc8967672a225655f57f93332d83c41d0",
+                "url": "https://api.github.com/repos/hydra-foundation/event/zipball/b0a9561c0b107b0f994db9e484711016f69dffb3",
+                "reference": "b0a9561c0b107b0f994db9e484711016f69dffb3",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "^0.25",
+                "hydrakit/core": "^0.26",
                 "php": ">=8.2",
                 "psr/event-dispatcher": "^1.0"
             },
@@ -533,7 +535,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -554,28 +556,28 @@
             "description": "A minimal PSR-14 event dispatcher and listener provider.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/event/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/event/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/filesystem",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/filesystem.git",
-                "reference": "52aaf25d71cf04f01057f7e5d3e7afd186725e7a"
+                "reference": "0ff130673540042cc08de36b60da5f47aa60806b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/filesystem/zipball/52aaf25d71cf04f01057f7e5d3e7afd186725e7a",
-                "reference": "52aaf25d71cf04f01057f7e5d3e7afd186725e7a",
+                "url": "https://api.github.com/repos/hydra-foundation/filesystem/zipball/0ff130673540042cc08de36b60da5f47aa60806b",
+                "reference": "0ff130673540042cc08de36b60da5f47aa60806b",
                 "shasum": ""
             },
             "require": {
                 "ext-fileinfo": "*",
-                "hydrakit/console": "^0.25",
-                "hydrakit/core": "^0.25",
+                "hydrakit/console": "^0.26",
+                "hydrakit/core": "^0.26",
                 "php": ">=8.2",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^2.0"
@@ -587,7 +589,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -609,27 +611,27 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "issues": "https://github.com/hydra-foundation/filesystem/issues",
-                "source": "https://github.com/hydra-foundation/filesystem/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/filesystem/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/http",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/http.git",
-                "reference": "d1226efd7bf9b67223bd3f98600a7a89679a1b8e"
+                "reference": "e99cee49c3ddd2e82b1120235911d8519ee9f158"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/http/zipball/d1226efd7bf9b67223bd3f98600a7a89679a1b8e",
-                "reference": "d1226efd7bf9b67223bd3f98600a7a89679a1b8e",
+                "url": "https://api.github.com/repos/hydra-foundation/http/zipball/e99cee49c3ddd2e82b1120235911d8519ee9f158",
+                "reference": "e99cee49c3ddd2e82b1120235911d8519ee9f158",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/console": "^0.25",
-                "hydrakit/core": "^0.25",
+                "hydrakit/console": "^0.26",
+                "hydrakit/core": "^0.26",
                 "php": ">=8.2",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^2.0",
@@ -638,14 +640,14 @@
                 "psr/log": "^3.0"
             },
             "require-dev": {
-                "hydrakit/log": "^0.25",
+                "hydrakit/log": "^0.26",
                 "nyholm/psr7": "^1.8",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -666,32 +668,32 @@
             "description": "PSR-7/PSR-15 HTTP layer: request lifecycle, routing, and middleware pipeline.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/http/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/http/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/kernel",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/kernel.git",
-                "reference": "24771fb63d6d47ccbf14c2750eaa3bb9a2c26cc5"
+                "reference": "f35c67252da3b8c16284892e69b9732db6e2f9b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/kernel/zipball/24771fb63d6d47ccbf14c2750eaa3bb9a2c26cc5",
-                "reference": "24771fb63d6d47ccbf14c2750eaa3bb9a2c26cc5",
+                "url": "https://api.github.com/repos/hydra-foundation/kernel/zipball/f35c67252da3b8c16284892e69b9732db6e2f9b8",
+                "reference": "f35c67252da3b8c16284892e69b9732db6e2f9b8",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/auth": "^0.25",
-                "hydrakit/authorization": "^0.25",
-                "hydrakit/core": "^0.25",
-                "hydrakit/event": "^0.25",
-                "hydrakit/http": "^0.25",
-                "hydrakit/session": "^0.25",
-                "hydrakit/view": "^0.25",
+                "hydrakit/auth": "^0.26",
+                "hydrakit/authorization": "^0.26",
+                "hydrakit/core": "^0.26",
+                "hydrakit/event": "^0.26",
+                "hydrakit/http": "^0.26",
+                "hydrakit/session": "^0.26",
+                "hydrakit/view": "^0.26",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -704,7 +706,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -725,22 +727,22 @@
             "description": "Hydra's default composition root and HTTP plumbing, kept in one place instead of copied per app.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/kernel/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/kernel/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/log",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/log.git",
-                "reference": "2622f65d501d9bd7eed4ec3ab0497d23e013c3bc"
+                "reference": "e43f8d4eceb817e7b2f9503194efe38bdec90fc9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/log/zipball/2622f65d501d9bd7eed4ec3ab0497d23e013c3bc",
-                "reference": "2622f65d501d9bd7eed4ec3ab0497d23e013c3bc",
+                "url": "https://api.github.com/repos/hydra-foundation/log/zipball/e43f8d4eceb817e7b2f9503194efe38bdec90fc9",
+                "reference": "e43f8d4eceb817e7b2f9503194efe38bdec90fc9",
                 "shasum": ""
             },
             "require": {
@@ -749,13 +751,13 @@
                 "psr/log": "^3.0"
             },
             "require-dev": {
-                "hydrakit/core": "^0.25",
+                "hydrakit/core": "^0.26",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -776,40 +778,40 @@
             "description": "A minimal PSR-3 logger that writes one plain-text line per record to a stream.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/log/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/log/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/mail",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/mail.git",
-                "reference": "13339c605717699d393804bb87e8d3cc747325d1"
+                "reference": "a492d5878e33b323a78fd6bb301fafc46eb03e77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/mail/zipball/13339c605717699d393804bb87e8d3cc747325d1",
-                "reference": "13339c605717699d393804bb87e8d3cc747325d1",
+                "url": "https://api.github.com/repos/hydra-foundation/mail/zipball/a492d5878e33b323a78fd6bb301fafc46eb03e77",
+                "reference": "a492d5878e33b323a78fd6bb301fafc46eb03e77",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "^0.25",
+                "hydrakit/core": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0",
                 "psr/event-dispatcher": "^1.0",
                 "psr/log": "^3.0"
             },
             "require-dev": {
-                "hydrakit/event": "^0.25",
-                "hydrakit/log": "^0.25",
+                "hydrakit/event": "^0.26",
+                "hydrakit/log": "^0.26",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -831,27 +833,27 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "issues": "https://github.com/hydra-foundation/mail/issues",
-                "source": "https://github.com/hydra-foundation/mail/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/mail/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/nyholm",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/nyholm.git",
-                "reference": "400237fa33fd2006da51784b47578c578dc4e65e"
+                "reference": "49f51e6b5937b4f75f2791315fb3b6ce9e4b0d27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/nyholm/zipball/400237fa33fd2006da51784b47578c578dc4e65e",
-                "reference": "400237fa33fd2006da51784b47578c578dc4e65e",
+                "url": "https://api.github.com/repos/hydra-foundation/nyholm/zipball/49f51e6b5937b4f75f2791315fb3b6ce9e4b0d27",
+                "reference": "49f51e6b5937b4f75f2791315fb3b6ce9e4b0d27",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "^0.25",
-                "hydrakit/http": "^0.25",
+                "hydrakit/core": "^0.26",
+                "hydrakit/http": "^0.26",
                 "nyholm/psr7": "^1.8",
                 "nyholm/psr7-server": "^1.0",
                 "php": ">=8.2",
@@ -863,7 +865,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -884,26 +886,26 @@
             "description": "Nyholm PSR-7/PSR-17 adapter: the default message and factory implementation for Hydra.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/nyholm/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/nyholm/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/php-di",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/php-di.git",
-                "reference": "8629fef4873ac64a83dd1a24eb8ee83e75186d75"
+                "reference": "582cf693c717142373538681a5679d4379ca906c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/php-di/zipball/8629fef4873ac64a83dd1a24eb8ee83e75186d75",
-                "reference": "8629fef4873ac64a83dd1a24eb8ee83e75186d75",
+                "url": "https://api.github.com/repos/hydra-foundation/php-di/zipball/582cf693c717142373538681a5679d4379ca906c",
+                "reference": "582cf693c717142373538681a5679d4379ca906c",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "^0.25",
+                "hydrakit/core": "^0.26",
                 "php": ">=8.2",
                 "php-di/php-di": "^7.0"
             },
@@ -913,7 +915,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -934,29 +936,29 @@
             "description": "PHP-DI PSR-11 adapter: the default container for Hydra.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/php-di/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/php-di/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/queue",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/queue.git",
-                "reference": "0e117494bc1256d2c064d7622e2a26b9275e168c"
+                "reference": "eab58d82063dc4e4e172968a92312545cf59b27b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/queue/zipball/0e117494bc1256d2c064d7622e2a26b9275e168c",
-                "reference": "0e117494bc1256d2c064d7622e2a26b9275e168c",
+                "url": "https://api.github.com/repos/hydra-foundation/queue/zipball/eab58d82063dc4e4e172968a92312545cf59b27b",
+                "reference": "eab58d82063dc4e4e172968a92312545cf59b27b",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/console": "^0.25",
-                "hydrakit/core": "^0.25",
-                "hydrakit/database": "^0.25",
-                "hydrakit/scheduler": "^0.25",
+                "hydrakit/console": "^0.26",
+                "hydrakit/core": "^0.26",
+                "hydrakit/database": "^0.26",
+                "hydrakit/scheduler": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0",
                 "psr/container": "^2.0",
@@ -965,14 +967,14 @@
             },
             "require-dev": {
                 "ext-pdo_sqlite": "*",
-                "hydrakit/event": "^0.25",
-                "hydrakit/log": "^0.25",
+                "hydrakit/event": "^0.26",
+                "hydrakit/log": "^0.26",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -994,28 +996,28 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "issues": "https://github.com/hydra-foundation/queue/issues",
-                "source": "https://github.com/hydra-foundation/queue/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/queue/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/scheduler",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/scheduler.git",
-                "reference": "128fa1e8888f8c5e6894c8ca87b9832135114e00"
+                "reference": "f3657be36284763409ab0d4473e71cbe07373bb0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/scheduler/zipball/128fa1e8888f8c5e6894c8ca87b9832135114e00",
-                "reference": "128fa1e8888f8c5e6894c8ca87b9832135114e00",
+                "url": "https://api.github.com/repos/hydra-foundation/scheduler/zipball/f3657be36284763409ab0d4473e71cbe07373bb0",
+                "reference": "f3657be36284763409ab0d4473e71cbe07373bb0",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/console": "^0.25",
-                "hydrakit/core": "^0.25",
-                "hydrakit/database": "^0.25",
+                "hydrakit/console": "^0.26",
+                "hydrakit/core": "^0.26",
+                "hydrakit/database": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0",
                 "psr/container": "^2.0",
@@ -1023,13 +1025,13 @@
             },
             "require-dev": {
                 "ext-pdo_sqlite": "*",
-                "hydrakit/log": "^0.25",
+                "hydrakit/log": "^0.26",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -1051,26 +1053,26 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "issues": "https://github.com/hydra-foundation/scheduler/issues",
-                "source": "https://github.com/hydra-foundation/scheduler/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/scheduler/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/seo",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/seo.git",
-                "reference": "b15fe7ed4fcf7cd4d59c620cacb3648ee4dd566a"
+                "reference": "27ef2bc300a2a6ebf0f8342018a2ca07aee6a76a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/seo/zipball/b15fe7ed4fcf7cd4d59c620cacb3648ee4dd566a",
-                "reference": "b15fe7ed4fcf7cd4d59c620cacb3648ee4dd566a",
+                "url": "https://api.github.com/repos/hydra-foundation/seo/zipball/27ef2bc300a2a6ebf0f8342018a2ca07aee6a76a",
+                "reference": "27ef2bc300a2a6ebf0f8342018a2ca07aee6a76a",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/view": "^0.25",
+                "hydrakit/view": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0"
             },
@@ -1080,7 +1082,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -1102,26 +1104,26 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "issues": "https://github.com/hydra-foundation/seo/issues",
-                "source": "https://github.com/hydra-foundation/seo/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/seo/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/session",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/session.git",
-                "reference": "6e172fa1e84784329ba44707bb34f0af49f91b32"
+                "reference": "db33f6fcec56ee2797562cec9290b27b27bcbe37"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/session/zipball/6e172fa1e84784329ba44707bb34f0af49f91b32",
-                "reference": "6e172fa1e84784329ba44707bb34f0af49f91b32",
+                "url": "https://api.github.com/repos/hydra-foundation/session/zipball/db33f6fcec56ee2797562cec9290b27b27bcbe37",
+                "reference": "db33f6fcec56ee2797562cec9290b27b27bcbe37",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/core": "^0.25",
+                "hydrakit/core": "^0.26",
                 "php": ">=8.2",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -1133,7 +1135,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -1154,26 +1156,26 @@
             "description": "Session handling as PSR-15 middleware, behind split data and lifecycle interfaces.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/session/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/session/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/symfony-console",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/symfony-console.git",
-                "reference": "0a6e63029b17f0aadae531a576a2fb641ea36527"
+                "reference": "f98af6d9bb2c34a49f3dd5c807915f489a3346cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/symfony-console/zipball/0a6e63029b17f0aadae531a576a2fb641ea36527",
-                "reference": "0a6e63029b17f0aadae531a576a2fb641ea36527",
+                "url": "https://api.github.com/repos/hydra-foundation/symfony-console/zipball/f98af6d9bb2c34a49f3dd5c807915f489a3346cc",
+                "reference": "f98af6d9bb2c34a49f3dd5c807915f489a3346cc",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/console": "^0.25",
+                "hydrakit/console": "^0.26",
                 "php": ">=8.2",
                 "symfony/console": "^7.0"
             },
@@ -1183,7 +1185,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -1205,28 +1207,28 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "issues": "https://github.com/hydra-foundation/symfony-console/issues",
-                "source": "https://github.com/hydra-foundation/symfony-console/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/symfony-console/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/throttle",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/throttle.git",
-                "reference": "4f3053d52b4658568091ed1dfa1b0e681983e759"
+                "reference": "45b76be03103bf486c4ed443cd104b61a38fd32a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/throttle/zipball/4f3053d52b4658568091ed1dfa1b0e681983e759",
-                "reference": "4f3053d52b4658568091ed1dfa1b0e681983e759",
+                "url": "https://api.github.com/repos/hydra-foundation/throttle/zipball/45b76be03103bf486c4ed443cd104b61a38fd32a",
+                "reference": "45b76be03103bf486c4ed443cd104b61a38fd32a",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/cache": "^0.25",
-                "hydrakit/core": "^0.25",
-                "hydrakit/http": "^0.25",
+                "hydrakit/cache": "^0.26",
+                "hydrakit/core": "^0.26",
+                "hydrakit/http": "^0.26",
                 "php": ">=8.2",
                 "psr/clock": "^1.0",
                 "psr/http-message": "^2.0",
@@ -1241,7 +1243,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -1263,22 +1265,22 @@
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
                 "issues": "https://github.com/hydra-foundation/throttle/issues",
-                "source": "https://github.com/hydra-foundation/throttle/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/throttle/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/validation",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/validation.git",
-                "reference": "6b46135c57311d7251c64f521b673d7e485ed7d4"
+                "reference": "89dac3e66e3ff5b63f680adf9f1c391ca9811fe0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/validation/zipball/6b46135c57311d7251c64f521b673d7e485ed7d4",
-                "reference": "6b46135c57311d7251c64f521b673d7e485ed7d4",
+                "url": "https://api.github.com/repos/hydra-foundation/validation/zipball/89dac3e66e3ff5b63f680adf9f1c391ca9811fe0",
+                "reference": "89dac3e66e3ff5b63f680adf9f1c391ca9811fe0",
                 "shasum": ""
             },
             "require": {
@@ -1293,7 +1295,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -1314,37 +1316,37 @@
             "description": "Zero-dependency input validation: per-field rules, stateless, shareable.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/validation/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/validation/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "hydrakit/view",
-            "version": "v0.25.0",
+            "version": "v0.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hydra-foundation/view.git",
-                "reference": "179f85722d3908c0bac463c3398b88c1b36ce6b8"
+                "reference": "7819a5141e0c5aa3587562a255b2867c6983d4dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hydra-foundation/view/zipball/179f85722d3908c0bac463c3398b88c1b36ce6b8",
-                "reference": "179f85722d3908c0bac463c3398b88c1b36ce6b8",
+                "url": "https://api.github.com/repos/hydra-foundation/view/zipball/7819a5141e0c5aa3587562a255b2867c6983d4dc",
+                "reference": "7819a5141e0c5aa3587562a255b2867c6983d4dc",
                 "shasum": ""
             },
             "require": {
-                "hydrakit/csrf": "^0.25",
-                "hydrakit/http": "^0.25",
+                "hydrakit/csrf": "^0.26",
+                "hydrakit/http": "^0.26",
                 "php": ">=8.2"
             },
             "require-dev": {
-                "hydrakit/session": "^0.25",
+                "hydrakit/session": "^0.26",
                 "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "0.25.x-dev"
+                    "dev-main": "0.26.x-dev"
                 }
             },
             "autoload": {
@@ -1365,9 +1367,9 @@
             "description": "Native PHP templating with template inheritance and escape-by-convention safety. No compile step.",
             "homepage": "https://hydra.williamhleucka.com",
             "support": {
-                "source": "https://github.com/hydra-foundation/view/tree/v0.25.0"
+                "source": "https://github.com/hydra-foundation/view/tree/v0.26.0"
             },
-            "time": "2026-10-07T00:27:59+00:00"
+            "time": "2026-10-07T01:47:56+00:00"
         },
         {
             "name": "laravel/serializable-closure",
