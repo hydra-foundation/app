@@ -1,0 +1,60 @@
+/* Colours for code highlighted on the server by $this->markdown()
+   (hydrakit/commonmark, through tempest/highlight). Link it on pages that
+   show code; it touches nothing else. Every colour is a custom property, so
+   a site recolours it without copying the rules. */
+
+:root {
+    --hl-bg: #f6f8fa;
+    --hl-text: #1f2328;
+    --hl-keyword: #cf222e;
+    --hl-property: #0550ae;
+    --hl-type: #8250df;
+    --hl-value: #0a3069;
+    --hl-number: #0550ae;
+    --hl-variable: #953800;
+    --hl-comment: #6e7781;
+    --hl-gutter: #8c959f;
+    --hl-addition: rgba(46, 160, 67, .15);
+    --hl-deletion: rgba(248, 81, 73, .15);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --hl-bg: #161b22;
+        --hl-text: #e6edf3;
+        --hl-keyword: #ff7b72;
+        --hl-property: #79c0ff;
+        --hl-type: #d2a8ff;
+        --hl-value: #a5d6ff;
+        --hl-number: #79c0ff;
+        --hl-variable: #ffa657;
+        --hl-comment: #8b949e;
+        --hl-gutter: #6e7681;
+        --hl-addition: rgba(46, 160, 67, .25);
+        --hl-deletion: rgba(248, 81, 73, .25);
+    }
+}
+
+pre[data-lang] {
+    background: var(--hl-bg);
+    color: var(--hl-text);
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    tab-size: 4;
+    line-height: 1.5;
+}
+
+.hl-keyword, .hl-operator { color: var(--hl-keyword); }
+.hl-property, .hl-attribute { color: var(--hl-property); }
+.hl-type, .hl-generic { color: var(--hl-type); }
+.hl-value { color: var(--hl-value); }
+.hl-number, .hl-literal { color: var(--hl-number); }
+.hl-variable { color: var(--hl-variable); }
+.hl-comment { color: var(--hl-comment); font-style: italic; }
+.hl-strong { font-weight: 700; }
+.hl-em { font-style: italic; }
+.hl-blur { filter: blur(2px); }
+.hl-addition { display: inline-block; min-width: 100%; background: var(--hl-addition); }
+.hl-deletion { display: inline-block; min-width: 100%; background: var(--hl-deletion); }
+.hl-gutter { display: inline-block; min-width: 2.5ch; margin-right: 1.25ch; color: var(--hl-gutter); text-align: right; user-select: none; }

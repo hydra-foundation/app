@@ -7,6 +7,7 @@ namespace App;
 use App\Config\RouteConfig;
 use App\Providers\AppServiceProvider;
 use Hydra\Cache\CacheServiceProvider;
+use Hydra\CommonMark\CommonMarkServiceProvider;
 use Hydra\Core\Application;
 use Hydra\Core\Environment;
 use Hydra\Admin\AdminServiceProvider;
@@ -52,6 +53,7 @@ final class Bootstrap
                 storagePath: $basePath . '/storage',
                 publicPath: $basePath . '/public',
             ))
+            ->register(new CommonMarkServiceProvider)
             ->register(new AppServiceProvider)
             ->register(new AdminServiceProvider(
                 modules: AppServiceProvider::MODULES,

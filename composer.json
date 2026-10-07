@@ -43,6 +43,7 @@
         "hydrakit/mail": "^0.28",
         "hydrakit/database": "^0.28",
         "hydrakit/view": "^0.28",
+        "hydrakit/commonmark": "^0.28",
         "hydrakit/nyholm": "^0.28",
         "hydrakit/console": "^0.28",
         "hydrakit/php-di": "^0.28",

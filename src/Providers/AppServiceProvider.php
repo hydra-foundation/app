@@ -88,6 +88,7 @@ use Hydra\Throttle\RateLimitMiddleware;
 use Hydra\Seo\Image;
 use Hydra\Seo\SiteMeta;
 use Hydra\View\Assets;
+use Hydra\View\Contracts\MarkdownInterface;
 use Hydra\View\Contracts\ViewInterface;
 use Hydra\View\PhpView;
 use PDO;
@@ -408,6 +409,9 @@ final class AppServiceProvider extends ServiceProvider
                 // password manager fills, and a lockout there costs more than
                 // the spam it would stop.
                 honeypot: $container->get(Honeypot::class),
+                // What $this->markdown() renders with: hydrakit/commonmark,
+                // registered in Bootstrap. Untrusted unless a call says so.
+                markdown: $container->get(MarkdownInterface::class),
             );
         });
 
