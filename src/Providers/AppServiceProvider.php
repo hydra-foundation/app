@@ -15,7 +15,7 @@ use App\Listeners\AuditAccountEventsListener;
 use App\Listeners\AuditAdminEventsListener;
 use App\Listeners\MailAddressChangesListener;
 use App\Listeners\MailRecoveryCodeUseListener;
-use App\Listeners\PublishQueueChanges;
+use App\Listeners\PublishQueueChangesListener;
 use App\Listeners\RecordSentMailListener;
 use App\Repositories\{ActivityRepository, ApiTokenRepository, AuditRepository, LockoutRepository, NotificationRepository, SentMailRepository, SignInRepository, TwoFactorRepository, UserRepository};
 use App\Tasks\PruneLockouts;
@@ -658,7 +658,7 @@ final class AppServiceProvider extends ServiceProvider
         // Jobs and Failed jobs, whose rows the admin never writes. Resolved at
         // dispatch, like the audit.
         $listeners->listen(QueueChanged::class, static function (QueueChanged $event) use ($container): void {
-            ($container->get(PublishQueueChanges::class))($event);
+            ($container->get(PublishQueueChangesListener::class))($event);
         });
 
         $listeners->listen(PasswordReset::class, static function (PasswordReset $event) use ($container): void {

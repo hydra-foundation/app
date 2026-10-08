@@ -12,7 +12,7 @@ use Hydra\Queue\Events\QueueChanged;
  * admin, so the admin has nothing of its own to publish for them. The queue
  * names its tables; which modules show them is the skeleton's to say.
  */
-final readonly class PublishQueueChanges
+final readonly class PublishQueueChangesListener
 {
     private const MODULES = [
         QueueChanged::JOBS => 'jobs',

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Modules;
 
-use App\Admin\Sources\ScheduledRunsSource;
+use App\Admin\Sources\ScheduledRunSource;
 use App\Authorization\AccessAdmin;
 use Hydra\Admin\Contracts\ModuleInterface;
 use Hydra\Admin\Definition;
@@ -26,7 +26,7 @@ final class ScheduledRunsModule implements ModuleInterface
             ->title('Runs')
             ->tabOf('scheduler')
             ->ability(AccessAdmin::class)
-            ->source(ScheduledRunsSource::class)
+            ->source(ScheduledRunSource::class)
             ->perPage(50)
             ->defaultSort('id', 'desc')
             ->gone('That run has been pruned.')

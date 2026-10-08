@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
-use App\Admin\Sources\ScheduledRunsSource;
+use App\Admin\Sources\ScheduledRunSource;
 use App\Tests\Support\TestSchema;
 use Hydra\Admin\Contracts\SourceInterface;
 use Hydra\Admin\Criteria;
@@ -13,13 +13,13 @@ use Hydra\Admin\Testing\RowSourceContractTestCase;
 use Hydra\Database\PdoConnection;
 use PHPUnit\Framework\Attributes\CoversClass;
 
-#[CoversClass(ScheduledRunsSource::class)]
-final class ScheduledRunsSourceTest extends RowSourceContractTestCase
+#[CoversClass(ScheduledRunSource::class)]
+final class ScheduledRunSourceTest extends RowSourceContractTestCase
 {
     private const WORKER = 'Hydra\Queue\Worker';
     private const PRUNE = 'Hydra\Scheduler\PruneScheduledRuns';
 
-    private ScheduledRunsSource $source;
+    private ScheduledRunSource $source;
 
     protected function setUp(): void
     {
@@ -40,7 +40,7 @@ final class ScheduledRunsSourceTest extends RowSourceContractTestCase
             )->execute([$task, $outcome, $items, $held, $error, 1790000000 + $n * 86400, 10]);
         }
 
-        $this->source = new ScheduledRunsSource(new PdoConnection($pdo));
+        $this->source = new ScheduledRunSource(new PdoConnection($pdo));
     }
 
     public function test_idle_is_a_run_that_handled_nothing(): void

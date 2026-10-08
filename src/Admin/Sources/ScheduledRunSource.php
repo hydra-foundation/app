@@ -14,7 +14,7 @@ use Hydra\Database\Contracts\ConnectionInterface;
  * The scheduler's run log, written only by the runner. `idle` is derived, not
  * stored: a run that ran and handled nothing, which is most of a drain's.
  */
-final class ScheduledRunsSource extends TableSource
+final class ScheduledRunSource extends TableSource
 {
     private const IDLE = "CASE WHEN outcome = 'ran' AND items = 0 THEN 1 ELSE 0 END";
 

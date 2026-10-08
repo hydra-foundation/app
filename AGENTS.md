@@ -29,7 +29,7 @@ php bin/console key:generate      # writes APP_KEY into .env
 | `src/Controllers` | HTTP controllers, routed by `#[Route]` attributes |
 | `src/Providers/AppServiceProvider.php` | the registration point: `CONTROLLERS`, `MODULES`, `MIDDLEWARE`, listeners in `boot()` |
 | `src/Admin` | admin modules, sources, actions, widgets, presenters |
-| `src/Repositories` | every SQL statement the app runs |
+| `src/Repositories` | the app's SQL; an admin source or a dashboard widget writes its own query |
 | `src/Entities` | typed rows the repositories return |
 | `src/Authorization` | abilities, one class per thing someone may do |
 | `src/Jobs` | queued jobs |
@@ -37,6 +37,12 @@ php bin/console key:generate      # writes APP_KEY into .env
 | `src/Tasks` | scheduled tasks |
 | `src/Mail` | messages |
 | `src/Config` | typed configuration read from `.env` |
+| `src/Http/Middleware` | the app's own middleware |
+| `src/Auth` | sign-ins: how long one counts, and ending them all |
+| `src/Security` | credentials on the settings forms: the current-password check, two-factor setup |
+| `src/View` | values every template can ask for: themes, timezones, avatars |
+| `src/ViewModels` | what an account or sign-in page shows: its data, and a form's errors |
+| `src/Console/Commands` | console commands, the `make:` generators among them |
 | `views` | PHP templates |
 | `database/migrations` | forward-only SQL migrations |
 | `tests/Unit`, `tests/Integration` | PHPUnit; integration tests boot the app on in-memory sqlite |
@@ -69,9 +75,10 @@ The generators that read a table (`make:source`, `make:module`, `make:entity`,
 
 ## Conventions
 
-- **SQL is what you read.** Repositories write plain SQL with bound
-  parameters through `ConnectionInterface`. There is no query builder and no
-  ORM; do not add one.
+- **SQL is what you read.** Repositories, admin sources and dashboard
+  widgets write plain SQL with bound parameters through
+  `ConnectionInterface`. There is no query builder and no ORM; do not add
+  one.
 - **Escape everything** in templates with `$this->e()`. Raw output is a
   decision, written down beside it.
 - **Errors say what to do.** A misconfiguration names the fix, not only the

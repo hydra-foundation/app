@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
-use App\Listeners\PublishQueueChanges;
+use App\Listeners\PublishQueueChangesListener;
 use Hydra\Admin\Live\ModuleChanges;
 use Hydra\Broadcast\Testing\FakeBroadcaster;
 use Hydra\Queue\Events\QueueChanged;
@@ -12,8 +12,8 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /** The queue names its tables; the skeleton knows which modules show them. */
-#[CoversClass(PublishQueueChanges::class)]
-final class PublishQueueChangesTest extends TestCase
+#[CoversClass(PublishQueueChangesListener::class)]
+final class PublishQueueChangesListenerTest extends TestCase
 {
     public function test_the_jobs_table_is_the_jobs_module(): void
     {
@@ -38,7 +38,7 @@ final class PublishQueueChangesTest extends TestCase
     {
         $broadcaster = new FakeBroadcaster;
 
-        (new PublishQueueChanges(new ModuleChanges($broadcaster)))(new QueueChanged($tables));
+        (new PublishQueueChangesListener(new ModuleChanges($broadcaster)))(new QueueChanged($tables));
 
         return array_map(static fn ($envelope): string => $envelope->topic, $broadcaster->published());
     }
