@@ -1,7 +1,13 @@
 <?php /** @var \Hydra\View\Template $this */ ?>
 <?php /** @var \Hydra\Admin\ViewModels\ScreenViewModel $screen */ ?>
 <?php /** @var \Hydra\Admin\Updates\UpdateCheck $updates */ ?>
+<?php /** @var \App\View\ThemeResolver $theme */ ?>
 <?php $this->extends('layouts/base') ?>
+
+<?php /* The signed-in person's palette, which only the admin wears. Asked for
+   here rather than at the view's construction: it reads the session, and the
+   console builds a view without one. */ ?>
+<?php $this->start('theme') ?><?= $theme->current() ?><?php $this->stop() ?>
 
 <?php /* The admin's own sheet and script, loaded only on admin screens. Both
    are the package's and are served by it, so an upgrade that adds a field type

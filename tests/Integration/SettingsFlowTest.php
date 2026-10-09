@@ -158,6 +158,17 @@ final class SettingsFlowTest extends TestCase
         $this->assertStringContainsString('data-theme="paper"', $this->body('/admin/settings'));
     }
 
+    public function test_the_public_site_keeps_its_own_palette_for_a_signed_in_admin(): void
+    {
+        $this->login('boss');
+        $this->save('graphite');
+
+        // The picker is the admin's appearance, not the site's: signing in
+        // must not repaint the public pages in it.
+        $this->assertStringContainsString('<html lang="en" data-theme="paper"', $this->body('/'));
+        $this->assertStringContainsString('data-theme="graphite"', $this->body('/admin/settings'));
+    }
+
     public function test_a_signed_out_page_takes_the_fallback(): void
     {
         // Nobody to ask. The login screen still has to be styled.

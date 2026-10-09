@@ -1,12 +1,11 @@
 <!doctype html>
-<?php /** @var \App\View\ThemeResolver $theme */ ?>
 <?php /** @var \App\View\Themes $themes */ ?>
 <?php /** @var \App\Config\CspConfig $csp */ ?>
 <?php /* The theme is a document-level attribute so one palette file can answer
    for the whole page, and a screen that wants another names it in a section.
-   Asked for here rather than at the view's construction: it reads the session,
-   and the console builds a view without one. */ ?>
-<html lang="en" data-theme="<?= $this->e($this->section('theme', $theme->current())) ?>">
+   The public site is painted in the fallback whoever is signed in: the picker
+   is the admin's appearance, and the admin layout is what names it. */ ?>
+<html lang="en" data-theme="<?= $this->e($this->section('theme', \App\View\Themes::FALLBACK)) ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
