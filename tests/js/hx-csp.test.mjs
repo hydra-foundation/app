@@ -24,7 +24,6 @@ before(() => {
     globalThis.Document = { parseHTMLUnsafe: () => ({ head: { querySelector: () => null } }) };
     globalThis.htmx = {
         config: {},
-        trigger: () => {},
         registerExtension: (_name, ext) => { extension = ext; },
     };
 
@@ -34,6 +33,7 @@ before(() => {
     extension.init({
         attributeValue: (elt, name) => elt?.getAttribute?.(name),
         initSecurity: () => {},
+        triggerHtmxEvent: () => {},
     });
 });
 
