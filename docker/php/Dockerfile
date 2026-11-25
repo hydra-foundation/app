@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM php:8.6-fpm
 
 # Build argument to determine dev or prod mode. It defaults to prod for the same
 # reason the compose base does: a build that says nothing about which it wants
@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg62-turbo-dev \
     libpng-dev \
     libwebp-dev \
+    libtool \
     # GD reads JPEG, PNG, GIF and WebP and writes WebP: hydrakit/image's
     # variants. EXIF tells it which way up a phone photo is.
     && docker-php-ext-configure gd --with-jpeg --with-webp \
@@ -29,19 +30,23 @@ RUN apt-get update && apt-get install -y \
        mbstring \
        intl \
        bcmath \
-       opcache \
+       $(php -m | grep -qi '^Zend OPcache$' || echo opcache) \
        pcntl \
        gd \
        exif \
     && docker-php-ext-enable pdo_mysql
 
+# PIE (PHP Installer for Extensions) replaces pecl, which the 8.6 images no
+# longer ship. Held to a major version, like Composer below.
+COPY --from=ghcr.io/php/pie:1-bin /pie /usr/bin/pie
+
 # Install Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
+RUN pie install "phpredis/phpredis:^6.4@RC"
 
 # Install Xdebug and PCOV only in dev mode
 RUN if [ "$BUILD_MODE" = "dev" ]; then \
-        pecl install xdebug && docker-php-ext-enable xdebug && \
-        pecl install pcov && docker-php-ext-enable pcov; \
+        pie install "xdebug/xdebug:^3.6@alpha" && \
+        { pie install pecl/pcov || echo "pcov: no build for this PHP, skipped"; }; \
     fi
 
 # Install Composer. Held to a major version rather than :latest, so a rebuild
