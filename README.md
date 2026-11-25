@@ -79,7 +79,7 @@ composer qa                      # static analysis, style, tests
 
 The three also run on their own as `composer stan`, `composer lint` and
 `composer test`; `composer lint:fix` applies the style fixes instead of
-reporting them. CI runs the same tools on PHP 8.4 and 8.5, and once more
+reporting them. CI runs the same tools on PHP 8.4, 8.5 and 8.6, and once more
 against the framework's `main` branch, so a change upstream that breaks the
 skeleton fails before it is released rather than after.
 

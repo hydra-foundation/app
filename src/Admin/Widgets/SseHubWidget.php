@@ -53,6 +53,11 @@ final class SseHubWidget implements PresenterInterface
             ['label' => 'Process', 'value' => (string) $report->pid],
         ];
 
+        // epoll on PHP 8.6, select below it; a hub before 0.32 does not say.
+        if ($report->poller !== null) {
+            $rows[] = ['label' => 'Waits on', 'value' => $report->poller];
+        }
+
         if (!$report->subscribed) {
             return [
                 'status' => Status::Warning,

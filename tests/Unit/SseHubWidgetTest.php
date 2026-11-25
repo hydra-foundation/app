@@ -41,6 +41,26 @@ final class SseHubWidgetTest extends TestCase
         $this->assertNull($card['note']);
     }
 
+    public function test_a_hub_that_says_what_it_waits_through_shows_it(): void
+    {
+        $now = $this->clock->now()->getTimestamp();
+        $this->status->publish(new HubReport(42, $now - 60, 3, true, $now, 'epoll'), 30);
+
+        $rows = (new SseHubWidget($this->status, $this->clock))->present()['rows'];
+
+        $this->assertContains(['label' => 'Waits on', 'value' => 'epoll'], $rows);
+    }
+
+    public function test_a_hub_too_old_to_say_has_no_such_row(): void
+    {
+        $now = $this->clock->now()->getTimestamp();
+        $this->status->publish(new HubReport(42, $now - 60, 3, true, $now), 30);
+
+        $labels = array_column((new SseHubWidget($this->status, $this->clock))->present()['rows'], 'label');
+
+        $this->assertNotContains('Waits on', $labels);
+    }
+
     public function test_a_hub_cut_off_from_redis_is_a_warning(): void
     {
         $now = $this->clock->now()->getTimestamp();
